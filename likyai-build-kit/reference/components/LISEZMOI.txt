@@ -1,0 +1,5 @@
+Place ici les 3 composants de reference fournis par le proprietaire :
+  loading-state.tsx   (LoadingState)
+  thinking-state.tsx  (ThinkingState)
+  prompt-bar.tsx      (PromptBar, depend du paquet "glimm")
+Voir AGENT_BUILD_GUIDE.md section 3.4 pour les tokens Tailwind a definir.

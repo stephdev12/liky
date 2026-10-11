@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "skills": {
+    "coss": {
+      "source": "cosscom/coss",
+      "sourceType": "github",
+      "skillPath": "apps/ui/skills/coss/SKILL.md",
+      "computedHash": "4ce6babba954ddd3ee14ff134b1eab68230cd0acd7fcfdbc4277248ed96a6318"
+    },
+    "coss-particles": {
+      "source": "cosscom/coss",
+      "sourceType": "github",
+      "skillPath": "apps/ui/skills/coss-particles/SKILL.md",
+      "computedHash": "fd04aeb6c61c0f3271bc124d63d40b21594cb694178df49575d309cec2a4eda5"
+    },
+    "kie-chat-agents": {
+      "source": "kie.ai",
+      "sourceUrl": "https://kie.ai",
+      "sourceType": "well-known",
+      "computedHash": "806c6840866c2665edb2b54785406728185913db288e0b567ff9f586bff4c13c",
+      "wellKnownDigest": "sha256:f1cbf185af32ff7162dd67d9d257cd527e79846d94cae804e2bb83e08a47e8b0"
+    },
+    "kie-models": {
+      "source": "kie.ai",
+      "sourceUrl": "https://kie.ai",
+      "sourceType": "well-known",
+      "computedHash": "9a8ed0bc28ef13ce38f33572ff7930104c23d343f94e0867ae222ff238fa9533",
+      "wellKnownDigest": "sha256:f6247b734033fad6ba75e0875bc105e2307c9b7e7790317a26c1b68838209f22"
+    },
+    "migrate-radix-to-base": {
+      "source": "shadcn/ui",
+      "sourceType": "github",
+      "skillPath": "skills/migrate-radix-to-base/SKILL.md",
+      "computedHash": "4fdc31bf287f674ba6bf91a648120f7b34cd7ef370f998f2cc116fed067789c5"
+    },
+    "shadcn": {
+      "source": "shadcn/ui",
+      "sourceType": "github",
+      "skillPath": "skills/shadcn/SKILL.md",
+      "computedHash": "2d7bf36e581289fdcc3ffc592c1ec1d7457572baa72ba0d440229ef34bd7f6dd"
+    }
+  }
+}
