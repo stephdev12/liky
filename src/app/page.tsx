@@ -1,12 +1,16 @@
 "use client";
 
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { createShader, playSweep, accentChain, ACCENTS } from "glimm";
 import { PromptBubble } from "@/components/prompt-bubble";
 import { CoolIcon } from "@/components/icons/coolicon";
 import { ResultBubble, type GenerationResultData } from "@/components/result-bubble";
 import { SectionShowcase } from "@/components/section-showcase";
 import { LibraryModal, type LibraryCardItem } from "@/components/library-modal";
+import { createClient } from "@/lib/supabase/client";
+import type { User } from "@supabase/supabase-js";
+import { Loader2 } from "lucide-react";
 
 /* ─────────────────────────────────────────────────────────
  * CONFIGURATION DU STUDIO LIKYAI (Ground Truth Prototype)
@@ -177,132 +181,13 @@ type CanvasCard = LibraryCardItem & {
   px?: number;
   py?: number;
 };
-
-const INITIAL_DEMO_CARDS: CanvasCard[] = [
-  {
-    id: "demo-card-1",
-    mode: "image",
-    caption: "Flacon de parfum minimaliste en verre",
-    fullPrompt: "Flacon de parfum en verre minimaliste, ombre portée douce et marbre noir, studio photo haute précision",
-    modelName: "Nano Banana 2",
-    mediaUrl: "/assets/organic/organic-1.webp",
-    creditsCost: 6,
-    status: "ready",
-    elapsed: 4,
-    thinkingStage: 2,
-    orgIndex: 0,
-    hues: [250, 320],
-    params: {
-      model: "nano",
-      qual: "2K",
-      format: "1:1 · Carré",
-      style: "Photo réaliste",
-    },
-    createdAt: Date.now() - 3600000 * 2,
-  },
-  {
-    id: "demo-card-2",
-    mode: "image",
-    caption: "Portrait néon cyberpunk à Douala",
-    fullPrompt: "Portrait néon cyberpunk aux reflets dorés, ambiance urbaine nocturne à Douala, photoréaliste 8k",
-    modelName: "Z-Image Turbo",
-    mediaUrl: "/assets/organic/organic-4.webp",
-    creditsCost: 2,
-    status: "ready",
-    elapsed: 3,
-    thinkingStage: 2,
-    orgIndex: 3,
-    hues: [20, 340],
-    params: {
-      model: "soul",
-      qual: "1K",
-      format: "1:1 · Carré",
-      style: "Cinéma",
-    },
-    createdAt: Date.now() - 3600000,
-  },
-  {
-    id: "demo-card-3",
-    mode: "video",
-    caption: "UGC · Crème Karité Glow naturelle",
-    fullPrompt: "Avis client filmé en lumière naturelle présentant la crème de karité bio avec texture onctueuse",
-    modelName: "Seedance 2.0 Mini",
-    mediaUrl: "/assets/organic/organic-2.webp",
-    creditsCost: 4,
-    status: "ready",
-    elapsed: 5,
-    thinkingStage: 2,
-    orgIndex: 1,
-    hues: [160, 220],
-    params: {
-      vmodel: "seedance",
-      Durée: "5 s",
-      Plateforme: "TikTok",
-      Avatar: "Femme",
-    },
-    createdAt: Date.now() - 3600000 * 4,
-  },
-  {
-    id: "demo-card-4",
-    mode: "video",
-    caption: "Vue drone cinématographique océan",
-    fullPrompt: "Vue drone cinématique au coucher du soleil sur les vagues de l'océan Atlantique, 4k 60fps",
-    modelName: "Kling 3.0",
-    mediaUrl: "/assets/organic/organic-3.webp",
-    creditsCost: 18,
-    status: "ready",
-    elapsed: 7,
-    thinkingStage: 2,
-    orgIndex: 2,
-    hues: [200, 270],
-    params: {
-      vmodel: "kling",
-      Durée: "5 s",
-      Plateforme: "YouTube Shorts",
-    },
-    createdAt: Date.now() - 3600000 * 3,
-  },
-  {
-    id: "demo-card-5",
-    mode: "music",
-    caption: "Afrobeat Vibes Yaoundé",
-    fullPrompt: "Afrobeat chaleureux et dansant avec guitare acoustique, rythmes ensoleillés et basse profonde",
-    modelName: "Suno V6",
-    creditsCost: 10,
-    status: "ready",
-    elapsed: 12,
-    thinkingStage: 2,
-    hues: [160, 220],
-    waveforms: [25, 45, 60, 75, 40, 65, 80, 50, 70, 85, 40, 60, 75, 30, 65, 85, 55, 45, 60, 70],
-    params: {
-      Genre: "Afrobeat",
-      Vocal: "Instrumental",
-      MDurée: "30 s",
-    },
-    createdAt: Date.now() - 3600000 * 5,
-  },
-  {
-    id: "demo-card-6",
-    mode: "voice",
-    caption: "Voix off narrative commerciale",
-    fullPrompt: "Bienvenue sur LikyAI, votre studio créatif propulsé par l'intelligence artificielle.",
-    modelName: "ElevenLabs V2.5",
-    creditsCost: 4,
-    status: "ready",
-    elapsed: 3,
-    thinkingStage: 2,
-    hues: [40, 10],
-    waveforms: [20, 35, 50, 70, 85, 60, 40, 55, 75, 90, 65, 45, 30, 50, 70, 80, 60, 40, 25, 15],
-    params: {
-      Voix: "Femme chaleureuse",
-      Langue: "Français",
-      Vitesse: "Normale",
-    },
-    createdAt: Date.now() - 3600000 * 6,
-  },
-];
+// Espace de travail vierge et isolé : chaque utilisateur dispose de ses propres créations depuis Supabase.
 
 export default function StudioPage() {
+  const router = useRouter();
+  const [user, setUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState<boolean>(true);
+
   const [mode, setMode] = useState<"image" | "video" | "music" | "voice">("image");
   const [vt, setVt] = useState<string | null>(null);
   const [credits, setCredits] = useState<number>(60);
@@ -359,22 +244,84 @@ export default function StudioPage() {
   const dragJustEndedRef = useRef<boolean>(false);
   const [isPromptShrunk, setIsPromptShrunk] = useState<boolean>(false);
 
-  /* Thème & cartes initialization */
-  useEffect(() => {
+  /* Chargement des données réelles de l'utilisateur (isolation stricte par user_id) */
+  const loadUserData = async (userId: string) => {
+    const supabase = createClient();
     try {
-      const savedCredits = localStorage.getItem("studio_credits");
-      if (savedCredits !== null) setCredits(Number(savedCredits));
-      const savedCards = localStorage.getItem("studio_cards");
-      if (savedCards) {
-        const parsed = JSON.parse(savedCards);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setCards(parsed);
-        } else {
-          setCards(INITIAL_DEMO_CARDS);
-        }
-      } else {
-        setCards(INITIAL_DEMO_CARDS);
+      // 1. Profil & solde réel de crédits
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("credits")
+        .eq("id", userId)
+        .maybeSingle();
+
+      if (profile && typeof profile.credits === "number") {
+        setCredits(profile.credits);
       }
+
+      // 2. Créations réelles de cet utilisateur
+      const { data: userGens, error } = await supabase
+        .from("generations")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false });
+
+      if (userGens && !error && userGens.length > 0) {
+        const formattedCards: CanvasCard[] = userGens.map((g, idx) => ({
+          id: g.task_id || g.id,
+          mode: g.tool as "image" | "video" | "music" | "voice",
+          caption: g.prompt.slice(0, 46) + (g.prompt.length > 46 ? "…" : ""),
+          fullPrompt: g.prompt,
+          modelName: g.model_name,
+          mediaUrl: g.media_url || (g.thumbnail_url ?? undefined),
+          creditsCost: g.credits_cost,
+          status: g.status === "success" || g.status === "fail" ? "ready" : "thinking",
+          elapsed: g.duration_seconds || 0,
+          orgIndex: idx % 4,
+          params: (g.parameters as Record<string, any>) || {},
+          createdAt: new Date(g.created_at).getTime(),
+        }));
+        setCards(formattedCards);
+      } else {
+        // Plan de travail totalement vierge et isolé
+        setCards([]);
+      }
+    } catch (err) {
+      console.warn("Erreur chargement Supabase:", err);
+      setCards([]);
+    }
+  };
+
+  /* Vérification obligatoire de l'authentification & écoute de session */
+  useEffect(() => {
+    const supabase = createClient();
+    let isMounted = true;
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!isMounted) return;
+      if (!session?.user) {
+        // Redirection obligatoire si non authentifié
+        router.replace("/auth");
+      } else {
+        setUser(session.user);
+        loadUserData(session.user.id);
+      }
+      setAuthLoading(false);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!isMounted) return;
+      if (!session?.user) {
+        router.replace("/auth");
+      } else {
+        setUser(session.user);
+      }
+    });
+
+    // Initialisation du thème
+    try {
       const savedTheme = localStorage.getItem("studio_theme") as "light" | "dark" | null;
       if (savedTheme) {
         setThemeMode(savedTheme);
@@ -384,20 +331,25 @@ export default function StudioPage() {
         const mq = window.matchMedia("(prefers-color-scheme: dark)");
         setIsDark(mq.matches);
       }
-    } catch {
-      setCards(INITIAL_DEMO_CARDS);
-    }
-  }, []);
+    } catch {}
 
-  useEffect(() => {
-    if (cards.length > 0) {
-      try {
-        localStorage.setItem("studio_cards", JSON.stringify(cards));
-      } catch {
-        // ignore
-      }
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
+  }, [router]);
+
+  const handleSignOut = async () => {
+    try {
+      const supabase = createClient();
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.error("Erreur déconnexion:", err);
     }
-  }, [cards]);
+    setUser(null);
+    setCards([]);
+    router.replace("/auth");
+  };
 
   const showToast = (msg: string) => {
     setToastMsg(msg);
@@ -406,12 +358,13 @@ export default function StudioPage() {
     }, 2800);
   };
 
-  const saveCredits = (newCredits: number) => {
+  const saveCredits = async (newCredits: number) => {
     setCredits(newCredits);
-    try {
-      localStorage.setItem("studio_credits", String(newCredits));
-    } catch {
-      // ignore
+    if (user) {
+      try {
+        const supabase = createClient();
+        await supabase.from("profiles").update({ credits: newCredits }).eq("id", user.id);
+      } catch {}
     }
   };
 
@@ -638,6 +591,24 @@ export default function StudioPage() {
             )
           );
 
+          // Synchronisation Supabase de la création terminée
+          if (user) {
+            try {
+              const supabase = createClient();
+              supabase
+                .from("generations")
+                .update({
+                  status: "success",
+                  media_url: finalUrl,
+                  duration_seconds: finalElapsed,
+                  updated_at: new Date().toISOString(),
+                })
+                .eq("user_id", user.id)
+                .eq("task_id", cardId)
+                .then(() => {});
+            } catch {}
+          }
+
           showToast("Ta création est prête.");
 
           // Ouvre automatiquement la bulle d'affichage du résultat
@@ -762,6 +733,26 @@ export default function StudioPage() {
         createdAt: Date.now(),
       });
 
+      // Enregistrement initial dans Supabase pour ce compte
+      if (user) {
+        try {
+          const supabase = createClient();
+          supabase
+            .from("generations")
+            .insert({
+              user_id: user.id,
+              task_id: cardId,
+              tool: mode,
+              model_name: chosenModelName,
+              prompt: p,
+              status: "generating",
+              credits_cost: Math.round(currentCost / count),
+              parameters: vals,
+            })
+            .then(() => {});
+        } catch {}
+      }
+
       // Appel réel backend /api/generate
       fetch("/api/generate", {
         method: "POST",
@@ -872,6 +863,25 @@ export default function StudioPage() {
     showToast(`+${chosenPack.c} crédits ajoutés (démo)`);
   };
 
+  if (authLoading || !user) {
+    return (
+      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[var(--bg)] text-[var(--ink)] select-none">
+        <div className="flex flex-col items-center gap-4 animate-in fade-in duration-300">
+          <div className="w-12 h-12 rounded-[14px] bg-[var(--lime)] flex items-center justify-center shadow-raised text-[#171717]">
+            <svg viewBox="0 0 24 24" className="w-6 h-6 fill-current">
+              <path d="M12 2c.6 5.4 4.6 9.4 10 10-5.4.6-9.4 4.6-10 10-.6-5.4-4.6-9.4-10-10 5.4-.6 9.4-4.6 10-10z" />
+            </svg>
+          </div>
+          <div className="flex items-center gap-2">
+            <Loader2 className="size-4 animate-spin text-[var(--lime)]" />
+            <span className="text-[13px] font-medium text-[var(--mute)]">
+              Accès sécurisé au Studio likyAI…
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -1003,136 +1013,123 @@ export default function StudioPage() {
         </div>
       </div>
 
-      {/* ── BOUTON BIBLIOTHÈQUE (HAUT DROIT) ── */}
-      <button
-        type="button"
-        className="fixed top-[calc(14px+env(safe-area-inset-top,0px))] right-[112px] z-[26] h-[38px] px-3.5 rounded-full bg-[var(--surf)] border border-[var(--line)] shadow-card flex items-center gap-2 text-[12.5px] font-medium text-[var(--ink)] hover:border-[var(--ink)]/40 transition-all cursor-pointer"
-        onClick={() => setLibraryOpen(true)}
-        title="Ouvrir la bibliothèque de créations"
-      >
-        <CoolIcon name="folders" duotone size={16} secondaryColor="var(--lime)" secondaryOpacity={0.4} />
-        <span className="hidden sm:inline">Bibliothèque</span>
-        <span className="px-1.5 py-0.2 rounded-full bg-[var(--mn)] text-[10.5px] font-mono text-[var(--mute)]">
-          {cards.length}
-        </span>
-      </button>
-
-      {/* ── BOUTON THÈME & MENU PROFIL (HAUT DROIT) ── */}
-      <button
-        type="button"
-        className="theme"
-        id="theme"
-        onClick={toggleTheme}
-        title={isDark ? "Passer en clair" : "Passer en sombre"}
-        aria-label="Changer de thème"
-      >
-        {isDark ? (
-          <CoolIcon name="sun" duotone size={19} secondaryColor="var(--lime)" secondaryOpacity={0.45} />
-        ) : (
-          <CoolIcon name="moon" duotone size={19} secondaryColor="var(--ink)" secondaryOpacity={0.25} />
-        )}
-      </button>
-
-      <div className="avatar">
+      {/* ── ACTIONS HAUT DROITE RESPONSIVES (BIBLIOTHÈQUE UNIQUE, THÈME & AVATAR) ── */}
+      <div className="top-actions">
+        {/* Bouton Bibliothèque unique (compact sur mobile, développé sur desktop) */}
         <button
           type="button"
-          className="av"
-          id="av"
-          aria-label="Profil"
-          onClick={() => setMenuOpen((o) => !o)}
+          className="h-[36px] sm:h-[38px] px-2.5 sm:px-3.5 rounded-full bg-[var(--surf)] border border-[var(--line)] shadow-card flex items-center gap-1.5 sm:gap-2 text-[12px] sm:text-[12.5px] font-medium text-[var(--ink)] hover:border-[var(--ink)]/40 transition-all cursor-pointer"
+          onClick={() => setLibraryOpen(true)}
+          title="Ouvrir la bibliothèque de créations"
         >
-          <i>A</i>
+          <CoolIcon name="folders" duotone size={16} secondaryColor="var(--lime)" secondaryOpacity={0.4} />
+          <span className="hidden sm:inline">Bibliothèque</span>
+          <span className="px-1.5 py-0.2 rounded-full bg-[var(--mn)] text-[10px] sm:text-[10.5px] font-mono text-[var(--mute)]">
+            {cards.length}
+          </span>
         </button>
 
-        <div className={`menu ${menuOpen ? "open" : ""}`} id="menu">
-          <div className="cred">
-            <div className="w-10 h-10 rounded-[12px] bg-[var(--mn)] border border-[var(--line)] flex items-center justify-center shrink-0 text-[var(--ink)]">
-              <CoolIcon name="credit-card-01" duotone size={22} secondaryColor="var(--lime)" secondaryOpacity={0.45} />
+        {/* Bouton Thème */}
+        <button
+          type="button"
+          className="theme"
+          id="theme"
+          onClick={toggleTheme}
+          title={isDark ? "Passer en clair" : "Passer en sombre"}
+          aria-label="Changer de thème"
+        >
+          {isDark ? (
+            <CoolIcon name="sun" duotone size={19} secondaryColor="var(--lime)" secondaryOpacity={0.45} />
+          ) : (
+            <CoolIcon name="moon" duotone size={19} secondaryColor="var(--ink)" secondaryOpacity={0.25} />
+          )}
+        </button>
+
+        {/* Menu Profil / Avatar */}
+        <div className="avatar">
+          <button
+            type="button"
+            className="av"
+            id="av"
+            aria-label="Profil"
+            onClick={() => setMenuOpen((o) => !o)}
+          >
+            <i>{user?.email ? user.email.charAt(0).toUpperCase() : "A"}</i>
+          </button>
+
+          <div className={`menu ${menuOpen ? "open" : ""}`} id="menu">
+            <div className="px-3 py-2 border-b border-[var(--line)]">
+              <small className="block text-[10.5px] text-[var(--mute)] truncate">Connecté en tant que</small>
+              <strong className="block text-[12px] font-semibold text-[var(--ink)] truncate max-w-[200px]">
+                {user?.email || "Compte studio"}
+              </strong>
             </div>
-            <div>
-              <small>Crédits</small>
-              <strong id="credits">{credits}</strong>
+
+            <div className="cred">
+              <div className="w-10 h-10 rounded-[12px] bg-[var(--mn)] border border-[var(--line)] flex items-center justify-center shrink-0 text-[var(--ink)]">
+                <CoolIcon name="credit-card-01" duotone size={22} secondaryColor="var(--lime)" secondaryOpacity={0.45} />
+              </div>
+              <div>
+                <small>Crédits</small>
+                <strong id="credits">{credits}</strong>
+              </div>
             </div>
+
+            <button
+              type="button"
+              className="mi pri"
+              id="topup"
+              onClick={() => {
+                setMenuOpen(false);
+                setScrim1Open(true);
+              }}
+            >
+              Recharger
+            </button>
+            <button
+              type="button"
+              className="mi"
+              id="hs"
+              onClick={() => {
+                setMenuOpen(false);
+                setScrim2Open(true);
+              }}
+            >
+              <div className="w-6 h-6 rounded-[7px] bg-[var(--mn)] border border-[var(--line)] flex items-center justify-center shrink-0 text-[var(--ink)]">
+                <CoolIcon name="folder" duotone size={15} />
+              </div>
+              Historique
+            </button>
+            <button
+              type="button"
+              className="mi"
+              id="st"
+              onClick={() => {
+                setMenuOpen(false);
+                setScrim3Open(true);
+              }}
+            >
+              <div className="w-6 h-6 rounded-[7px] bg-[var(--mn)] border border-[var(--line)] flex items-center justify-center shrink-0 text-[var(--ink)]">
+                <CoolIcon name="settings" duotone size={15} />
+              </div>
+              Paramètres
+            </button>
+            <div className="hr" />
+            <button
+              type="button"
+              className="mi text-red-400 hover:text-red-300"
+              id="out"
+              onClick={() => {
+                setMenuOpen(false);
+                handleSignOut();
+              }}
+            >
+              <div className="w-6 h-6 rounded-[7px] bg-red-500/10 border border-red-500/20 flex items-center justify-center shrink-0 text-red-400">
+                <CoolIcon name="log-out" duotone size={15} />
+              </div>
+              Se déconnecter
+            </button>
           </div>
-          <button
-            type="button"
-            className="mi pri"
-            id="topup"
-            onClick={() => {
-              setMenuOpen(false);
-              setScrim1Open(true);
-            }}
-          >
-            Recharger
-          </button>
-          <button
-            type="button"
-            className="mi"
-            id="lib"
-            onClick={() => {
-              setMenuOpen(false);
-              setLibraryOpen(true);
-            }}
-          >
-            <div className="w-6 h-6 rounded-[7px] bg-[var(--mn)] border border-[var(--line)] flex items-center justify-center shrink-0 text-[var(--ink)]">
-              <CoolIcon name="folders" duotone size={15} secondaryColor="var(--lime)" />
-            </div>
-            Bibliothèque ({cards.length})
-          </button>
-          <button
-            type="button"
-            className="mi"
-            id="hs"
-            onClick={() => {
-              setMenuOpen(false);
-              setScrim2Open(true);
-            }}
-          >
-            <div className="w-6 h-6 rounded-[7px] bg-[var(--mn)] border border-[var(--line)] flex items-center justify-center shrink-0 text-[var(--ink)]">
-              <CoolIcon name="folder" duotone size={15} />
-            </div>
-            Historique
-          </button>
-          <button
-            type="button"
-            className="mi"
-            id="st"
-            onClick={() => {
-              setMenuOpen(false);
-              setScrim3Open(true);
-            }}
-          >
-            <div className="w-6 h-6 rounded-[7px] bg-[var(--mn)] border border-[var(--line)] flex items-center justify-center shrink-0 text-[var(--ink)]">
-              <CoolIcon name="settings" duotone size={15} />
-            </div>
-            Paramètres
-          </button>
-          <a
-            href="/auth"
-            className="mi"
-            id="auth-btn"
-            onClick={() => setMenuOpen(false)}
-          >
-            <div className="w-6 h-6 rounded-[7px] bg-[var(--mn)] border border-[var(--line)] flex items-center justify-center shrink-0 text-[var(--ink)]">
-              <CoolIcon name="user-voice" duotone size={15} secondaryColor="var(--lime)" />
-            </div>
-            Connexion / Compte
-          </a>
-          <div className="hr" />
-          <button
-            type="button"
-            className="mi"
-            id="out"
-            onClick={() => {
-              setMenuOpen(false);
-              showToast("Déconnecté (démo)");
-            }}
-          >
-            <div className="w-6 h-6 rounded-[7px] bg-[var(--mn)] border border-[var(--line)] flex items-center justify-center shrink-0 text-[var(--mute)]">
-              <CoolIcon name="log-out" duotone size={15} />
-            </div>
-            Se déconnecter
-          </button>
         </div>
       </div>
 

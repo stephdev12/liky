@@ -83,9 +83,9 @@ export function SectionShowcase({
   const lastFour = cards.slice(0, 4);
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-4 pt-16 pb-28 transition-all duration-300">
-      {/* Barre supérieure compacte de section : Titre + Accès Bibliothèque */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 mb-3.5">
+    <div className="w-full max-w-4xl mx-auto px-4 min-h-[calc(100dvh-120px)] flex flex-col justify-center pt-28 sm:pt-24 pb-48 sm:pb-40 transition-all duration-300">
+      {/* Barre supérieure compacte de section : Titre & indicateur d'ordre */}
+      <div className="flex items-center justify-between gap-2.5 mb-3.5">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-[10px] bg-[var(--surf)] border border-[var(--line)] shadow-sm flex items-center justify-center text-[var(--ink)] shrink-0">
             <CoolIcon
@@ -110,26 +110,6 @@ export function SectionShowcase({
             </p>
           </div>
         </div>
-
-        {/* Bouton vers la bibliothèque complète */}
-        <button
-          type="button"
-          onClick={onOpenLibrary}
-          className="group flex items-center gap-1.5 px-3 py-1 rounded-full bg-[var(--surf)] hover:bg-[var(--mn)] border border-[var(--line)] hover:border-[var(--ink)]/40 text-[11.5px] font-medium text-[var(--ink)] shadow-sm transition-all cursor-pointer"
-        >
-          <CoolIcon
-            name="folders"
-            duotone
-            size={13}
-            secondaryColor="var(--lime)"
-            secondaryOpacity={0.4}
-            className="group-hover:scale-110 transition-transform"
-          />
-          <span>Bibliothèque</span>
-          <span className="px-1.5 py-0.2 rounded-full bg-[var(--mn)] group-hover:bg-[var(--line)] text-[10px] font-mono text-[var(--mute)]">
-            {allModeCardsCount}
-          </span>
-        </button>
       </div>
 
       {/* Grille des 4 cartes compactes (ou état vide si 0) */}

@@ -265,10 +265,18 @@ html, body {
   transform: translateX(-50%);
 }
 
-.avatar {
+.top-actions {
   position: fixed;
   top: calc(14px + env(safe-area-inset-top, 0px));
   right: 16px;
+  z-index: 26;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.avatar {
+  position: relative;
   z-index: 26;
 }
 
@@ -399,9 +407,7 @@ html, body {
 }
 
 .theme {
-  position: fixed;
-  top: calc(14px + env(safe-area-inset-top, 0px));
-  right: 62px;
+  position: relative;
   width: 38px;
   height: 38px;
   border-radius: 50%;
@@ -1016,11 +1022,14 @@ html, body {
   .types button {
     padding: 10px;
   }
-  .avatar {
+  .top-actions {
+    top: calc(12px + env(safe-area-inset-top, 0px));
     right: 12px;
+    gap: 6px;
   }
-  .theme {
-    right: 58px;
+  .theme, .av {
+    width: 35px;
+    height: 35px;
   }
   .scrim {
     align-items: end;
