@@ -4,17 +4,25 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createShader, playSweep, accentChain, ACCENTS } from "glimm";
 import { PromptBubble } from "@/components/prompt-bubble";
-import { CoolIcon } from "@/components/icons/coolicon";
+import { CoolIcon, type CoolIconKey } from "@/components/icons/coolicon";
 import { ResultBubble, type GenerationResultData } from "@/components/result-bubble";
 import { SectionShowcase } from "@/components/section-showcase";
 import { LibraryModal, type LibraryCardItem } from "@/components/library-modal";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
 import { Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 /* ─────────────────────────────────────────────────────────
  * CONFIGURATION DU STUDIO LIKYAI (Ground Truth Prototype)
  * ───────────────────────────────────────────────────────── */
+
+const CATEGORIES: { id: "image" | "video" | "music" | "voice"; label: string; icon: CoolIconKey }[] = [
+  { id: "image", label: "Image", icon: "image-01" },
+  { id: "video", label: "Vidéo", icon: "camera" },
+  { id: "music", label: "Musique", icon: "headphones" },
+  { id: "voice", label: "Voix off", icon: "user-voice" },
+];
 
 const MODELS_CONFIG = {
   image: [
@@ -940,81 +948,33 @@ export default function StudioPage() {
         <span>likyAI</span>
       </div>
 
-      {/* ── NAVIGATION CENTRALE HAUTE (4 OUTILS) ── */}
-      <div className="top">
+      {/* ── NAVIGATION CENTRALE HAUTE (4 OUTILS - DESKTOP) ── */}
+      <div className="top hidden sm:flex">
         <div className="nav" id="nav">
-          <button
-            type="button"
-            className={mode === "image" ? "on" : ""}
-            onClick={() => {
-              setMode("image");
-              setVt(null);
-            }}
-          >
-            <CoolIcon
-              name="image-01"
-              duotone
-              size={24}
-              secondaryColor={mode === "image" ? "var(--lime)" : "currentColor"}
-              secondaryOpacity={mode === "image" ? 0.45 : 0.2}
-              className={mode === "image" ? "text-[var(--ink)]" : "text-[var(--mute)]"}
-            />
-            <span>Image</span>
-          </button>
-          <button
-            type="button"
-            className={mode === "video" ? "on" : ""}
-            onClick={() => {
-              setMode("video");
-              setVt(null);
-            }}
-          >
-            <CoolIcon
-              name="camera"
-              duotone
-              size={24}
-              secondaryColor={mode === "video" ? "var(--lime)" : "currentColor"}
-              secondaryOpacity={mode === "video" ? 0.45 : 0.2}
-              className={mode === "video" ? "text-[var(--ink)]" : "text-[var(--mute)]"}
-            />
-            <span>Vidéo</span>
-          </button>
-          <button
-            type="button"
-            className={mode === "music" ? "on" : ""}
-            onClick={() => {
-              setMode("music");
-              setVt(null);
-            }}
-          >
-            <CoolIcon
-              name="headphones"
-              duotone
-              size={24}
-              secondaryColor={mode === "music" ? "var(--lime)" : "currentColor"}
-              secondaryOpacity={mode === "music" ? 0.45 : 0.2}
-              className={mode === "music" ? "text-[var(--ink)]" : "text-[var(--mute)]"}
-            />
-            <span>Musique</span>
-          </button>
-          <button
-            type="button"
-            className={mode === "voice" ? "on" : ""}
-            onClick={() => {
-              setMode("voice");
-              setVt(null);
-            }}
-          >
-            <CoolIcon
-              name="user-voice"
-              duotone
-              size={24}
-              secondaryColor={mode === "voice" ? "var(--lime)" : "currentColor"}
-              secondaryOpacity={mode === "voice" ? 0.45 : 0.2}
-              className={mode === "voice" ? "text-[var(--ink)]" : "text-[var(--mute)]"}
-            />
-            <span>Voix off</span>
-          </button>
+          {CATEGORIES.map((cat) => {
+            const active = mode === cat.id;
+            return (
+              <button
+                key={cat.id}
+                type="button"
+                className={active ? "on" : ""}
+                onClick={() => {
+                  setMode(cat.id);
+                  setVt(null);
+                }}
+              >
+                <CoolIcon
+                  name={cat.icon}
+                  duotone
+                  size={24}
+                  secondaryColor={active ? "var(--lime)" : "currentColor"}
+                  secondaryOpacity={active ? 0.45 : 0.2}
+                  className={active ? "text-[var(--ink)]" : "text-[var(--mute)]"}
+                />
+                <span>{cat.label}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -1140,6 +1100,40 @@ export default function StudioPage() {
 
       {/* ── DOCK INFÉRIEUR ── */}
       <div className="dock" id="dock" ref={dockRef}>
+        {/* Navigation des catégories sur Mobile (placée en bas pour libérer l'espace de travail) */}
+        <div className="flex sm:hidden justify-center mb-2 pointer-events-auto">
+          <div className="flex items-center gap-1 p-1 bg-[var(--surf)] border border-[var(--line)] rounded-full shadow-card backdrop-blur-md">
+            {CATEGORIES.map((cat) => {
+              const active = mode === cat.id;
+              return (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => {
+                    setMode(cat.id);
+                    setVt(null);
+                  }}
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11.5px] font-medium transition-all cursor-pointer whitespace-nowrap",
+                    active
+                      ? "bg-[var(--ink)] text-[var(--bg)] shadow-xs font-semibold"
+                      : "text-[var(--mute)] hover:text-[var(--ink)] hover:bg-[var(--mn)]"
+                  )}
+                >
+                  <CoolIcon
+                    name={cat.icon}
+                    duotone
+                    size={13}
+                    secondaryColor={active ? "var(--lime)" : "currentColor"}
+                    secondaryOpacity={active ? 0.9 : 0.3}
+                  />
+                  <span>{cat.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Mode Vidéo sans type choisi -> Grille de cartes .types avec textures organiques */}
         {mode === "video" && !vt ? (
           <div className="types">

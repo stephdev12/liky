@@ -974,7 +974,7 @@ html, body {
 
 @media (max-width: 640px) {
   .top {
-    top: calc(64px + env(safe-area-inset-top, 0px));
+    display: none !important;
   }
   .nav button {
     padding: 6px 8px 7px;

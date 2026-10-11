@@ -13,59 +13,8 @@ interface SectionShowcaseProps {
   onRetryCard: (card: LibraryCardItem) => void;
   onEditCard: (card: LibraryCardItem) => void;
   onOpenLibrary: () => void;
-  onSelectSamplePrompt: (prompt: string) => void;
+  onSelectSamplePrompt?: (prompt: string) => void;
 }
-
-const SECTION_META = {
-  image: {
-    title: "Images",
-    label: "Créations récentes · Images",
-    icon: "image-01" as const,
-    emptyTitle: "Aucune image générée pour l'instant",
-    emptyDesc: "Décrivez ce que vous imaginez ou inspirez-vous de ces suggestions :",
-    samples: [
-      "Flacon de parfum en verre minimaliste, ombre portée douce et marbre noir",
-      "Portrait cyberpunk futuriste sous la pluie néon à Douala, 8k",
-      "Café design contemporain baigné de lumière dorée du matin",
-    ],
-  },
-  video: {
-    title: "Vidéos",
-    label: "Créations récentes · Vidéos",
-    icon: "camera" as const,
-    emptyTitle: "Aucune vidéo générée pour l'instant",
-    emptyDesc: "Créez une vidéo cinématique, un avis client UGC ou une publicité :",
-    samples: [
-      "Avis client filmé en lumière naturelle présentant une crème de karité bio",
-      "Vue drone cinématographique au coucher du soleil sur les vagues de l'océan",
-      "Démo dynamique d'une application mobile moderne, transitions fluides",
-    ],
-  },
-  music: {
-    title: "Musique",
-    label: "Créations récentes · Musique",
-    icon: "headphones" as const,
-    emptyTitle: "Aucun morceau de musique généré",
-    emptyDesc: "Composez une mélodie instrumentale ou un titre complet avec Suno :",
-    samples: [
-      "Afrobeat chaleureux et dansant avec guitare acoustique et basse profonde",
-      "Piano solo mélancolique et méditatif, ambiance feutrée de nuit",
-      "Lo-Fi hip hop chill pour étudier, sonorités douces et pluie en fond",
-    ],
-  },
-  voice: {
-    title: "Voix off",
-    label: "Créations récentes · Voix off",
-    icon: "user-voice" as const,
-    emptyTitle: "Aucune voix off générée",
-    emptyDesc: "Donnez une voix humaine et engageante à vos textes et vidéos :",
-    samples: [
-      "Bienvenue sur LikyAI, votre studio de création créative propulsé par l'intelligence artificielle.",
-      "Découvrez notre nouvelle collection inspirée de la nature africaine et du savoir-faire artisanal.",
-      "En quelques clics, transformez vos idées en images, vidéos et musique haute fidélité.",
-    ],
-  },
-};
 
 export function SectionShowcase({
   mode,
@@ -75,81 +24,18 @@ export function SectionShowcase({
   onRetryCard,
   onEditCard,
   onOpenLibrary,
-  onSelectSamplePrompt,
 }: SectionShowcaseProps) {
-  const meta = SECTION_META[mode];
-
   // Les 4 dernières générations de la section (le début du tableau est le plus récent)
   const lastFour = cards.slice(0, 4);
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-3.5 sm:px-4 pt-[118px] sm:pt-24 pb-[320px] sm:pb-40 sm:min-h-[calc(100dvh-120px)] sm:flex sm:flex-col sm:justify-center transition-all duration-300">
-      {/* Barre supérieure compacte de section : Titre & indicateur d'ordre */}
-      <div className="flex items-center justify-between gap-2.5 mb-3.5">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-[10px] bg-[var(--surf)] border border-[var(--line)] shadow-sm flex items-center justify-center text-[var(--ink)] shrink-0">
-            <CoolIcon
-              name={meta.icon}
-              duotone
-              size={17}
-              secondaryColor="var(--lime)"
-              secondaryOpacity={0.45}
-            />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-[14px] font-semibold tracking-tight text-[var(--ink)]">
-                {meta.label}
-              </h1>
-              <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono font-medium bg-[var(--surf)] border border-[var(--line)] text-[var(--mute)]">
-                {lastFour.length}/4
-              </span>
-            </div>
-            <p className="text-[11px] text-[var(--mute)]">
-              4 dernières créations générées
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Grille des 4 cartes compactes (ou état vide si 0) */}
+    <div className="w-full max-w-4xl mx-auto px-3.5 sm:px-4 pt-16 sm:pt-20 pb-[260px] sm:pb-36 min-h-[calc(100dvh-60px)] flex flex-col justify-center transition-all duration-300">
+      {/* Grille des 4 cartes compactes ou simple carte avec bordure en trait interrompu si vide */}
       {lastFour.length === 0 ? (
-        <div className="w-full bg-[var(--surf)]/70 backdrop-blur-md border border-[var(--line)] rounded-[18px] p-6 text-center shadow-sm">
-          <div className="w-12 h-12 rounded-[14px] bg-[var(--mn)] border border-[var(--line)] flex items-center justify-center mx-auto mb-3 text-[var(--ink)] shadow-sm">
-            <CoolIcon
-              name={meta.icon}
-              duotone
-              size={24}
-              secondaryColor="var(--lime)"
-              secondaryOpacity={0.45}
-            />
-          </div>
-          <h2 className="text-[14px] font-semibold text-[var(--ink)] mb-1">
-            {meta.emptyTitle}
-          </h2>
-          <p className="text-[11.5px] text-[var(--mute)] max-w-sm mx-auto mb-4">
-            {meta.emptyDesc}
-          </p>
-
-          <div className="flex flex-wrap items-center justify-center gap-1.5 max-w-xl mx-auto">
-            {meta.samples.map((sample, idx) => (
-              <button
-                key={idx}
-                type="button"
-                onClick={() => onSelectSamplePrompt(sample)}
-                className="group flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--bg)] border border-[var(--line)] hover:border-[var(--ink)] text-[11px] text-left text-[var(--ink)]/90 hover:text-[var(--ink)] transition-all cursor-pointer shadow-xs"
-              >
-                <CoolIcon
-                  name="edit-pencil-01"
-                  size={10}
-                  duotone
-                  secondaryColor="var(--lime)"
-                  className="shrink-0 text-[var(--mute)] group-hover:text-[var(--ink)]"
-                />
-                <span className="line-clamp-1">{sample}</span>
-              </button>
-            ))}
-          </div>
+        <div className="w-full flex items-center justify-center py-12 sm:py-16 px-4 border border-dashed border-[var(--line)] rounded-[18px] bg-[var(--surf)]/20 text-center select-none shadow-xs">
+          <span className="text-[12px] sm:text-[13px] text-[var(--mute)]">
+            Aucune génération récente
+          </span>
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
