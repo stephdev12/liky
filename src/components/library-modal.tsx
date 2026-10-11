@@ -71,37 +71,37 @@ export function LibraryModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/55 backdrop-blur-md animate-in fade-in-0 duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-6 bg-black/55 backdrop-blur-md animate-in fade-in-0 duration-200"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
       <div
-        className="relative w-full max-w-5xl h-[88vh] max-h-[820px] flex flex-col bg-[var(--surf)] border border-[var(--line)] rounded-[24px] shadow-overlay overflow-hidden animate-in zoom-in-95 duration-200"
+        className="relative w-full max-w-5xl h-[90vh] sm:h-[88vh] max-h-[820px] flex flex-col bg-[var(--surf)] border border-[var(--line)] rounded-[20px] sm:rounded-[24px] shadow-overlay overflow-hidden animate-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* En-tête de la bibliothèque */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-[var(--line)] shrink-0 bg-[var(--surf)]/90 backdrop-blur-md">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-[14px] bg-[var(--mn)] border border-[var(--line)] flex items-center justify-center text-[var(--ink)] shadow-sm">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-5 border-b border-[var(--line)] shrink-0 bg-[var(--surf)]/90 backdrop-blur-md">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-[12px] sm:rounded-[14px] bg-[var(--mn)] border border-[var(--line)] flex items-center justify-center text-[var(--ink)] shadow-sm shrink-0">
               <CoolIcon
                 name="folders"
                 duotone
-                size={22}
+                size={20}
                 secondaryColor="var(--lime)"
                 secondaryOpacity={0.4}
               />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-[18px] font-semibold tracking-tight text-[var(--ink)]">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="text-[16px] sm:text-[18px] font-semibold tracking-tight text-[var(--ink)]">
                   Bibliothèque de créations
                 </h2>
-                <span className="px-2 py-0.5 rounded-full text-[11px] font-mono font-medium bg-[var(--mn)] border border-[var(--line)] text-[var(--mute)]">
+                <span className="px-2 py-0.5 rounded-full text-[10.5px] sm:text-[11px] font-mono font-medium bg-[var(--mn)] border border-[var(--line)] text-[var(--mute)]">
                   {items.length} {items.length > 1 ? "fichiers" : "fichier"}
                 </span>
               </div>
-              <p className="text-[12.5px] text-[var(--mute)]">
+              <p className="text-[11.5px] sm:text-[12.5px] text-[var(--mute)] truncate">
                 Retrouvez, téléchargez ou modifiez l&apos;ensemble de vos générations
               </p>
             </div>
@@ -110,15 +110,15 @@ export function LibraryModal({
           <button
             type="button"
             onClick={onClose}
-            className="w-9 h-9 rounded-full bg-[var(--mn)] hover:bg-[var(--line)] text-[var(--mute)] hover:text-[var(--ink)] flex items-center justify-center transition-colors cursor-pointer"
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[var(--mn)] hover:bg-[var(--line)] text-[var(--mute)] hover:text-[var(--ink)] flex items-center justify-center transition-colors cursor-pointer shrink-0 ml-2"
             aria-label="Fermer la bibliothèque"
           >
-            <CoolIcon name="close-md" size={16} />
+            <CoolIcon name="close-md" size={15} />
           </button>
         </div>
 
         {/* Barre d'outils : Filtres par catégorie et Recherche */}
-        <div className="px-6 py-3.5 border-b border-[var(--line)] bg-[var(--bg)]/50 shrink-0 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="px-4 sm:px-6 py-3 sm:py-3.5 border-b border-[var(--line)] bg-[var(--bg)]/50 shrink-0 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-3">
           {/* Onglets Filtres */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
             <button
@@ -279,7 +279,7 @@ export function LibraryModal({
         </div>
 
         {/* Grille des cartes de la bibliothèque */}
-        <div className="flex-1 overflow-y-auto p-6 scrollbar-thin">
+        <div className="flex-1 overflow-y-auto p-3.5 sm:p-6 scrollbar-thin">
           {filteredItems.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center p-8">
               <div className="w-16 h-16 rounded-[20px] bg-[var(--mn)] border border-[var(--line)] flex items-center justify-center text-[var(--mute)] mb-4">
