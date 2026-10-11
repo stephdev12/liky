@@ -333,6 +333,11 @@ export default function StudioPage() {
       }
     } catch {}
 
+    // Sur mobile, réduire la bulle par défaut pour dégager complètement l'espace de travail
+    if (typeof window !== "undefined" && window.innerWidth < 640) {
+      setIsPromptShrunk(true);
+    }
+
     return () => {
       isMounted = false;
       subscription.unsubscribe();

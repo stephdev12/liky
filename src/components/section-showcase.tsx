@@ -83,7 +83,7 @@ export function SectionShowcase({
   const lastFour = cards.slice(0, 4);
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-4 min-h-[calc(100dvh-120px)] flex flex-col justify-center pt-28 sm:pt-24 pb-48 sm:pb-40 transition-all duration-300">
+    <div className="w-full max-w-4xl mx-auto px-3.5 sm:px-4 pt-[118px] sm:pt-24 pb-[320px] sm:pb-40 sm:min-h-[calc(100dvh-120px)] sm:flex sm:flex-col sm:justify-center transition-all duration-300">
       {/* Barre supérieure compacte de section : Titre & indicateur d'ordre */}
       <div className="flex items-center justify-between gap-2.5 mb-3.5">
         <div className="flex items-center gap-2.5">

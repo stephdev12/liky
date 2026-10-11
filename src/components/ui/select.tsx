@@ -18,7 +18,7 @@ export function SelectTrigger({
   return (
     <BaseSelect.Trigger
       className={cn(
-        "relative inline-flex items-center h-8 gap-1.5 px-2.5 rounded-[12px] text-[12.5px] font-medium select-none transition-all outline-none cursor-pointer",
+        "relative inline-flex items-center h-8 gap-1.5 px-2.5 rounded-[12px] text-[12px] sm:text-[12.5px] font-medium shrink-0 whitespace-nowrap select-none transition-all outline-none cursor-pointer",
         "bg-[var(--mn)] text-[var(--ink)] border border-[var(--line)]",
         "hover:border-[var(--line-strong)] hover:bg-[var(--hover)]",
         "focus-visible:ring-2 focus-visible:ring-[var(--lime)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--surf)]",
@@ -27,7 +27,7 @@ export function SelectTrigger({
       )}
       {...props}
     >
-      {label && <span className="text-[var(--mute)] font-normal text-[12px]">{label}</span>}
+      {label && <span className="text-[var(--mute)] font-normal text-[11.5px] sm:text-[12px]">{label}</span>}
       {children}
       <BaseSelect.Icon className="ml-0.5 shrink-0 text-[var(--mute)] transition-transform duration-150 in-[[data-popup-open]]:rotate-180">
         <CoolIcon name="chevron-down" size={13} strokeWidth={2.2} />
@@ -57,10 +57,17 @@ export function SelectPopup({
 }: React.ComponentProps<typeof BaseSelect.Popup>) {
   return (
     <BaseSelect.Portal>
-      <BaseSelect.Positioner sideOffset={6} align="start" className="z-50">
+      <BaseSelect.Positioner
+        side="top"
+        sideOffset={8}
+        align="start"
+        alignItemWithTrigger={false}
+        collisionPadding={12}
+        className="z-50"
+      >
         <BaseSelect.Popup
           className={cn(
-            "min-w-[140px] max-w-[260px] max-h-72 p-1 overflow-y-auto rounded-[14px]",
+            "min-w-[140px] max-w-[calc(100vw-32px)] sm:max-w-[280px] max-h-64 p-1 overflow-y-auto rounded-[14px]",
             "bg-[var(--surf)] border border-[var(--line)] shadow-raised",
             "outline-none text-[12.5px] select-none",
             "data-[state=open]:animate-in data-[state=closed]:animate-out",

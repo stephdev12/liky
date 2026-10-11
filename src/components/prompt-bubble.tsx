@@ -470,8 +470,8 @@ export function PromptBubble({
       </div>
 
       {/* ── LIGNE DES DROPDOWNS COSS & ACTION DE GÉNÉRATION ── */}
-      <div className="row flex flex-wrap items-center justify-between gap-2.5 px-3 pb-2.5 pt-1">
-        <div className="chips flex flex-wrap items-center gap-2 flex-1 min-w-0">
+      <div className="row flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 px-2.5 sm:px-3 pb-2.5 pt-1 w-full">
+        <div className="chips flex items-center gap-1.5 overflow-x-auto overflow-y-hidden py-1 w-full sm:flex-1 min-w-0 no-scrollbar select-none flex-nowrap sm:flex-wrap">
           {/* ════ MODE IMAGE : DROPDOWNS COSS ════ */}
           {mode === "image" && (
             <>
@@ -699,7 +699,7 @@ export function PromptBubble({
               <button
                 type="button"
                 onClick={() => setVt(null)}
-                className="inline-flex items-center gap-1.5 h-8 px-3 rounded-[12px] bg-[var(--ink)] text-[var(--bg)] text-[12.5px] font-semibold hover:opacity-90 transition-opacity cursor-pointer"
+                className="inline-flex items-center gap-1.5 h-8 px-3 rounded-[12px] shrink-0 whitespace-nowrap bg-[var(--ink)] text-[var(--bg)] text-[12px] font-semibold hover:opacity-90 transition-opacity cursor-pointer"
                 title="Changer de préréglage vidéo"
               >
                 <span>{VTYPES[vt]?.n}</span>
@@ -773,7 +773,7 @@ export function PromptBubble({
                   return (
                     <label
                       key={fld.k}
-                      className="inline-flex items-center h-8 gap-1.5 px-3 rounded-[12px] bg-[var(--mn)] text-[var(--ink)] border border-[var(--line)] hover:border-[var(--line-strong)] hover:bg-[var(--hover)] cursor-pointer select-none transition-all"
+                      className="inline-flex items-center h-8 gap-1.5 px-3 rounded-[12px] shrink-0 whitespace-nowrap bg-[var(--mn)] text-[var(--ink)] border border-[var(--line)] hover:border-[var(--line-strong)] hover:bg-[var(--hover)] cursor-pointer select-none transition-all"
                     >
                       <CoolIcon name="paperclip-attechment-tilt" size={15} duotone className="text-[var(--mute)]" />
                       <span className="text-[12.5px] font-medium text-[var(--ink)] max-w-[140px] truncate">
