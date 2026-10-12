@@ -58,71 +58,79 @@ class StatelessMcpTransport implements Transport {
   }
 }
 
+import {
+  getBaseUrl,
+  getCorsHeaders,
+  handleCorsPreflight,
+  getOAuthAuthorizationServerMetadata,
+  getOAuthProtectedResourceMetadata,
+} from "@/lib/mcp/oauth-metadata";
+
+/**
+ * OPTIONS /api/mcp
+ * Support CORS preflight pour ChatGPT et Claude Web
+ */
+export async function OPTIONS() {
+  return handleCorsPreflight();
+}
+
 /**
  * GET /api/mcp
  * Endpoint d'information, de santé et de découverte du serveur MCP LikyAI (avec OAuth)
  */
 export async function GET(req: NextRequest) {
-  const host = req.headers.get("host") || "liky.ai";
-  const protocol = host.includes("localhost") ? "http" : "https";
-  const baseUrl = `${protocol}://${host}`;
+  const baseUrl = getBaseUrl(req);
   const mcpEndpoint = `${baseUrl}/api/mcp`;
+  const cors = getCorsHeaders(req);
 
-  return NextResponse.json({
-    status: "online",
-    name: "likyai-mcp",
-    version: "1.0.0",
-    protocolVersion: "2024-11-05",
-    description: "Serveur MCP universel pour LikyAI (Images, Vidéos, Musiques, Voix off).",
-    transport: "Streamable HTTP & JSON-RPC 2.0",
-    endpoint: mcpEndpoint,
-    oauth: {
-      authorization_endpoint: `${baseUrl}/mcp/authorize`,
-      token_endpoint: `${baseUrl}/api/mcp/oauth/token`,
-      response_types_supported: ["code"],
-      grant_types_supported: ["authorization_code"],
-      scope_supported: ["mcp:tools"],
-    },
-    capabilities: {
-      tools: [
-        "likyai_generate_image",
-        "likyai_generate_video",
-        "likyai_generate_music",
-        "likyai_generate_voice",
-        "likyai_get_task_status",
-        "likyai_list_models",
-        "likyai_get_balance",
-      ],
-      resources: ["likyai://models"],
-      prompts: ["creative-campaign"],
-    },
-    clientConfigExample: {
-      chatgpt: {
-        connection: mcpEndpoint,
-        authentication: "OAuth",
-        authorization_url: `${baseUrl}/mcp/authorize`,
-        token_url: `${baseUrl}/api/mcp/oauth/token`,
+  return NextResponse.json(
+    {
+      status: "online",
+      name: "likyai-mcp",
+      version: "1.0.0",
+      protocolVersion: "2024-11-05",
+      description: "Serveur MCP universel pour LikyAI (Images, Vidéos, Musiques, Voix off).",
+      transport: "Streamable HTTP & JSON-RPC 2.0",
+      endpoint: mcpEndpoint,
+      resource: mcpEndpoint,
+      authorization_servers: [baseUrl],
+      oauth: getOAuthAuthorizationServerMetadata(baseUrl),
+      protected_resource: getOAuthProtectedResourceMetadata(baseUrl),
+      capabilities: {
+        tools: [
+          "likyai_generate_image",
+          "likyai_generate_video",
+          "likyai_generate_music",
+          "likyai_generate_voice",
+          "likyai_get_task_status",
+          "likyai_list_models",
+          "likyai_get_balance",
+        ],
+        resources: ["likyai://models"],
+        prompts: ["creative-campaign"],
       },
-      claude_web: {
-        connection: mcpEndpoint,
-      },
-      claude_desktop: {
-        mcpServers: {
-          likyai: {
-            url: mcpEndpoint,
-            headers: {
-              Authorization: "Bearer <VOTRE_CLE_API_LIKYAI>",
-            },
-          },
+      clientConfigExample: {
+        chatgpt: {
+          connection: mcpEndpoint,
+          authentication: "OAuth",
+          client_id: "likyai_client",
+          client_secret: "likyai_secret",
+          authorization_url: `${baseUrl}/mcp/authorize`,
+          token_url: `${baseUrl}/api/mcp/oauth/token`,
+        },
+        claude_web: {
+          connection: mcpEndpoint,
+          client_id: "likyai_client",
         },
       },
-      cursor: {
-        type: "command",
-        command: "npx",
-        args: ["-y", "likyai-mcp"],
-      },
     },
-  });
+    {
+      headers: {
+        ...cors,
+        Link: `<${baseUrl}/.well-known/oauth-protected-resource>; rel="oauth-protected-resource"`,
+      },
+    }
+  );
 }
 
 /**
@@ -130,12 +138,53 @@ export async function GET(req: NextRequest) {
  * Endpoint d'exécution JSON-RPC 2.0 officiel conforme à la spécification MCP
  */
 export async function POST(req: NextRequest) {
+  const baseUrl = getBaseUrl(req);
+  const cors = getCorsHeaders(req);
+
   try {
     const authHeader = req.headers.get("authorization");
     const apiKey = authHeader?.replace(/^Bearer\s+/i, "") || req.nextUrl.searchParams.get("key");
 
+    // Si aucune authentification n'est fournie, renvoyer le challenge 401 standard (RFC 9728)
+    // C'est ce signal 401 strict qui déclenche le flow OAuth dans Claude Web & ChatGPT !
+    if (!authHeader && !apiKey) {
+      return NextResponse.json(
+        {
+          error: "unauthorized",
+          error_description: "Authentification requise via OAuth 2.0. Connectez votre compte LikyAI pour utiliser le MCP avec vos crédits.",
+          resource_metadata: `${baseUrl}/.well-known/oauth-protected-resource`,
+          authorization_url: `${baseUrl}/mcp/authorize`,
+        },
+        {
+          status: 401,
+          headers: {
+            ...cors,
+            "WWW-Authenticate": `Bearer realm="LikyAI", resource_metadata="${baseUrl}/.well-known/oauth-protected-resource"`,
+            Link: `<${baseUrl}/.well-known/oauth-protected-resource>; rel="oauth-protected-resource"`,
+          },
+        }
+      );
+    }
+
     // Résolution de l'utilisateur et de son solde de crédits
     const user = await resolveMcpUser(authHeader || apiKey);
+
+    if (!user) {
+      return NextResponse.json(
+        {
+          error: "invalid_token",
+          error_description: "Le token d'accès est expiré ou invalide. Veuillez reconnecter votre compte.",
+          resource_metadata: `${baseUrl}/.well-known/oauth-protected-resource`,
+        },
+        {
+          status: 401,
+          headers: {
+            ...cors,
+            "WWW-Authenticate": `Bearer error="invalid_token", error_description="The access token is expired or invalid", resource_metadata="${baseUrl}/.well-known/oauth-protected-resource"`,
+          },
+        }
+      );
+    }
 
     // Instanciation du serveur MCP LikyAI avec le contexte utilisateur
     const mcpServer = createLikyMcpServer({ user });
@@ -148,7 +197,9 @@ export async function POST(req: NextRequest) {
     // Traitement du message JSON-RPC
     const response = await transport.handleClientMessage(body);
 
-    return NextResponse.json(response);
+    return NextResponse.json(response, {
+      headers: cors,
+    });
   } catch (error: unknown) {
     console.error("[MCP Error]:", error);
 
@@ -161,7 +212,10 @@ export async function POST(req: NextRequest) {
           message: error instanceof Error ? error.message : "Erreur interne MCP",
         },
       },
-      { status: 500 }
+      {
+        status: 500,
+        headers: cors,
+      }
     );
   }
 }

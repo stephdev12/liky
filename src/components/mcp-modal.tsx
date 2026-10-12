@@ -163,7 +163,7 @@ export function McpModal({ isOpen, onClose }: McpModalProps) {
 
               <div className="space-y-3">
                 <h3 className="text-xs font-semibold text-foreground uppercase tracking-wider font-mono">
-                  Paramètres demandés par ChatGPT :
+                  1. Configuration principale (ChatGPT Custom Action / Tool) :
                 </h3>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
@@ -180,6 +180,32 @@ export function McpModal({ isOpen, onClose }: McpModalProps) {
                   <div className="sm:col-span-2 p-3 rounded-xl border border-[var(--line)] bg-[var(--field)]">
                     <span className="text-muted-foreground block text-[11px]">Connection (URL) :</span>
                     <span className="font-mono text-foreground select-all break-all">{mcpEndpoint}</span>
+                  </div>
+                </div>
+
+                <h3 className="text-xs font-semibold text-foreground uppercase tracking-wider font-mono pt-1">
+                  2. Si ChatGPT demande les paramètres manuels (Manual OAuth Settings) :
+                </h3>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+                  <div className="p-3 rounded-xl border border-[var(--line)] bg-[var(--field)]">
+                    <span className="text-muted-foreground block text-[11px]">Client ID :</span>
+                    <span className="font-mono font-semibold text-foreground select-all">likyai_client</span>
+                  </div>
+
+                  <div className="p-3 rounded-xl border border-[var(--line)] bg-[var(--field)]">
+                    <span className="text-muted-foreground block text-[11px]">Client Secret :</span>
+                    <span className="font-mono font-semibold text-foreground select-all">likyai_secret</span>
+                  </div>
+
+                  <div className="p-3 rounded-xl border border-[var(--line)] bg-[var(--field)]">
+                    <span className="text-muted-foreground block text-[11px]">Client Authentication :</span>
+                    <span className="text-foreground font-medium">Send in request body (ou Basic)</span>
+                  </div>
+
+                  <div className="p-3 rounded-xl border border-[var(--line)] bg-[var(--field)]">
+                    <span className="text-muted-foreground block text-[11px]">Scope :</span>
+                    <span className="font-mono text-foreground select-all">mcp:tools</span>
                   </div>
 
                   <div className="sm:col-span-2 p-3 rounded-xl border border-[var(--line)] bg-[var(--field)]">
@@ -206,17 +232,22 @@ export function McpModal({ isOpen, onClose }: McpModalProps) {
               <div className="space-y-2.5 text-xs">
                 <div className="p-3 rounded-xl border border-[var(--line)] bg-[var(--field)]">
                   <span className="text-muted-foreground block text-[11px]">Name :</span>
-                  <span className="font-semibold text-foreground">LikyAI Studio</span>
+                  <span className="font-semibold text-foreground">LikyAI</span>
                 </div>
 
                 <div className="p-3 rounded-xl border border-[var(--line)] bg-[var(--field)]">
                   <span className="text-muted-foreground block text-[11px]">Connector HTTPS URL :</span>
                   <span className="font-mono text-foreground select-all break-all">{mcpEndpoint}</span>
                 </div>
+
+                <div className="p-3 rounded-xl border border-[var(--line)] bg-[var(--field)]">
+                  <span className="text-muted-foreground block text-[11px]">OAuth Client ID (si demandé) :</span>
+                  <span className="font-mono font-semibold text-foreground select-all">likyai_client</span>
+                </div>
               </div>
 
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Claude Web se connectera directement au serveur MCP de LikyAI et vous demandera de vous identifier afin de débiter vos crédits personnels.
+                Le serveur supporte l&apos;enregistrement automatique (RFC 7591) ainsi que le Client ID statique <code>likyai_client</code>. Vous serez redirigé vers LikyAI pour vous identifier et autoriser le connecteur à utiliser vos crédits personnels.
               </p>
             </div>
           )}

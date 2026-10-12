@@ -23,11 +23,100 @@ interface McpTokenEntry {
   expiresAt: number;
 }
 
+export interface RegisteredOAuthClient {
+  clientId: string;
+  clientSecret: string;
+  clientName: string;
+  redirectUris: string[];
+  grantTypes: string[];
+  responseTypes: string[];
+  tokenEndpointAuthMethod: string;
+  createdAt: number;
+}
+
 declare global {
   // eslint-disable-next-line no-var
   var __mcpOAuthCodes: Map<string, OAuthCodeEntry> | undefined;
   // eslint-disable-next-line no-var
   var __mcpTokens: Map<string, McpTokenEntry> | undefined;
+  // eslint-disable-next-line no-var
+  var __mcpClients: Map<string, RegisteredOAuthClient> | undefined;
+}
+
+function getClientsMap(): Map<string, RegisteredOAuthClient> {
+  if (!globalThis.__mcpClients) {
+    globalThis.__mcpClients = new Map();
+
+    // Client statique officiel par défaut (recommandé pour config manuelle ChatGPT & Claude)
+    globalThis.__mcpClients.set("likyai_client", {
+      clientId: "likyai_client",
+      clientSecret: "likyai_secret",
+      clientName: "LikyAI Connector (Default)",
+      redirectUris: [
+        "https://chatgpt.com/aip/g/oauth/callback",
+        "https://chatgpt.com/api/mcp/oauth/callback",
+        "https://claude.ai/api/mcp/oauth/callback",
+      ],
+      grantTypes: ["authorization_code", "refresh_token"],
+      responseTypes: ["code"],
+      tokenEndpointAuthMethod: "none",
+      createdAt: Date.now(),
+    });
+  }
+  return globalThis.__mcpClients;
+}
+
+/**
+ * Enregistrement dynamique d'un client OAuth (RFC 7591 DCR)
+ */
+export function registerOAuthClient(params: {
+  clientName?: string;
+  redirectUris?: string[];
+  grantTypes?: string[];
+  responseTypes?: string[];
+  tokenEndpointAuthMethod?: string;
+}): RegisteredOAuthClient {
+  const map = getClientsMap();
+  const clientId = `liky_cli_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  const clientSecret = `liky_sec_${Math.random().toString(36).slice(2, 16)}`;
+
+  const client: RegisteredOAuthClient = {
+    clientId,
+    clientSecret,
+    clientName: params.clientName || "MCP Client",
+    redirectUris: params.redirectUris || [
+      "https://chatgpt.com/api/mcp/oauth/callback",
+      "https://claude.ai/api/mcp/oauth/callback",
+    ],
+    grantTypes: params.grantTypes || ["authorization_code", "refresh_token"],
+    responseTypes: params.responseTypes || ["code"],
+    tokenEndpointAuthMethod: params.tokenEndpointAuthMethod || "none",
+    createdAt: Date.now(),
+  };
+
+  map.set(clientId, client);
+  return client;
+}
+
+export function getOAuthClient(clientId?: string | null): RegisteredOAuthClient | null {
+  if (!clientId) return null;
+  const client = getClientsMap().get(clientId);
+  if (client) return client;
+
+  // Accepte également les identifiants génériques courants pour une compatibilité sans faille
+  if (clientId === "likyai_client" || clientId === "chatgpt" || clientId === "claude") {
+    return {
+      clientId,
+      clientSecret: "likyai_secret",
+      clientName: "LikyAI Client",
+      redirectUris: [],
+      grantTypes: ["authorization_code", "refresh_token"],
+      responseTypes: ["code"],
+      tokenEndpointAuthMethod: "none",
+      createdAt: Date.now(),
+    };
+  }
+  return null;
 }
 
 function getCodesMap(): Map<string, OAuthCodeEntry> {

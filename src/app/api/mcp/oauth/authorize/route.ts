@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateOAuthCode } from "@/lib/mcp/auth";
+import { getCorsHeaders, handleCorsPreflight } from "@/lib/mcp/oauth-metadata";
+
+export async function OPTIONS() {
+  return handleCorsPreflight();
+}
 
 export async function POST(req: NextRequest) {
   try {
