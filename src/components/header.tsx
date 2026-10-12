@@ -25,7 +25,7 @@ export function Header() {
 						className="rounded-lg py-1.5 hover:opacity-85 transition-opacity"
 						href="/"
 					>
-						<Logo className="h-5" />
+						<Logo />
 					</Link>
 					<DesktopNav />
 				</div>

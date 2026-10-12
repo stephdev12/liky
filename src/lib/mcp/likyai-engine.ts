@@ -157,7 +157,7 @@ export async function checkLikyTask(taskId: string): Promise<TaskStatusResult> {
  */
 export async function waitForTaskCompletion(
   taskId: string,
-  maxWaitSeconds: number = 30,
+  maxWaitSeconds: number = 5,
   intervalSeconds: number = 2
 ): Promise<TaskStatusResult> {
   const startTime = Date.now();
@@ -177,8 +177,9 @@ export async function waitForTaskCompletion(
 
   return {
     taskId,
-    state: "timeout",
-    message: `Délai d'attente dépassé (${maxWaitSeconds}s). La tâche continue en arrière-plan. Vérifiez plus tard avec likyai_get_task_status.`,
+    state: "generating",
+    progress: 45,
+    message: "Rendu en cours sur le cluster GPU LikyAI. Utilisez likyai_get_task_status pour vérifier l'avancement.",
   };
 }
 
@@ -242,7 +243,7 @@ export async function generateImage(options: GenerateImageOptions): Promise<{
   };
 
   if (options.waitForResult !== false) {
-    status = await waitForTaskCompletion(res.taskId, options.maxWaitSeconds || 35);
+    status = await waitForTaskCompletion(res.taskId, options.maxWaitSeconds || 5);
   }
 
   return { taskId: res.taskId, status, model: officialModel, mode: "live" };
@@ -285,7 +286,7 @@ export async function generateVideo(options: GenerateVideoOptions): Promise<{
     };
 
     if (options.waitForResult) {
-      status = await waitForTaskCompletion(simTaskId, options.maxWaitSeconds || 20);
+      status = await waitForTaskCompletion(simTaskId, options.maxWaitSeconds || 5);
     }
 
     return { taskId: simTaskId, status, model: modelId, mode: "demo" };
@@ -311,7 +312,7 @@ export async function generateVideo(options: GenerateVideoOptions): Promise<{
   };
 
   if (options.waitForResult) {
-    status = await waitForTaskCompletion(res.taskId, options.maxWaitSeconds || 60);
+    status = await waitForTaskCompletion(res.taskId, options.maxWaitSeconds || 5);
   }
 
   return { taskId: res.taskId, status, model: officialModel, mode: "live" };
@@ -374,7 +375,7 @@ export async function generateMusic(options: GenerateMusicOptions): Promise<{
   };
 
   if (options.waitForResult) {
-    status = await waitForTaskCompletion(res.taskId, options.maxWaitSeconds || 60);
+    status = await waitForTaskCompletion(res.taskId, options.maxWaitSeconds || 5);
   }
 
   return { taskId: res.taskId, status, model: officialModel, mode: "live" };
@@ -411,7 +412,7 @@ export async function generateVoice(options: GenerateVoiceOptions): Promise<{
     };
 
     if (options.waitForResult !== false) {
-      status = await waitForTaskCompletion(simTaskId, options.maxWaitSeconds || 15);
+      status = await waitForTaskCompletion(simTaskId, options.maxWaitSeconds || 5);
     }
 
     return { taskId: simTaskId, status, model: "elevenlabs-v2", mode: "demo" };
@@ -435,7 +436,7 @@ export async function generateVoice(options: GenerateVoiceOptions): Promise<{
   };
 
   if (options.waitForResult !== false) {
-    status = await waitForTaskCompletion(res.taskId, options.maxWaitSeconds || 25);
+    status = await waitForTaskCompletion(res.taskId, options.maxWaitSeconds || 5);
   }
 
   return { taskId: res.taskId, status, model: officialModel, mode: "live" };

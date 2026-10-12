@@ -13,6 +13,7 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group";
 import { AuthDivider } from "@/components/auth-divider";
+import { LogoIcon } from "@/components/logo";
 import { DecorIcon } from "@/components/decor-icon";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
@@ -204,11 +205,7 @@ export function AuthPage({ onSuccess, className, isModal = false }: AuthProps) {
         <div className="w-full max-w-sm animate-in space-y-5">
           {/* En-tête avec logo */}
           <div className="flex flex-col items-center text-center space-y-2">
-            <div className="w-10 h-10 rounded-[12px] bg-[var(--lime)] flex items-center justify-center shadow-sm text-[#171717]">
-              <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current">
-                <path d="M12 2c.6 5.4 4.6 9.4 10 10-5.4.6-9.4 4.6-10 10-.6-5.4-4.6-9.4-10-10 5.4-.6 9.4-4.6 10-10z" />
-              </svg>
-            </div>
+            <LogoIcon className="w-10 h-10 rounded-[12px] shadow-xs" />
             <h1 className="font-bold text-2xl tracking-tight text-[var(--ink)]">
               {authMode === "signin" ? "Connexion à likyAI" : "Créer un compte"}
             </h1>

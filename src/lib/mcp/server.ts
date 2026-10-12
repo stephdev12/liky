@@ -13,7 +13,10 @@ import {
 import {
   McpUserSession,
   deductUserCredits,
+  refundUserCredits,
   recordMcpGeneration,
+  updateMcpGenerationResult,
+  refundFailedTask,
 } from "./auth";
 import {
   calculateImageCost,
@@ -88,14 +91,20 @@ export function createLikyMcpServer(options?: { user?: McpUserSession | null }) 
         // Débit exact selon la configuration choisie
         await deductUserCredits(user.userId, pricing.cost);
 
-        const res = await generateImage({
-          prompt: args.prompt,
-          model: args.model,
-          aspect_ratio: args.aspect_ratio as any,
-          quality: args.quality?.toLowerCase() as any,
-          waitForResult: args.wait_for_result !== false,
-          maxWaitSeconds: 30,
-        });
+        let res;
+        try {
+          res = await generateImage({
+            prompt: args.prompt,
+            model: args.model,
+            aspect_ratio: args.aspect_ratio as any,
+            quality: args.quality?.toLowerCase() as any,
+            waitForResult: args.wait_for_result !== false,
+            maxWaitSeconds: 5,
+          });
+        } catch (genErr) {
+          await refundUserCredits(user.userId, pricing.cost);
+          throw genErr;
+        }
 
         const urls = res.status.resultUrls || [];
         await recordMcpGeneration({
@@ -107,9 +116,15 @@ export function createLikyMcpServer(options?: { user?: McpUserSession | null }) 
           mediaUrl: urls[0],
           taskId: res.taskId,
           status: res.status.state === "success" ? "success" : "generating",
+          parameters: {
+            quality: args.quality || "1K",
+            aspect_ratio: args.aspect_ratio || "1:1",
+            count: args.count || 1,
+            model: args.model || "nano-banana-2-1",
+          },
         });
 
-        let summary = `[LikyAI] Image générée avec succès\n`;
+        let summary = `[LikyAI] Tâche d'image acceptée avec succès\n`;
         summary += `• Modèle: ${pricing.modelName}\n`;
         summary += `• Qualité: ${args.quality || "1K"} | Format: ${args.aspect_ratio || "1:1"}\n`;
         summary += `• Crédits débités: ${pricing.cost} crédits (Compte: ${user.email})\n`;
@@ -117,9 +132,9 @@ export function createLikyMcpServer(options?: { user?: McpUserSession | null }) 
         summary += `• État: ${res.status.state}\n`;
 
         if (urls.length > 0) {
-          summary += `\nLien de l'image: ${urls[0]}\n`;
+          summary += `\nLien direct de l'image:\n${urls[0]}\n`;
         } else {
-          summary += `\nImage en cours de rendu. Utilisez likyai_get_task_status avec "${res.taskId}" pour récupérer le lien.`;
+          summary += `\nImage en cours de génération sur le cluster LikyAI. Utilisez l'outil gratuit 'likyai_get_task_status' avec l'identifiant "${res.taskId}" pour récupérer le lien direct dès que le rendu est terminé (ou retrouvez-la directement dans votre Studio LikyAI).`;
         }
 
         return {
@@ -191,15 +206,21 @@ export function createLikyMcpServer(options?: { user?: McpUserSession | null }) 
 
         await deductUserCredits(user.userId, pricing.cost);
 
-        const res = await generateVideo({
-          prompt: args.prompt,
-          model: args.model,
-          aspect_ratio: args.aspect_ratio as any,
-          duration: pricing.duration,
-          image_url: args.image_url,
-          waitForResult: args.wait_for_result === true,
-          maxWaitSeconds: 60,
-        });
+        let res;
+        try {
+          res = await generateVideo({
+            prompt: args.prompt,
+            model: args.model,
+            aspect_ratio: args.aspect_ratio as any,
+            duration: pricing.duration,
+            image_url: args.image_url,
+            waitForResult: args.wait_for_result === true,
+            maxWaitSeconds: 5,
+          });
+        } catch (genErr) {
+          await refundUserCredits(user.userId, pricing.cost);
+          throw genErr;
+        }
 
         const urls = res.status.resultUrls || [];
         await recordMcpGeneration({
@@ -211,6 +232,12 @@ export function createLikyMcpServer(options?: { user?: McpUserSession | null }) 
           mediaUrl: urls[0],
           taskId: res.taskId,
           status: res.status.state === "success" ? "success" : "generating",
+          parameters: {
+            duration: pricing.duration,
+            aspect_ratio: args.aspect_ratio || "16:9",
+            image_url: args.image_url,
+            model: args.model || "seedance-2-0",
+          },
         });
 
         let summary = `[LikyAI] Rendu vidéo initié avec succès\n`;
@@ -220,9 +247,9 @@ export function createLikyMcpServer(options?: { user?: McpUserSession | null }) 
         summary += `• État: ${res.status.state}\n`;
 
         if (urls.length > 0) {
-          summary += `\nLien vidéo MP4: ${urls[0]}\n`;
+          summary += `\nLien vidéo MP4:\n${urls[0]}\n`;
         } else {
-          summary += `\nRendu en arrière-plan. Utilisez likyai_get_task_status avec "${res.taskId}" pour récupérer le lien MP4.`;
+          summary += `\nRendu en arrière-plan sur les GPU LikyAI. Utilisez l'outil gratuit 'likyai_get_task_status' avec l'identifiant "${res.taskId}" pour récupérer le lien MP4 dès qu'il est prêt (ou retrouvez la vidéo directement dans votre Studio LikyAI).`;
         }
 
         return {
@@ -289,14 +316,20 @@ export function createLikyMcpServer(options?: { user?: McpUserSession | null }) 
 
         await deductUserCredits(user.userId, pricing.cost);
 
-        const res = await generateMusic({
-          prompt: args.prompt,
-          genre: args.genre,
-          instrumental: args.instrumental,
-          title: args.title,
-          waitForResult: args.wait_for_result === true,
-          maxWaitSeconds: 45,
-        });
+        let res;
+        try {
+          res = await generateMusic({
+            prompt: args.prompt,
+            genre: args.genre,
+            instrumental: args.instrumental,
+            title: args.title,
+            waitForResult: args.wait_for_result === true,
+            maxWaitSeconds: 5,
+          });
+        } catch (genErr) {
+          await refundUserCredits(user.userId, pricing.cost);
+          throw genErr;
+        }
 
         const urls = res.status.resultUrls || [];
         await recordMcpGeneration({
@@ -308,17 +341,23 @@ export function createLikyMcpServer(options?: { user?: McpUserSession | null }) 
           mediaUrl: urls[0],
           taskId: res.taskId,
           status: res.status.state === "success" ? "success" : "generating",
+          parameters: {
+            genre: args.genre,
+            instrumental: args.instrumental,
+            title: args.title,
+            duration: pricing.duration,
+          },
         });
 
-        let summary = `[LikyAI] Musique générée (Suno v4)\n`;
-        summary += `• Durée: ${pricing.duration}s | Crédits débités: ${pricing.cost} crédits\n`;
+        let summary = `[LikyAI] Composition musicale initiée (Suno v4)\n`;
+        summary += `• Durée: ${pricing.duration}s | Crédits débités: ${pricing.cost} crédits (Compte: ${user.email})\n`;
         summary += `• TaskId: ${res.taskId}\n`;
         summary += `• État: ${res.status.state}\n`;
 
         if (urls.length > 0) {
-          summary += `\nLien audio MP3: ${urls[0]}\n`;
+          summary += `\nLien audio MP3:\n${urls[0]}\n`;
         } else {
-          summary += `\nComposition en cours. Utilisez likyai_get_task_status avec "${res.taskId}".`;
+          summary += `\nComposition musicale en arrière-plan. Utilisez l'outil gratuit 'likyai_get_task_status' avec "${res.taskId}" pour récupérer le lien MP3 dès qu'il est disponible (ou dans votre Studio LikyAI).`;
         }
 
         return {
@@ -372,13 +411,19 @@ export function createLikyMcpServer(options?: { user?: McpUserSession | null }) 
         const pricing = calculateVoiceCost(args.prompt);
         await deductUserCredits(user.userId, pricing.cost);
 
-        const res = await generateVoice({
-          prompt: args.prompt,
-          voice: args.voice,
-          language: args.language,
-          waitForResult: args.wait_for_result !== false,
-          maxWaitSeconds: 25,
-        });
+        let res;
+        try {
+          res = await generateVoice({
+            prompt: args.prompt,
+            voice: args.voice,
+            language: args.language,
+            waitForResult: args.wait_for_result !== false,
+            maxWaitSeconds: 5,
+          });
+        } catch (genErr) {
+          await refundUserCredits(user.userId, pricing.cost);
+          throw genErr;
+        }
 
         const urls = res.status.resultUrls || [];
         await recordMcpGeneration({
@@ -390,15 +435,21 @@ export function createLikyMcpServer(options?: { user?: McpUserSession | null }) 
           mediaUrl: urls[0],
           taskId: res.taskId,
           status: res.status.state === "success" ? "success" : "generating",
+          parameters: {
+            voice: args.voice,
+            language: args.language,
+          },
         });
 
         let summary = `[LikyAI] Voix off générée avec succès\n`;
-        summary += `• Longueur: ${pricing.length} caractères | Crédits débités: ${pricing.cost} crédits\n`;
+        summary += `• Longueur: ${pricing.length} caractères | Crédits débités: ${pricing.cost} crédits (Compte: ${user.email})\n`;
         summary += `• TaskId: ${res.taskId}\n`;
         summary += `• État: ${res.status.state}\n`;
 
         if (urls.length > 0) {
-          summary += `\nLien audio MP3: ${urls[0]}\n`;
+          summary += `\nLien audio MP3:\n${urls[0]}\n`;
+        } else {
+          summary += `\nSynthèse vocale en cours. Utilisez l'outil gratuit 'likyai_get_task_status' avec "${res.taskId}" pour récupérer le lien audio MP3 (ou dans votre Studio LikyAI).`;
         }
 
         return {
@@ -440,15 +491,26 @@ export function createLikyMcpServer(options?: { user?: McpUserSession | null }) 
         let status = await checkLikyTask(args.taskId);
 
         if (args.wait_if_generating && (status.state === "waiting" || status.state === "generating")) {
-          status = await waitForTaskCompletion(args.taskId, 20);
+          status = await waitForTaskCompletion(args.taskId, 5);
         }
 
         const urls = status.resultUrls || [];
         let summary = `[LikyAI Statut] Tâche ${args.taskId}\n`;
         summary += `• État: ${status.state} (${status.progress || 0}%)\n`;
-        if (urls.length > 0) {
-          summary += `\nFichiers générés:\n${urls.map((u, i) => `  ${i + 1}. ${u}`).join("\n")}\n`;
+
+        if (urls.length > 0 || status.state === "success") {
+          await updateMcpGenerationResult(args.taskId, urls[0] || null, "success");
+          if (urls.length > 0) {
+            summary += `\nFichiers générés:\n${urls.map((u, i) => `  ${i + 1}. ${u}`).join("\n")}\n`;
+          }
+        } else if (status.state === "fail") {
+          await updateMcpGenerationResult(args.taskId, null, "fail");
+          const refund = await refundFailedTask(args.taskId, user?.userId);
+          if (refund.refunded) {
+            summary += `\n[Auto-Remboursement] La tâche a échoué côté GPU. ${refund.cost} crédits ont été automatiquement recrédités sur votre solde.`;
+          }
         }
+
         if (status.error) {
           summary += `\nErreur: ${status.error}\n`;
         }

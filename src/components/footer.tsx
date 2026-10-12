@@ -2,6 +2,7 @@
 import { cn } from "@/lib/utils";
 import { motion, useReducedMotion } from "motion/react";
 import type { ReactNode } from "react";
+import { Logo } from "@/components/logo";
 
 type FooterLink = {
 	title: string;
@@ -56,16 +57,7 @@ export function Footer() {
 
 			<div className="grid w-full gap-8 py-6 md:py-8 lg:grid-cols-3 lg:gap-8">
 				<AnimatedContainer className="space-y-4">
-					<div className="flex items-center gap-2">
-						<div className="w-7 h-7 rounded-[8px] bg-[var(--lime)] flex items-center justify-center text-[#171717]">
-							<svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
-								<path d="M12 2c.6 5.4 4.6 9.4 10 10-5.4.6-9.4 4.6-10 10-.6-5.4-4.6-9.4-10-10 5.4-.6 9.4-4.6 10-10z" />
-							</svg>
-						</div>
-						<span className="font-serif text-[22px] font-medium tracking-tight text-[var(--ink)]">
-							likyAI
-						</span>
-					</div>
+					<Logo />
 					<p className="mt-6 text-muted-foreground text-sm md:mt-0 max-w-xs">
 						Studio créatif IA unifié. Donnez vie à vos images, vidéos, musiques et voix off avec vos modèles et agents préférés.
 					</p>

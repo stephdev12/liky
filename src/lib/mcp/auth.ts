@@ -306,7 +306,61 @@ export async function deductUserCredits(userId: string, cost: number): Promise<n
 
   const nextCredits = current - cost;
   await admin.from("profiles").update({ credits: nextCredits }).eq("id", userId);
+
+  try {
+    await admin.from("transactions").insert({
+      user_id: userId,
+      type: "generation",
+      amount: -cost,
+      description: `Génération IA MCP (-${cost} crédits)`,
+      status: "completed",
+    });
+  } catch (err) {
+    console.warn("[MCP] Erreur transaction débit:", err);
+  }
+
   return nextCredits;
+}
+
+/**
+ * Rembourse les crédits d'un utilisateur en cas d'erreur de lancement
+ */
+export async function refundUserCredits(userId: string, cost: number): Promise<number> {
+  if (userId === "demo-creator" || userId === "demo-user") {
+    return 100;
+  }
+
+  try {
+    const admin = createAdminClient();
+    const { data: profile } = await admin
+      .from("profiles")
+      .select("credits")
+      .eq("id", userId)
+      .maybeSingle();
+
+    if (profile) {
+      const current = typeof profile.credits === "number" ? profile.credits : 0;
+      const nextCredits = current + cost;
+      await admin.from("profiles").update({ credits: nextCredits }).eq("id", userId);
+
+      try {
+        await admin.from("transactions").insert({
+          user_id: userId,
+          type: "refund",
+          amount: cost,
+          description: `Remboursement annulation/erreur (+${cost} crédits)`,
+          status: "completed",
+        });
+      } catch (err) {
+        console.warn("[MCP] Erreur transaction remboursement:", err);
+      }
+
+      return nextCredits;
+    }
+  } catch (err) {
+    console.error("[MCP] Erreur lors du remboursement:", err);
+  }
+  return 0;
 }
 
 /**
@@ -320,7 +374,8 @@ export async function recordMcpGeneration(params: {
   creditsCost: number;
   mediaUrl?: string;
   taskId?: string;
-  status?: "pending" | "generating" | "success" | "fail";
+  status?: "waiting" | "generating" | "success" | "fail";
+  parameters?: Record<string, any>;
 }) {
   try {
     if (params.userId === "demo-creator" || params.userId === "demo-user") {
@@ -328,17 +383,84 @@ export async function recordMcpGeneration(params: {
     }
 
     const admin = createAdminClient();
+    let dbStatus = params.status || "generating";
+    if (dbStatus !== "waiting" && dbStatus !== "generating" && dbStatus !== "success" && dbStatus !== "fail") {
+      dbStatus = "generating";
+    }
+
     await admin.from("generations").insert({
       user_id: params.userId,
       tool: params.tool,
-      model_id: params.modelName,
+      model_name: params.modelName,
       prompt: params.prompt,
-      credits_used: params.creditsCost,
-      status: params.status || "success",
-      result_url: params.mediaUrl || null,
+      credits_cost: params.creditsCost,
+      status: dbStatus,
+      media_url: params.mediaUrl || null,
       task_id: params.taskId || null,
+      parameters: params.parameters || {},
     });
   } catch (err) {
     console.warn("[MCP] Erreur enregistrement génération:", err);
   }
 }
+
+/**
+ * Met à jour le résultat d'une génération lorsqu'elle est terminée
+ */
+export async function updateMcpGenerationResult(
+  taskId: string,
+  mediaUrl?: string | null,
+  status: "success" | "fail" = "success"
+) {
+  try {
+    const admin = createAdminClient();
+    const updateData: Record<string, any> = {
+      status,
+      updated_at: new Date().toISOString(),
+    };
+    if (mediaUrl) {
+      updateData.media_url = mediaUrl;
+    }
+    await admin
+      .from("generations")
+      .update(updateData)
+      .eq("task_id", taskId);
+  } catch (err) {
+    console.warn("[MCP] Erreur mise à jour génération:", err);
+  }
+}
+
+/**
+ * Rembourse automatiquement l'utilisateur si une tâche a échoué
+ */
+export async function refundFailedTask(
+  taskId: string,
+  userId?: string
+): Promise<{ refunded: boolean; cost: number }> {
+  try {
+    const admin = createAdminClient();
+    const { data: gen } = await admin
+      .from("generations")
+      .select("user_id, credits_cost, status")
+      .eq("task_id", taskId)
+      .maybeSingle();
+
+    if (!gen || !gen.credits_cost || gen.credits_cost <= 0) {
+      return { refunded: false, cost: 0 };
+    }
+
+    const targetUserId = userId || gen.user_id;
+    if (targetUserId && gen.status !== "fail") {
+      await refundUserCredits(targetUserId, gen.credits_cost);
+      await admin
+        .from("generations")
+        .update({ status: "fail", updated_at: new Date().toISOString() })
+        .eq("task_id", taskId);
+      return { refunded: true, cost: gen.credits_cost };
+    }
+  } catch (err) {
+    console.warn("[MCP] Erreur remboursement tâche échouée:", err);
+  }
+  return { refunded: false, cost: 0 };
+}
+

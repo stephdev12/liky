@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { CoolIcon } from "@/components/icons/coolicon";
 import { Button } from "@/components/ui/button";
 import { AuthPage } from "@/components/auth";
+import { LogoIcon } from "@/components/logo";
 
 function AuthorizeContent() {
   const searchParams = useSearchParams();
@@ -116,9 +117,7 @@ function AuthorizeContent() {
         {/* En-tête */}
         <div className="text-center space-y-2">
           <div className="flex items-center justify-center gap-3">
-            <div className="size-11 rounded-2xl bg-black text-white flex items-center justify-center font-bold text-lg shadow-xs">
-              L
-            </div>
+            <LogoIcon className="size-11 rounded-2xl border border-[var(--line)]" />
             <CoolIcon name="arrow-right-sm" size={16} duotone={false} className="text-muted-foreground" />
             <div className="size-11 rounded-2xl border border-[var(--line)] bg-[var(--field)] text-foreground flex items-center justify-center font-medium text-xs">
               {clientId.slice(0, 7)}

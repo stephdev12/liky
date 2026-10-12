@@ -4,7 +4,7 @@ import { fetchKieModels, getKieApiKey } from "@/lib/kie/client";
 
 export async function GET(req: NextRequest) {
   try {
-    const searchParams = req.nextUrl.searchParams;
+    const { searchParams } = new URL(req.url);
     const tool = searchParams.get("tool") as ToolKind | null;
 
     // Modèles statiques par défaut

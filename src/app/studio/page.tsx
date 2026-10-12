@@ -12,6 +12,7 @@ import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Logo } from "@/components/logo";
 
 /* ─────────────────────────────────────────────────────────
  * CONFIGURATION DU STUDIO LIKYAI (Ground Truth Prototype)
@@ -939,13 +940,8 @@ export default function StudioPage() {
       </main>
 
       {/* ── LOGO OFFICIEL SUPÉRIEUR GAUCHE ── */}
-      <div className="logo">
-        <b>
-          <svg viewBox="0 0 24 24">
-            <path d="M12 2c.6 5.4 4.6 9.4 10 10-5.4.6-9.4 4.6-10 10-.6-5.4-4.6-9.4-10-10 5.4-.6 9.4-4.6 10-10z" />
-          </svg>
-        </b>
-        <span>likyAI</span>
+      <div className="flex items-center">
+        <Logo className="cursor-pointer" onClick={() => router.push("/")} />
       </div>
 
       {/* ── NAVIGATION CENTRALE HAUTE (4 OUTILS - DESKTOP) ── */}
