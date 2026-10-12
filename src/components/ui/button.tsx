@@ -1,4 +1,5 @@
 import * as React from "react";
+import { Slot } from "radix-ui";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
@@ -8,13 +9,13 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-[#D8FF64] text-[#171717] font-semibold shadow-sm hover:opacity-90 active:scale-[0.98]",
+          "bg-[#D8FF64] text-[#171717] font-semibold shadow-xs hover:bg-[#cbf54a] active:scale-[0.98] [&_*]:text-[#171717]",
         destructive:
-          "bg-red-500 text-white shadow-sm hover:bg-red-600 active:scale-[0.98]",
+          "bg-red-500 text-white shadow-xs hover:bg-red-600 active:scale-[0.98]",
         outline:
-          "border border-[var(--line)] bg-[var(--surf)] text-[var(--ink)] shadow-sm hover:bg-[var(--mn)] hover:text-[var(--ink)] hover:border-[var(--line-strong)] active:scale-[0.98]",
+          "border border-[var(--line)] bg-[var(--surf)] text-[var(--ink)] shadow-xs hover:bg-[var(--mn)] hover:text-[var(--ink)] hover:border-[var(--line-strong)] active:scale-[0.98]",
         secondary:
-          "bg-[var(--mn)] text-[var(--ink)] border border-[var(--line)] shadow-sm hover:bg-[var(--hover)] active:scale-[0.98]",
+          "bg-[var(--mn)] text-[var(--ink)] border border-[var(--line)] shadow-xs hover:bg-[var(--hover)] active:scale-[0.98]",
         ghost:
           "hover:bg-[var(--mn)] text-[var(--ink)] hover:text-[var(--ink)]",
         link:
@@ -41,11 +42,12 @@ export interface ButtonProps
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, ...props }, ref) => {
+  ({ className, variant, size, asChild = false, ...props }, ref) => {
+    const Comp = asChild ? Slot.Root : "button";
     return (
-      <button
+      <Comp
         className={cn(buttonVariants({ variant, size, className }))}
-        ref={ref}
+        ref={ref as any}
         {...props}
       />
     );

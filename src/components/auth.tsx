@@ -14,7 +14,8 @@ import {
 } from "@/components/ui/input-group";
 import { AuthDivider } from "@/components/auth-divider";
 import { DecorIcon } from "@/components/decor-icon";
-import { Loader2, CheckCircle2, AlertCircle, Eye, EyeOff } from "lucide-react";
+import { Loader2, CheckCircle2, AlertCircle, Eye, EyeOff, ArrowLeft } from "lucide-react";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
 interface AuthProps {
@@ -44,7 +45,7 @@ export function AuthPage({ onSuccess, className, isModal = false }: AuthProps) {
         if (onSuccess) {
           onSuccess();
         } else {
-          router.replace("/");
+          router.replace("/studio");
         }
       }
     });
@@ -97,7 +98,7 @@ export function AuthPage({ onSuccess, className, isModal = false }: AuthProps) {
           if (onSuccess) {
             onSuccess();
           } else {
-            router.replace("/");
+            router.replace("/studio");
           }
         }
       } else {
@@ -106,7 +107,7 @@ export function AuthPage({ onSuccess, className, isModal = false }: AuthProps) {
           email: trimmedEmail,
           password,
           options: {
-            emailRedirectTo: typeof window !== "undefined" ? window.location.origin : undefined,
+            emailRedirectTo: typeof window !== "undefined" ? `${window.location.origin}/studio` : undefined,
           },
         });
 
@@ -126,7 +127,7 @@ export function AuthPage({ onSuccess, className, isModal = false }: AuthProps) {
           if (onSuccess) {
             onSuccess();
           } else {
-            router.replace("/");
+            router.replace("/studio");
           }
         } else if (data.user) {
           // Si Supabase requiert confirmation d'email
@@ -152,7 +153,7 @@ export function AuthPage({ onSuccess, className, isModal = false }: AuthProps) {
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: typeof window !== "undefined" ? window.location.origin : undefined,
+          redirectTo: typeof window !== "undefined" ? `${window.location.origin}/studio` : undefined,
         },
       });
 
@@ -169,11 +170,23 @@ export function AuthPage({ onSuccess, className, isModal = false }: AuthProps) {
   return (
     <div
       className={cn(
-        "relative flex w-full items-center justify-center overflow-hidden px-4 md:px-8 select-none",
+        "relative flex w-full flex-col items-center justify-center overflow-hidden px-4 md:px-8 select-none",
         isModal ? "py-4" : "min-h-screen py-10",
         className
       )}
     >
+      {!isModal && (
+        <div className="w-full max-w-sm mb-4 z-10">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 text-xs font-medium text-[var(--mute)] hover:text-[var(--ink)] transition-colors group px-1 py-1 rounded-md"
+          >
+            <ArrowLeft className="size-3.5 duration-150 ease-out group-hover:-translate-x-0.5 text-[var(--mute)] group-hover:text-[var(--ink)]" />
+            <span>Retour à l&apos;accueil</span>
+          </Link>
+        </div>
+      )}
+
       <div
         className={cn(
           "relative flex w-full max-w-sm flex-col justify-between p-6 md:p-8",

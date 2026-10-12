@@ -810,7 +810,7 @@ export function PromptBubble({
           style={{
             backgroundColor: "#D8FF64",
             color: "#171717",
-            boxShadow: "0 2px 12px rgba(216, 255, 100, 0.35)",
+            boxShadow: "0 1px 3px rgba(0, 0, 0, 0.12)",
           }}
         >
           <CoolIcon
