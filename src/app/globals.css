@@ -37,6 +37,8 @@
 
   --radius-control: 12px;
   --radius-chip: 8px;
+
+  --font-heading: var(--font-newsreader), Sentient, Newsreader, Georgia, serif;
 }
 
 :root {

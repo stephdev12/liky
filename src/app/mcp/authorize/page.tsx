@@ -113,47 +113,46 @@ function AuthorizeContent() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[var(--bg)] p-4">
       <div className="w-full max-w-md rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6 sm:p-8 shadow-xl space-y-6">
-        {/* En-tête avec logos */}
-        <div className="flex items-center justify-center gap-4">
-          <div className="size-12 rounded-2xl bg-black text-white flex items-center justify-center font-bold text-xl shadow-xs">
-            L
+        {/* En-tête */}
+        <div className="text-center space-y-2">
+          <div className="flex items-center justify-center gap-3">
+            <div className="size-11 rounded-2xl bg-black text-white flex items-center justify-center font-bold text-lg shadow-xs">
+              L
+            </div>
+            <CoolIcon name="arrow-right-sm" size={16} duotone={false} className="text-muted-foreground" />
+            <div className="size-11 rounded-2xl border border-[var(--line)] bg-[var(--field)] text-foreground flex items-center justify-center font-medium text-xs">
+              {clientId.slice(0, 7)}
+            </div>
           </div>
-          <CoolIcon name="arrow-right-sm" size={18} duotone={false} className="text-muted-foreground" />
-          <div className="size-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-400 flex items-center justify-center font-semibold text-sm">
-            {clientId.slice(0, 7)}
-          </div>
-        </div>
 
-        <div className="text-center space-y-1.5">
-          <h1 className="text-lg font-bold text-foreground tracking-tight">
-            Autoriser {clientId} à accéder à votre compte LikyAI
-          </h1>
-          <p className="text-xs text-muted-foreground">
-            L&apos;agent utilisera votre compte pour générer des assets selon vos demandes.
-          </p>
+          <div className="pt-2">
+            <h1 className="font-heading text-2xl font-normal text-foreground tracking-tight">
+              Autoriser {clientId}
+            </h1>
+            <p className="text-xs text-muted-foreground mt-1">
+              Connexion sécurisée à votre compte LikyAI
+            </p>
+          </div>
         </div>
 
         {/* Détails du compte et solde */}
         <div className="rounded-xl border border-[var(--line)] bg-[var(--field)] p-4 space-y-2.5 text-xs">
           <div className="flex justify-between items-center">
-            <span className="text-muted-foreground">Compte connecté :</span>
-            <span className="font-semibold text-foreground">{user.email}</span>
+            <span className="text-muted-foreground">Compte :</span>
+            <span className="font-medium text-foreground">{user.email}</span>
           </div>
           <div className="flex justify-between items-center border-t border-[var(--line)] pt-2.5">
-            <span className="text-muted-foreground">Vos crédits disponibles :</span>
-            <span className="font-mono font-bold text-emerald-700 dark:text-emerald-400">
+            <span className="text-muted-foreground">Crédits disponibles :</span>
+            <span className="font-mono font-medium text-foreground">
               {credits !== null ? `${credits} crédits` : "Chargement..."}
             </span>
           </div>
         </div>
 
-        {/* Avertissement d'usage */}
-        <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/20 p-3.5 text-[11.5px] text-emerald-800 dark:text-emerald-300 leading-relaxed flex items-start gap-2.5">
-          <CoolIcon name="shield-check" size={16} duotone secondaryColor="currentColor" className="shrink-0 mt-0.5 text-emerald-700 dark:text-emerald-400" />
-          <span>
-            Chaque génération d&apos;image (5 crédits), vidéo ou musique demandée dans {clientId} débitera uniquement <strong>vos propres crédits</strong> LikyAI.
-          </span>
-        </div>
+        {/* Information d'usage */}
+        <p className="text-[11.5px] text-muted-foreground leading-relaxed text-center px-2">
+          Les générations demandées par l&apos;agent débiteront directement vos crédits selon le modèle et les paramètres choisis.
+        </p>
 
         {error && (
           <div className="rounded-xl bg-red-500/10 border border-red-500/20 p-3 text-xs text-red-600 dark:text-red-400">
@@ -161,12 +160,12 @@ function AuthorizeContent() {
           </div>
         )}
 
-        {/* Boutons d'action */}
-        <div className="space-y-2.5 pt-2">
+        {/* Actions */}
+        <div className="space-y-2 pt-1">
           <Button
             onClick={handleAuthorize}
             disabled={submitting}
-            className="w-full h-11 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm shadow-sm transition-all"
+            className="w-full h-10 rounded-xl font-medium text-xs shadow-xs transition-all"
           >
             {submitting ? "Autorisation en cours..." : "Autoriser la connexion"}
           </Button>
@@ -175,9 +174,9 @@ function AuthorizeContent() {
             onClick={handleCancel}
             disabled={submitting}
             variant="outline"
-            className="w-full h-10 rounded-xl text-xs font-medium border-border"
+            className="w-full h-10 rounded-xl text-xs font-medium"
           >
-            Refuser et Annuler
+            Refuser
           </Button>
         </div>
       </div>

@@ -42,7 +42,7 @@ export function Integrations() {
 								className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#D8FF64] text-[#171717] font-semibold text-[13.5px] hover:bg-[#cbf54a] transition-all shadow-xs cursor-pointer [&_*]:text-[#171717]"
 							>
 								<CoolIcon name="terminal" size={16} duotone secondaryColor="#171717" className="shrink-0 text-[#171717]" />
-								<span className="text-[#171717]">Obtenir la clé MCP</span>
+								<span className="text-[#171717]">Connecter un agent (MCP)</span>
 								<CoolIcon name="arrow-right-sm" size={15} duotone={false} className="shrink-0 text-[#171717]" />
 							</button>
 						</motion.div>

@@ -15,9 +15,18 @@ import {
   deductUserCredits,
   recordMcpGeneration,
 } from "./auth";
+import {
+  calculateImageCost,
+  calculateVideoCost,
+  calculateMusicCost,
+  calculateVoiceCost,
+} from "./pricing";
 
 /**
- * Crée et configure une instance de serveur MCP officiel LikyAI
+ * Crée et configure une instance de serveur MCP officiel LikyAI.
+ * Les appels d'inspection (list_models, get_balance, get_task_status) sont 100% GRATUITS (0 crédit).
+ * Les crédits sont débités uniquement lors des générations effectives et calculés dynamiquement
+ * selon les choix de l'agent (modèle, qualité, durée, format, nombre).
  */
 export function createLikyMcpServer(options?: { user?: McpUserSession | null }) {
   const user = options?.user;
@@ -27,281 +36,90 @@ export function createLikyMcpServer(options?: { user?: McpUserSession | null }) 
   });
 
   // ==========================================
-  // OUTIL 1 : Génération d'image
+  // OUTIL 1 : Génération d'image (Crédits dynamiques)
   // ==========================================
   server.registerTool(
     "likyai_generate_image",
     {
       title: "Générer une image IA",
       description:
-        "Génère une image cinématique ou artistique ultra-réaliste (Nano Banana 2.1, Z-Image Turbo, Seedream) via le studio LikyAI. Par défaut, attend la fin de la génération et renvoie directement l'URL de l'image.",
+        "Génère une image cinématique ou artistique. Les crédits consommés dépendent du modèle choisi (Nano Banana 2: base 6, Z-Image Turbo: base 2, Seedream 5: base 5) et du niveau de qualité (1K: x1, 2K: x1.5, 4K: x2.5).",
       inputSchema: {
         prompt: z
           .string()
-          .describe("Description visuelle détaillée de l'image à générer (style, cadrage, lumière)"),
+          .describe("Description visuelle détaillée de l'image (style, sujet, lumière, cadrage)"),
         model: z
-          .string()
+          .enum(["nano-banana-2-1", "nano", "z-image-turbo", "soul", "seedream-5-flash", "seed"])
           .optional()
-          .describe(
-            "Modèle à utiliser : 'nano-banana-2-1' (recommandé), 'z-image-turbo' ou 'seedream-5-flash'"
-          ),
+          .describe("Modèle au choix : 'nano-banana-2-1' (haute fidélité), 'z-image-turbo' (ultra-rapide, économique), 'seedream-5-flash' (stylisé)"),
+        quality: z
+          .enum(["1k", "1K", "standard", "2k", "2K", "4k", "4K"])
+          .optional()
+          .describe("Niveau de qualité : '1K' (standard), '2K' (HD), '4K' (Ultra HD)"),
         aspect_ratio: z
-          .enum(["1:1", "16:9", "9:16", "4:3", "3:4"])
+          .enum(["1:1", "16:9", "9:16", "4:3", "3:4", "4:5"])
           .optional()
           .describe("Format d'image (par défaut '1:1')"),
-        quality: z
-          .enum(["standard", "2k", "4k"])
+        count: z
+          .number()
+          .int()
+          .min(1)
+          .max(4)
           .optional()
-          .describe("Niveau de qualité/résolution souhaité"),
+          .describe("Nombre d'images à générer (1 à 4, par défaut 1)"),
         wait_for_result: z
           .boolean()
           .optional()
-          .describe(
-            "Si true (défaut), attend jusqu'à 30s et renvoie l'URL finale. Si false, renvoie le taskId immédiatement."
-          ),
+          .describe("Si true (défaut), attend le rendu et renvoie directement l'URL."),
       },
     },
     async (args) => {
       try {
-        if (user) {
-          await deductUserCredits(user.userId, 5);
+        if (!user) {
+          throw new Error("Authentification requise : Veuillez connecter votre compte LikyAI via OAuth pour utiliser vos crédits.");
         }
+
+        const pricing = calculateImageCost({
+          model: args.model,
+          quality: args.quality,
+          count: args.count,
+        });
+
+        // Débit exact selon la configuration choisie
+        await deductUserCredits(user.userId, pricing.cost);
 
         const res = await generateImage({
           prompt: args.prompt,
           model: args.model,
-          aspect_ratio: args.aspect_ratio,
-          quality: args.quality,
+          aspect_ratio: args.aspect_ratio as any,
+          quality: args.quality?.toLowerCase() as any,
           waitForResult: args.wait_for_result !== false,
           maxWaitSeconds: 30,
         });
 
         const urls = res.status.resultUrls || [];
-        if (user) {
-          await recordMcpGeneration({
-            userId: user.userId,
-            tool: "image",
-            modelName: res.model,
-            prompt: args.prompt,
-            creditsCost: 5,
-            mediaUrl: urls[0],
-            taskId: res.taskId,
-            status: res.status.state === "success" ? "success" : "generating",
-          });
-        }
+        await recordMcpGeneration({
+          userId: user.userId,
+          tool: "image",
+          modelName: pricing.modelName,
+          prompt: args.prompt,
+          creditsCost: pricing.cost,
+          mediaUrl: urls[0],
+          taskId: res.taskId,
+          status: res.status.state === "success" ? "success" : "generating",
+        });
 
-        let summary = `[LikyAI] Image générée avec succès (Modèle: ${res.model}, Mode: ${res.mode})\n`;
-        summary += `TaskId: ${res.taskId}\n`;
-        summary += `État: ${res.status.state}\n`;
-        if (user) {
-          summary += `Compte débité: ${user.email} (5 crédits)\n`;
-        }
+        let summary = `[LikyAI] Image générée avec succès\n`;
+        summary += `• Modèle: ${pricing.modelName}\n`;
+        summary += `• Qualité: ${args.quality || "1K"} | Format: ${args.aspect_ratio || "1:1"}\n`;
+        summary += `• Crédits débités: ${pricing.cost} crédits (Compte: ${user.email})\n`;
+        summary += `• TaskId: ${res.taskId}\n`;
+        summary += `• État: ${res.status.state}\n`;
 
         if (urls.length > 0) {
           summary += `\nLien de l'image: ${urls[0]}\n`;
         } else {
-          summary += `\nL'image est en cours de rendu. Utilisez likyai_get_task_status avec le taskId "${res.taskId}" pour récupérer l'URL.`;
-        }
-
-        return {
-          content: [
-            {
-              type: "text",
-              text: summary,
-            },
-          ],
-        };
-      } catch (err: unknown) {
-        return {
-          isError: true,
-          content: [
-            {
-              type: "text",
-              text: `[LikyAI Erreur] Impossible de générer l'image: ${
-                err instanceof Error ? err.message : String(err)
-              }`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  // ==========================================
-  // OUTIL 2 : Génération de vidéo
-  // ==========================================
-  server.registerTool(
-    "likyai_generate_video",
-    {
-      title: "Créer une vidéo cinématique",
-      description:
-        "Génère une séquence vidéo cinématique avec Seedance 2.0, Kling 3.0 Turbo ou Wan 2.7. Supporte le text-to-video et l'image-to-video.",
-      inputSchema: {
-        prompt: z
-          .string()
-          .describe("Description du mouvement, de l'action de la caméra et du sujet"),
-        model: z
-          .string()
-          .optional()
-          .describe("Modèle vidéo : 'seedance-2' (défaut), 'kling-3-turbo' ou 'wan-2-7'"),
-        aspect_ratio: z
-          .enum(["16:9", "9:16", "1:1"])
-          .optional()
-          .describe("Format vidéo (par défaut '16:9')"),
-        duration: z
-          .number()
-          .int()
-          .min(3)
-          .max(15)
-          .optional()
-          .describe("Durée en secondes (ex: 5 ou 10s)"),
-        image_url: z
-          .string()
-          .optional()
-          .describe("URL d'une image source pour animer en image-to-video"),
-        wait_for_result: z
-          .boolean()
-          .optional()
-          .describe(
-            "Si true, attend la fin du rendu (peut prendre 40-60s). Si false (recommandé pour la vidéo), renvoie le taskId immédiatement."
-          ),
-      },
-    },
-    async (args) => {
-      try {
-        if (user) {
-          await deductUserCredits(user.userId, 15);
-        }
-
-        const res = await generateVideo({
-          prompt: args.prompt,
-          model: args.model,
-          aspect_ratio: args.aspect_ratio,
-          duration: args.duration,
-          image_url: args.image_url,
-          waitForResult: args.wait_for_result === true,
-          maxWaitSeconds: 60,
-        });
-
-        const urls = res.status.resultUrls || [];
-        if (user) {
-          await recordMcpGeneration({
-            userId: user.userId,
-            tool: "video",
-            modelName: res.model,
-            prompt: args.prompt,
-            creditsCost: 15,
-            mediaUrl: urls[0],
-            taskId: res.taskId,
-            status: res.status.state === "success" ? "success" : "generating",
-          });
-        }
-
-        let summary = `[LikyAI] Tâche vidéo créée (Modèle: ${res.model}, Mode: ${res.mode})\n`;
-        summary += `TaskId: ${res.taskId}\n`;
-        summary += `État: ${res.status.state}\n`;
-        if (user) {
-          summary += `Compte débité: ${user.email} (15 crédits)\n`;
-        }
-
-        if (urls.length > 0) {
-          summary += `\nLien de la vidéo: ${urls[0]}\n`;
-        } else {
-          summary += `\nRendu vidéo lancé. Suivez l'avancement avec: likyai_get_task_status(taskId: "${res.taskId}")`;
-        }
-
-        return {
-          content: [
-            {
-              type: "text",
-              text: summary,
-            },
-          ],
-        };
-      } catch (err: unknown) {
-        return {
-          isError: true,
-          content: [
-            {
-              type: "text",
-              text: `[LikyAI Erreur] Échec génération vidéo: ${
-                err instanceof Error ? err.message : String(err)
-              }`,
-            },
-          ],
-        };
-      }
-    }
-  );
-
-  // ==========================================
-  // OUTIL 3 : Génération de musique
-  // ==========================================
-  server.registerTool(
-    "likyai_generate_music",
-    {
-      title: "Composer une musique",
-      description:
-        "Compose une piste musicale haute qualité avec Suno v4 à partir d'un prompt d'ambiance ou de paroles.",
-      inputSchema: {
-        prompt: z
-          .string()
-          .describe("Description de la mélodie, style musical ou paroles"),
-        genre: z
-          .string()
-          .optional()
-          .describe("Style / genre (ex: 'Afrobeats', 'Synthwave 80s', 'Lo-Fi Chill')"),
-        instrumental: z
-          .boolean()
-          .optional()
-          .describe("Piste instrumentale sans voix (défaut: false)"),
-        title: z.string().optional().describe("Titre du morceau"),
-        wait_for_result: z
-          .boolean()
-          .optional()
-          .describe("Si true, attend le fichier audio final."),
-      },
-    },
-    async (args) => {
-      try {
-        if (user) {
-          await deductUserCredits(user.userId, 10);
-        }
-
-        const res = await generateMusic({
-          prompt: args.prompt,
-          genre: args.genre,
-          instrumental: args.instrumental,
-          title: args.title,
-          waitForResult: args.wait_for_result === true,
-          maxWaitSeconds: 45,
-        });
-
-        const urls = res.status.resultUrls || [];
-        if (user) {
-          await recordMcpGeneration({
-            userId: user.userId,
-            tool: "music",
-            modelName: res.model,
-            prompt: args.prompt,
-            creditsCost: 10,
-            mediaUrl: urls[0],
-            taskId: res.taskId,
-            status: res.status.state === "success" ? "success" : "generating",
-          });
-        }
-
-        let summary = `[LikyAI] Composition musicale initiée (Modèle: ${res.model})\n`;
-        summary += `TaskId: ${res.taskId}\n`;
-        summary += `État: ${res.status.state}\n`;
-        if (user) {
-          summary += `Compte débité: ${user.email} (10 crédits)\n`;
-        }
-
-        if (urls.length > 0) {
-          summary += `\nLien du morceau audio: ${urls[0]}\n`;
-        } else {
-          summary += `\nUtilisez likyai_get_task_status(taskId: "${res.taskId}") pour écouter le résultat.`;
+          summary += `\nImage en cours de rendu. Utilisez likyai_get_task_status avec "${res.taskId}" pour récupérer le lien.`;
         }
 
         return {
@@ -313,9 +131,7 @@ export function createLikyMcpServer(options?: { user?: McpUserSession | null }) 
           content: [
             {
               type: "text",
-              text: `[LikyAI Erreur] Échec composition musicale: ${
-                err instanceof Error ? err.message : String(err)
-              }`,
+              text: `[LikyAI Erreur] ${err instanceof Error ? err.message : String(err)}`,
             },
           ],
         };
@@ -324,20 +140,219 @@ export function createLikyMcpServer(options?: { user?: McpUserSession | null }) 
   );
 
   // ==========================================
-  // OUTIL 4 : Voix off & Synthèse vocale
+  // OUTIL 2 : Génération de vidéo (Crédits dynamiques)
+  // ==========================================
+  server.registerTool(
+    "likyai_generate_video",
+    {
+      title: "Générer une vidéo IA",
+      description:
+        "Génère une séquence vidéo cinématique. Les crédits débités dépendent du modèle (Seedance 2.0: 4 cr/s, Kling 3.0 Turbo: 18 cr/s, Wan 2.7: 12 cr/s) et de la durée en secondes.",
+      inputSchema: {
+        prompt: z
+          .string()
+          .describe("Description précise de la scène, de l'action, du mouvement de caméra et du style"),
+        model: z
+          .enum(["seedance", "seedance-2-0", "kling", "kling-3-0", "wan", "wan-2-7"])
+          .optional()
+          .describe("Modèle : 'seedance-2-0' (4 cr/s, polyvalent), 'kling-3-0' (18 cr/s, cinématique ultra-réaliste), 'wan-2-7' (12 cr/s)"),
+        duration: z
+          .number()
+          .int()
+          .min(5)
+          .max(30)
+          .optional()
+          .describe("Durée de la vidéo en secondes (ex: 5, 10, 15 - par défaut 5)"),
+        aspect_ratio: z
+          .enum(["16:9", "9:16", "1:1", "4:5"])
+          .optional()
+          .describe("Format vidéo (ex: '16:9' paysage, '9:16' TikTok/Reels)"),
+        image_url: z
+          .string()
+          .url()
+          .optional()
+          .describe("Optionnel : URL d'une image de départ à animer"),
+        wait_for_result: z
+          .boolean()
+          .optional()
+          .describe("Si true, attend la fin du rendu vidéo avant de répondre."),
+      },
+    },
+    async (args) => {
+      try {
+        if (!user) {
+          throw new Error("Authentification requise : Veuillez connecter votre compte LikyAI via OAuth pour utiliser vos crédits.");
+        }
+
+        const pricing = calculateVideoCost({
+          model: args.model,
+          durationSeconds: args.duration,
+        });
+
+        await deductUserCredits(user.userId, pricing.cost);
+
+        const res = await generateVideo({
+          prompt: args.prompt,
+          model: args.model,
+          aspect_ratio: args.aspect_ratio as any,
+          duration: pricing.duration,
+          image_url: args.image_url,
+          waitForResult: args.wait_for_result === true,
+          maxWaitSeconds: 60,
+        });
+
+        const urls = res.status.resultUrls || [];
+        await recordMcpGeneration({
+          userId: user.userId,
+          tool: "video",
+          modelName: pricing.modelName,
+          prompt: args.prompt,
+          creditsCost: pricing.cost,
+          mediaUrl: urls[0],
+          taskId: res.taskId,
+          status: res.status.state === "success" ? "success" : "generating",
+        });
+
+        let summary = `[LikyAI] Rendu vidéo initié avec succès\n`;
+        summary += `• Modèle: ${pricing.modelName} | Durée: ${pricing.duration}s\n`;
+        summary += `• Crédits débités: ${pricing.cost} crédits (Compte: ${user.email})\n`;
+        summary += `• TaskId: ${res.taskId}\n`;
+        summary += `• État: ${res.status.state}\n`;
+
+        if (urls.length > 0) {
+          summary += `\nLien vidéo MP4: ${urls[0]}\n`;
+        } else {
+          summary += `\nRendu en arrière-plan. Utilisez likyai_get_task_status avec "${res.taskId}" pour récupérer le lien MP4.`;
+        }
+
+        return {
+          content: [{ type: "text", text: summary }],
+        };
+      } catch (err: unknown) {
+        return {
+          isError: true,
+          content: [
+            {
+              type: "text",
+              text: `[LikyAI Erreur] ${err instanceof Error ? err.message : String(err)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  // ==========================================
+  // OUTIL 3 : Génération de musique (Crédits dynamiques)
+  // ==========================================
+  server.registerTool(
+    "likyai_generate_music",
+    {
+      title: "Composer une musique",
+      description:
+        "Compose une piste musicale haute qualité avec Suno v4. Coût : 10 crédits par tranche de 15 secondes.",
+      inputSchema: {
+        prompt: z
+          .string()
+          .describe("Description du morceau (style, ambiance, instruments ou paroles)"),
+        genre: z
+          .string()
+          .optional()
+          .describe("Genre musical (ex: 'Afrobeats', 'Synthwave', 'Acoustic Piano')"),
+        duration: z
+          .number()
+          .int()
+          .min(15)
+          .max(120)
+          .optional()
+          .describe("Durée approximative en secondes (ex: 15, 30, 60 - défaut: 30)"),
+        instrumental: z
+          .boolean()
+          .optional()
+          .describe("Morceau purement instrumental (défaut: false)"),
+        title: z.string().optional().describe("Titre du morceau"),
+        wait_for_result: z
+          .boolean()
+          .optional()
+          .describe("Si true, attend le fichier audio final."),
+      },
+    },
+    async (args) => {
+      try {
+        if (!user) {
+          throw new Error("Authentification requise : Veuillez connecter votre compte LikyAI via OAuth pour utiliser vos crédits.");
+        }
+
+        const pricing = calculateMusicCost({
+          durationSeconds: args.duration,
+        });
+
+        await deductUserCredits(user.userId, pricing.cost);
+
+        const res = await generateMusic({
+          prompt: args.prompt,
+          genre: args.genre,
+          instrumental: args.instrumental,
+          title: args.title,
+          waitForResult: args.wait_for_result === true,
+          maxWaitSeconds: 45,
+        });
+
+        const urls = res.status.resultUrls || [];
+        await recordMcpGeneration({
+          userId: user.userId,
+          tool: "music",
+          modelName: res.model,
+          prompt: args.prompt,
+          creditsCost: pricing.cost,
+          mediaUrl: urls[0],
+          taskId: res.taskId,
+          status: res.status.state === "success" ? "success" : "generating",
+        });
+
+        let summary = `[LikyAI] Musique générée (Suno v4)\n`;
+        summary += `• Durée: ${pricing.duration}s | Crédits débités: ${pricing.cost} crédits\n`;
+        summary += `• TaskId: ${res.taskId}\n`;
+        summary += `• État: ${res.status.state}\n`;
+
+        if (urls.length > 0) {
+          summary += `\nLien audio MP3: ${urls[0]}\n`;
+        } else {
+          summary += `\nComposition en cours. Utilisez likyai_get_task_status avec "${res.taskId}".`;
+        }
+
+        return {
+          content: [{ type: "text", text: summary }],
+        };
+      } catch (err: unknown) {
+        return {
+          isError: true,
+          content: [
+            {
+              type: "text",
+              text: `[LikyAI Erreur] ${err instanceof Error ? err.message : String(err)}`,
+            },
+          ],
+        };
+      }
+    }
+  );
+
+  // ==========================================
+  // OUTIL 4 : Synthèse vocale & Voix off (Crédits dynamiques)
   // ==========================================
   server.registerTool(
     "likyai_generate_voice",
     {
       title: "Générer une voix off",
       description:
-        "Synthétise un texte en voix off réaliste, naturelle et expressive.",
+        "Synthétise un texte en voix off réaliste et naturelle. Coût : 2 crédits par tranche de 100 caractères (min. 2 crédits).",
       inputSchema: {
-        prompt: z.string().describe("Texte exact à prononcer"),
+        prompt: z.string().describe("Texte exact à prononcer par la voix off"),
         voice: z
           .string()
           .optional()
-          .describe("Nom ou style de voix (ex: 'Rachel', 'Adam', 'Antoni')"),
+          .describe("Voix ou profil vocal au choix (ex: 'Rachel', 'Adam', 'Antoni')"),
         language: z
           .string()
           .optional()
@@ -350,9 +365,12 @@ export function createLikyMcpServer(options?: { user?: McpUserSession | null }) 
     },
     async (args) => {
       try {
-        if (user) {
-          await deductUserCredits(user.userId, 5);
+        if (!user) {
+          throw new Error("Authentification requise : Veuillez connecter votre compte LikyAI via OAuth pour utiliser vos crédits.");
         }
+
+        const pricing = calculateVoiceCost(args.prompt);
+        await deductUserCredits(user.userId, pricing.cost);
 
         const res = await generateVoice({
           prompt: args.prompt,
@@ -363,30 +381,24 @@ export function createLikyMcpServer(options?: { user?: McpUserSession | null }) 
         });
 
         const urls = res.status.resultUrls || [];
-        if (user) {
-          await recordMcpGeneration({
-            userId: user.userId,
-            tool: "voice",
-            modelName: res.model,
-            prompt: args.prompt,
-            creditsCost: 5,
-            mediaUrl: urls[0],
-            taskId: res.taskId,
-            status: res.status.state === "success" ? "success" : "generating",
-          });
-        }
+        await recordMcpGeneration({
+          userId: user.userId,
+          tool: "voice",
+          modelName: res.model,
+          prompt: args.prompt,
+          creditsCost: pricing.cost,
+          mediaUrl: urls[0],
+          taskId: res.taskId,
+          status: res.status.state === "success" ? "success" : "generating",
+        });
 
-        let summary = `[LikyAI] Voix off générée (Modèle: ${res.model})\n`;
-        summary += `TaskId: ${res.taskId}\n`;
-        summary += `État: ${res.status.state}\n`;
-        if (user) {
-          summary += `Compte débité: ${user.email} (5 crédits)\n`;
-        }
+        let summary = `[LikyAI] Voix off générée avec succès\n`;
+        summary += `• Longueur: ${pricing.length} caractères | Crédits débités: ${pricing.cost} crédits\n`;
+        summary += `• TaskId: ${res.taskId}\n`;
+        summary += `• État: ${res.status.state}\n`;
 
         if (urls.length > 0) {
           summary += `\nLien audio MP3: ${urls[0]}\n`;
-        } else {
-          summary += `\nConsultez le statut avec: likyai_get_task_status(taskId: "${res.taskId}")`;
         }
 
         return {
@@ -398,9 +410,7 @@ export function createLikyMcpServer(options?: { user?: McpUserSession | null }) 
           content: [
             {
               type: "text",
-              text: `[LikyAI Erreur] Échec synthèse vocale: ${
-                err instanceof Error ? err.message : String(err)
-              }`,
+              text: `[LikyAI Erreur] ${err instanceof Error ? err.message : String(err)}`,
             },
           ],
         };
@@ -409,20 +419,20 @@ export function createLikyMcpServer(options?: { user?: McpUserSession | null }) 
   );
 
   // ==========================================
-  // OUTIL 5 : Statut d'une tâche & Récupération
+  // OUTIL 5 : Statut d'une tâche (GRATUIT - 0 crédit)
   // ==========================================
   server.registerTool(
     "likyai_get_task_status",
     {
-      title: "Consulter le statut d'une tâche",
+      title: "Consulter le statut d'une tâche (Gratuit)",
       description:
-        "Vérifie l'état d'avancement d'une tâche LikyAI (waiting, generating, success, fail) et renvoie les URLs des médias générés.",
+        "Vérifie l'état d'avancement d'un rendu et récupère les liens de téléchargement. Cet outil ne consomme aucun crédit (0 crédit).",
       inputSchema: {
-        taskId: z.string().describe("L'ID unique de la tâche retourné par une génération"),
+        taskId: z.string().describe("L'identifiant de la tâche retourné lors d'une génération"),
         wait_if_generating: z
           .boolean()
           .optional()
-          .describe("Si true et que la tâche est encore en cours, attend jusqu'à 20s."),
+          .describe("Si true et que la tâche est en cours, attend jusqu'à 20s."),
       },
     },
     async (args) => {
@@ -435,18 +445,12 @@ export function createLikyMcpServer(options?: { user?: McpUserSession | null }) 
 
         const urls = status.resultUrls || [];
         let summary = `[LikyAI Statut] Tâche ${args.taskId}\n`;
-        summary += `État: ${status.state} (${status.progress || 0}%)\n`;
-        if (status.creditsConsumed) {
-          summary += `Crédits consommés: ${status.creditsConsumed}\n`;
-        }
-        if (status.message) {
-          summary += `Détail: ${status.message}\n`;
-        }
+        summary += `• État: ${status.state} (${status.progress || 0}%)\n`;
         if (urls.length > 0) {
-          summary += `\nLiens des fichiers générés:\n${urls.map((u, i) => `  ${i + 1}. ${u}`).join("\n")}\n`;
+          summary += `\nFichiers générés:\n${urls.map((u, i) => `  ${i + 1}. ${u}`).join("\n")}\n`;
         }
         if (status.error) {
-          summary += `\nErreur signalée: ${status.error}\n`;
+          summary += `\nErreur: ${status.error}\n`;
         }
 
         return {
@@ -458,9 +462,7 @@ export function createLikyMcpServer(options?: { user?: McpUserSession | null }) 
           content: [
             {
               type: "text",
-              text: `[LikyAI Erreur] Impossible de lire le statut: ${
-                err instanceof Error ? err.message : String(err)
-              }`,
+              text: `[LikyAI Erreur] ${err instanceof Error ? err.message : String(err)}`,
             },
           ],
         };
@@ -469,32 +471,31 @@ export function createLikyMcpServer(options?: { user?: McpUserSession | null }) 
   );
 
   // ==========================================
-  // OUTIL 6 : Catalogue des modèles
+  // OUTIL 6 : Catalogue des modèles (GRATUIT - 0 crédit)
   // ==========================================
   server.registerTool(
     "likyai_list_models",
     {
-      title: "Lister les modèles IA disponibles",
+      title: "Lister les modèles IA et tarifs (Gratuit)",
       description:
-        "Affiche la liste complète des modèles d'images, vidéos, musiques et voix disponibles sur LikyAI, avec leurs coûts en crédits et leurs spécifications.",
+        "Affiche la liste complète des modèles avec leur tarification exacte en crédits pour vous aider à choisir selon les besoins de l'utilisateur. Cet outil ne consomme aucun crédit (0 crédit).",
       inputSchema: {
         category: z
           .enum(["image", "video", "music", "voice", "all"])
           .optional()
-          .describe("Catégorie de modèles à filtrer (par défaut 'all')"),
+          .describe("Filtrer par type (image, video, music, voice, all)"),
       },
     },
     async (args) => {
       const models = listLikyModels(args.category);
       const text =
-        `[LikyAI Modèles Disponibles]\n` +
+        `[LikyAI Modèles Disponibles (Appel gratuit - 0 crédit)]\n\n` +
         models
           .map(
             (m) =>
-              `• ${m.name} (${m.id}) [${m.kind.toUpperCase()}]\n` +
-              `  - Description: ${m.tagline}\n` +
-              `  - Tarif: ${m.pricingDescription} (${m.costCredits} crédits)\n` +
-              `  - Tier: ${m.tier}`
+              `• ${m.name} (id: ${m.id}) [${m.kind.toUpperCase()}]\n` +
+              `  - Tarification: ${m.pricingDescription}\n` +
+              `  - Usage recommandé: ${m.tagline}`
           )
           .join("\n\n");
 
@@ -505,13 +506,13 @@ export function createLikyMcpServer(options?: { user?: McpUserSession | null }) 
   );
 
   // ==========================================
-  // OUTIL 7 : Solde et compte
+  // OUTIL 7 : Solde de crédits (GRATUIT - 0 crédit)
   // ==========================================
   server.registerTool(
     "likyai_get_balance",
     {
-      title: "Consulter le solde de crédits",
-      description: "Affiche le nombre de crédits restants et le statut du compte LikyAI.",
+      title: "Consulter le solde de crédits (Gratuit)",
+      description: "Affiche le nombre de crédits restants sur votre compte LikyAI. Cet outil ne consomme aucun crédit (0 crédit).",
       inputSchema: {},
     },
     async () => {
@@ -521,72 +522,26 @@ export function createLikyMcpServer(options?: { user?: McpUserSession | null }) 
             {
               type: "text",
               text:
-                `[LikyAI Compte Connecté]\n` +
-                `• Utilisateur: ${user.email}\n` +
-                `• Solde: ${user.credits} crédits disponibles\n` +
-                `• Mode MCP: Personnel (vos crédits sont débités à chaque génération)\n` +
+                `[LikyAI Compte]\n` +
+                `• Email: ${user.email}\n` +
+                `• Crédits disponibles: ${user.credits}\n` +
                 `• Statut: Actif\n` +
-                `Pour recharger: achetez vos crédits directement via Mobile Money sur https://liky.ai/#pricing.`,
+                `Pour recharger vos crédits: rendez-vous sur le studio LikyAI.`,
             },
           ],
         };
       }
 
       const b = getLikyBalance();
-      const text =
-        `[LikyAI Compte Démo]\n` +
-        `• Solde: ${b.credits} crédits disponibles\n` +
-        `• Forfait: ${b.plan}\n` +
-        `• Accès MCP: ${b.mcpAccess}\n` +
-        `• Statut: ${b.status}\n` +
-        `Connectez votre compte LikyAI via OAuth ou fournissez votre clé API pour utiliser vos crédits personnels.`;
-
       return {
-        content: [{ type: "text", text }],
-      };
-    }
-  );
-
-  // ==========================================
-  // RESSOURCES & PROMPTS MCP
-  // ==========================================
-  server.registerResource(
-    "models-catalog",
-    "likyai://models",
-    {
-      title: "Catalogue des modèles LikyAI",
-      description: "Schéma JSON complet des modèles et tarifs disponibles",
-      mimeType: "application/json",
-    },
-    async () => {
-      return {
-        contents: [
+        content: [
           {
-            uri: "likyai://models",
-            mimeType: "application/json",
-            text: JSON.stringify(listLikyModels("all"), null, 2),
-          },
-        ],
-      };
-    }
-  );
-
-  server.registerPrompt(
-    "creative-campaign",
-    {
-      title: "Campagne créative multi-assets",
-      description: "Génère un pack créatif complet (image d'accroche 16:9, courte vidéo et musique d'ambiance)",
-    },
-    async () => {
-      return {
-        messages: [
-          {
-            role: "user",
-            content: {
-              type: "text",
-              text:
-                "Tu es l'assistant de direction artistique LikyAI. En utilisant les outils likyai_generate_image, likyai_generate_video et likyai_generate_music, conçois une direction créative complète pour le thème demandé par l'utilisateur.",
-            },
+            type: "text",
+            text:
+              `[LikyAI Compte]\n` +
+              `• Crédits: ${b.credits}\n` +
+              `• Statut: ${b.status}\n` +
+              `Connectez votre compte LikyAI via OAuth pour utiliser vos crédits personnels.`,
           },
         ],
       };
