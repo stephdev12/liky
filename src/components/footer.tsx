@@ -127,7 +127,7 @@ function AnimatedContainer({
 			className={className}
 			initial={{ filter: "blur(4px)", translateY: -8, opacity: 0 }}
 			transition={{ delay, duration: 0.8 }}
-			viewport={{ once: true }}
+			viewport={{ once: false, amount: 0.1 }}
 			whileInView={{ filter: "blur(0px)", translateY: 0, opacity: 1 }}
 		>
 			{children}

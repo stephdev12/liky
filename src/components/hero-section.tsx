@@ -42,11 +42,12 @@ export function HeroSection() {
 				{/* Headline (Higgsfield-inspired minimal punchline) */}
 				<motion.h1
 					initial={{ opacity: 0, y: 25, filter: "blur(6px)" }}
-					animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+					whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+					viewport={{ once: false, amount: 0.2 }}
 					transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
 					className={cn(
-						"font-heading text-balance text-center text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight",
-						"text-foreground leading-[1.12]"
+						"font-heading text-balance text-center text-[2.65rem] sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight",
+						"text-foreground leading-[1.06] sm:leading-[1.12]"
 					)}
 				>
 					Studio créatif IA <br />
@@ -56,8 +57,9 @@ export function HeroSection() {
 				{/* Description */}
 				<motion.p
 					initial={{ opacity: 0, y: 20, filter: "blur(4px)" }}
-					animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-					transition={{ duration: 0.8, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+					whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+					viewport={{ once: false, amount: 0.2 }}
+					transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
 					className="mx-auto max-w-xl text-center text-sm sm:text-base md:text-lg text-muted-foreground tracking-normal leading-relaxed px-2"
 				>
 					Générez des images cinématiques, des vidéos ultra-réalistes, des musiques et des voix off. Connectez vos agents IA via MCP ou créez directement dans le Studio.
@@ -66,8 +68,9 @@ export function HeroSection() {
 				{/* Actions */}
 				<motion.div
 					initial={{ opacity: 0, y: 15 }}
-					animate={{ opacity: 1, y: 0 }}
-					transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+					whileInView={{ opacity: 1, y: 0 }}
+					viewport={{ once: false, amount: 0.2 }}
+					transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
 					className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full sm:w-auto pt-2"
 				>
 					<motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="w-full sm:w-auto">

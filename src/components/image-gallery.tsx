@@ -24,14 +24,10 @@ export function ImageGallery() {
 			<motion.div
 				initial={{ opacity: 0, y: 25 }}
 				whileInView={{ opacity: 1, y: 0 }}
-				viewport={{ once: true, margin: "-80px" }}
+				viewport={{ once: false, amount: 0.2 }}
 				transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
 				className="mx-auto max-w-5xl space-y-4 text-center mb-14"
 			>
-				<div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--surf)] border border-[var(--line)] text-[12px] font-mono text-[var(--mute)] shadow-2xs">
-					<span className="size-1.5 rounded-full bg-[var(--lime)] animate-ping" />
-					<span>Créé avec LikyAI</span>
-				</div>
 				<h2 className="font-heading font-semibold text-3xl text-foreground tracking-tight sm:text-4xl md:text-5xl">
 					Rendu cinématique & précision créative
 				</h2>
@@ -55,10 +51,10 @@ export function ImageGallery() {
 										key={`${col}-${index}`}
 										initial={{ opacity: 0, y: 20 }}
 										whileInView={{ opacity: 1, y: 0 }}
-										viewport={{ once: true, margin: "-40px" }}
+										viewport={{ once: false, amount: 0.1 }}
 										transition={{
 											duration: 0.6,
-											delay: col * 0.08 + index * 0.06,
+											delay: (index % 3) * 0.08,
 											ease: [0.16, 1, 0.3, 1],
 										}}
 										whileHover={{ y: -5, transition: { duration: 0.2 } }}

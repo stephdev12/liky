@@ -51,14 +51,10 @@ export function TestimonialsSection() {
 			<motion.div
 				initial={{ opacity: 0, y: 25 }}
 				whileInView={{ opacity: 1, y: 0 }}
-				viewport={{ once: true, margin: "-60px" }}
+				viewport={{ once: false, amount: 0.2 }}
 				transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
 				className="mx-auto max-w-5xl space-y-3 text-center mb-14"
 			>
-				<div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--surf)] border border-[var(--line)] text-[12px] font-mono text-[var(--mute)] shadow-2xs">
-					<span className="size-1.5 rounded-full bg-[var(--lime)] animate-ping" />
-					<span>Retours Créateurs</span>
-				</div>
 				<h2 className="font-heading font-semibold text-3xl text-foreground tracking-tight sm:text-4xl md:text-5xl">
 					Adopté par les créateurs et studios
 				</h2>
@@ -95,7 +91,7 @@ function TestimonialCard({
 		<motion.figure
 			initial={{ opacity: 0, y: 25 }}
 			whileInView={{ opacity: 1, y: 0 }}
-			viewport={{ once: true, margin: "-50px" }}
+			viewport={{ once: false, amount: 0.15 }}
 			transition={{ duration: 0.6, delay: index * 0.1, ease: [0.16, 1, 0.3, 1] }}
 			whileHover={{ y: -6, transition: { duration: 0.2 } }}
 			className={cn(

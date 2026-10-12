@@ -14,7 +14,6 @@ type CreditPack = {
 	features: string[];
 	btnText: string;
 	highlighted?: boolean;
-	badge?: string;
 };
 
 const creditPacks: CreditPack[] = [
@@ -46,7 +45,6 @@ const creditPacks: CreditPack[] = [
 		],
 		btnText: "Choisir 200 crédits",
 		highlighted: true,
-		badge: "Plus populaire",
 	},
 	{
 		name: "Studio Pro",
@@ -71,14 +69,10 @@ export function PricingSection() {
 				<motion.div
 					initial={{ opacity: 0, y: 25 }}
 					whileInView={{ opacity: 1, y: 0 }}
-					viewport={{ once: true, margin: "-60px" }}
+					viewport={{ once: false, amount: 0.2 }}
 					transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
 					className="mx-auto max-w-xl space-y-3 text-center"
 				>
-					<div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--surf)] border border-[var(--line)] text-[12px] font-mono text-[var(--mute)] shadow-2xs">
-						<CoolIcon name="credit-card-01" size={14} duotone secondaryColor="var(--lime)" className="text-[var(--lime)]" />
-						<span>Paiement Mobile Money</span>
-					</div>
 					<h2 className="font-heading font-semibold text-3xl text-foreground tracking-tight sm:text-4xl md:text-5xl">
 						Rechargez vos crédits en toute liberté
 					</h2>
@@ -102,7 +96,7 @@ function PricingCard({ pack, index = 0 }: { pack: CreditPack; index?: number }) 
 		<motion.div
 			initial={{ opacity: 0, y: 25 }}
 			whileInView={{ opacity: 1, y: 0 }}
-			viewport={{ once: true, margin: "-50px" }}
+			viewport={{ once: false, amount: 0.15 }}
 			transition={{ duration: 0.6, delay: index * 0.1, ease: [0.16, 1, 0.3, 1] }}
 			whileHover={{ y: -4, transition: { duration: 0.2 } }}
 			className={cn(
@@ -112,13 +106,6 @@ function PricingCard({ pack, index = 0 }: { pack: CreditPack; index?: number }) 
 					: "border-[var(--line)] bg-[var(--surf)]/80 hover:border-[var(--line-strong)] hover:shadow-card"
 			)}
 		>
-			{pack.badge && (
-				<div className="absolute top-3.5 right-3.5 z-10 flex items-center gap-1 rounded-full border border-[var(--lime)]/50 bg-[var(--lime)]/15 px-2.5 py-0.5 text-[11px] font-medium text-[var(--ink)]">
-					<CoolIcon name="star" size={13} duotone secondaryColor="var(--lime)" className="text-[var(--lime)]" />
-					<span>{pack.badge}</span>
-				</div>
-			)}
-
 			<div className="p-6 border-b border-[var(--line)]">
 				<h3 className="font-semibold text-lg text-[var(--ink)]">{pack.name}</h3>
 				<p className="font-normal text-muted-foreground text-xs mt-1 min-h-[32px] leading-relaxed">{pack.info}</p>

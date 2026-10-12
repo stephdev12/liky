@@ -21,14 +21,10 @@ export function Integrations() {
 				<motion.div
 					initial={{ opacity: 0, x: -30 }}
 					whileInView={{ opacity: 1, x: 0 }}
-					viewport={{ once: true, margin: "-60px" }}
+					viewport={{ once: false, amount: 0.2 }}
 					transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
 					className="max-w-xl space-y-6"
 				>
-					<div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--surf)] border border-[var(--line)] text-[12px] font-mono text-[var(--mute)] shadow-2xs">
-						<span className="size-2 rounded-full bg-[var(--lime)] animate-pulse" />
-						Protocole MCP Natif
-					</div>
 					<h2 className="font-heading font-semibold text-3xl text-foreground tracking-tight sm:text-4xl md:text-5xl">
 						Connectez vos agents IA préférés
 					</h2>
@@ -56,8 +52,8 @@ export function Integrations() {
 				<motion.div
 					initial={{ opacity: 0, scale: 0.95 }}
 					whileInView={{ opacity: 1, scale: 1 }}
-					viewport={{ once: true, margin: "-60px" }}
-					transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+					viewport={{ once: false, amount: 0.2 }}
+					transition={{ duration: 0.8, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
 					className="flex justify-center items-center md:justify-end w-full overflow-hidden py-4"
 				>
 					<div className="mask-[radial-gradient(ellipse_at_center,black,black,transparent)] relative size-90 scale-[0.82] sm:scale-100 origin-center shrink-0">
