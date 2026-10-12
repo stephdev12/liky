@@ -1,7 +1,7 @@
 import * as React from "react"
 import { cva } from "class-variance-authority"
 import { cn } from "cn"
-import { ChevronDownIcon } from "lucide-react"
+import { CoolIcon } from "@/components/icons/coolicon"
 import { NavigationMenu as NavigationMenuPrimitive } from "radix-ui"
 
 function NavigationMenu({
@@ -73,8 +73,11 @@ function NavigationMenuTrigger({
       {...props}
     >
       {children}{" "}
-      <ChevronDownIcon
-        className="relative top-[1px] ml-1 size-3 transition duration-300 group-data-[state=open]:rotate-180"
+      <CoolIcon
+        name="chevron-down"
+        size={13}
+        duotone={false}
+        className="relative top-[1px] ml-1 transition duration-300 group-data-[state=open]:rotate-180"
         aria-hidden="true"
       />
     </NavigationMenuPrimitive.Trigger>

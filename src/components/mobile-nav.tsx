@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Portal, PortalBackdrop } from "@/components/portal";
 import { companyLinks, companyLinks2, productLinks } from "@/components/nav-links";
 import { LinkItem } from "@/components/sheard";
-import { XIcon, MenuIcon } from "lucide-react";
+import { CoolIcon } from "@/components/icons/coolicon";
 import Link from "next/link";
 
 export function MobileNav() {
@@ -27,7 +27,7 @@ export function MobileNav() {
 						open ? "scale-100 opacity-100" : "scale-0 opacity-0"
 					)}
 				>
-					<XIcon className="size-4" />
+					<CoolIcon name="close-md" size={17} duotone={false} />
 				</div>
 				<div
 					className={cn(
@@ -35,7 +35,7 @@ export function MobileNav() {
 						open ? "scale-0 opacity-0" : "scale-100 opacity-100"
 					)}
 				>
-					<MenuIcon className="size-4" />
+					<CoolIcon name="hamburger-md" size={17} duotone={false} />
 				</div>
 			</Button>
 			{open && (

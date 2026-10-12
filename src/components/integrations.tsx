@@ -4,7 +4,7 @@ import React from "react";
 import { cn } from "@/lib/utils";
 import { motion } from "motion/react";
 import Link from "next/link";
-import { ArrowRight, Bot } from "lucide-react";
+import { CoolIcon } from "@/components/icons/coolicon";
 
 type TileData = {
 	row: number;
@@ -41,9 +41,9 @@ export function Integrations() {
 								href="/auth"
 								className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#D8FF64] text-[#171717] font-semibold text-[13.5px] hover:bg-[#cbf54a] transition-all shadow-xs [&_*]:text-[#171717]"
 							>
-								<Bot className="size-4 shrink-0 text-[#171717]" />
+								<CoolIcon name="terminal" size={16} duotone secondaryColor="#171717" className="shrink-0 text-[#171717]" />
 								<span className="text-[#171717]">Obtenir la clé MCP</span>
-								<ArrowRight className="size-3.5 shrink-0 text-[#171717]" />
+								<CoolIcon name="arrow-right-sm" size={15} duotone={false} className="shrink-0 text-[#171717]" />
 							</Link>
 						</motion.div>
 						<span className="text-[12.5px] text-muted-foreground font-mono">

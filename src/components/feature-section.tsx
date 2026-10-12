@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import type React from "react";
 import { motion } from "motion/react";
 import { CobeGlobe } from "@/components/cobe-globe";
-import { TrendingUpIcon, SquareMousePointerIcon, GlobeIcon } from "lucide-react";
+import { CoolIcon } from "@/components/icons/coolicon";
 
 const features = [
 	{
@@ -153,7 +153,7 @@ function ReportsVisual() {
 			<div className="min-h-32">
 				<div className="absolute top-6 left-6 sm:top-8 sm:left-8 flex items-center gap-2">
 					<div className="flex size-8 items-center justify-center rounded-full bg-[var(--lime)]/20 text-foreground">
-						<TrendingUpIcon className="size-4" />
+						<CoolIcon name="trending-up" size={16} duotone secondaryColor="var(--lime)" />
 					</div>
 					<div className="font-mono font-medium text-xs text-muted-foreground">Mobile Money</div>
 				</div>
@@ -174,7 +174,7 @@ function DashboardVisual() {
 		<div className="grid h-full sm:grid-cols-2 overflow-hidden">
 			<div className="relative z-10 space-y-6 py-6 sm:py-8 px-6 sm:ps-8 sm:pe-2">
 				<div className="flex size-12 items-center justify-center rounded-full border bg-card shadow-xs outline outline-border/80 outline-offset-2">
-					<SquareMousePointerIcon className="size-5 text-[var(--lime)]" />
+					<CoolIcon name="mouse" size={20} duotone secondaryColor="var(--lime)" className="text-[var(--lime)]" />
 				</div>
 				<div className="space-y-2">
 					<FeatureTitle className="text-base">
@@ -215,7 +215,7 @@ function PresenceVisual() {
 		<div className="grid max-h-120 sm:grid-cols-2 overflow-hidden">
 			<div className="space-y-6 pt-6 sm:pt-8 pb-4 px-6 sm:pl-8 sm:pr-4 sm:pb-8">
 				<div className="flex size-12 items-center justify-center rounded-full border bg-card shadow-xs outline outline-border/80 outline-offset-2">
-					<GlobeIcon className="size-5 text-[var(--lime)]" />
+					<CoolIcon name="globe" size={20} duotone secondaryColor="var(--lime)" className="text-[var(--lime)]" />
 				</div>
 				<div className="space-y-2">
 					<FeatureTitle className="text-base">

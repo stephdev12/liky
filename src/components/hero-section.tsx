@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Wand2 } from "lucide-react";
+import { CoolIcon } from "@/components/icons/coolicon";
 import Link from "next/link";
 import { motion } from "motion/react";
 
@@ -77,7 +77,7 @@ export function HeroSection() {
 							size="lg"
 						>
 							<Link href="/studio" className="text-[#171717] flex items-center justify-center gap-1.5">
-								<Sparkles className="size-4 shrink-0 text-[#171717]" />
+								<CoolIcon name="bulb" size={16} duotone secondaryColor="#171717" className="text-[#171717]" />
 								<span>Commencer à créer</span>
 							</Link>
 						</Button>
@@ -90,7 +90,7 @@ export function HeroSection() {
 							variant="outline"
 						>
 							<Link href="#gallery" className="flex items-center justify-center gap-1.5">
-								<Wand2 className="size-4 shrink-0 text-muted-foreground" />
+								<CoolIcon name="compass" size={16} duotone secondaryColor="currentColor" className="text-muted-foreground" />
 								<span>Explorer la galerie</span>
 							</Link>
 						</Button>

@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { StarIcon, CheckCircleIcon, Zap } from "lucide-react";
+import { CoolIcon } from "@/components/icons/coolicon";
 import { motion } from "motion/react";
 
 type CreditPack = {
@@ -76,7 +76,7 @@ export function PricingSection() {
 					className="mx-auto max-w-xl space-y-3 text-center"
 				>
 					<div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--surf)] border border-[var(--line)] text-[12px] font-mono text-[var(--mute)] shadow-2xs">
-						<Zap className="size-3 text-[var(--lime)] fill-[var(--lime)]" />
+						<CoolIcon name="credit-card-01" size={14} duotone secondaryColor="var(--lime)" className="text-[var(--lime)]" />
 						<span>Paiement Mobile Money</span>
 					</div>
 					<h2 className="font-heading font-semibold text-3xl text-foreground tracking-tight sm:text-4xl md:text-5xl">
@@ -114,7 +114,7 @@ function PricingCard({ pack, index = 0 }: { pack: CreditPack; index?: number }) 
 		>
 			{pack.badge && (
 				<div className="absolute top-3.5 right-3.5 z-10 flex items-center gap-1 rounded-full border border-[var(--lime)]/50 bg-[var(--lime)]/15 px-2.5 py-0.5 text-[11px] font-medium text-[var(--ink)]">
-					<StarIcon className="size-3 fill-[var(--lime)] text-[var(--lime)]" />
+					<CoolIcon name="star" size={13} duotone secondaryColor="var(--lime)" className="text-[var(--lime)]" />
 					<span>{pack.badge}</span>
 				</div>
 			)}
@@ -137,7 +137,7 @@ function PricingCard({ pack, index = 0 }: { pack: CreditPack; index?: number }) 
 			<div className="space-y-3 p-6 text-muted-foreground text-[13px] flex-1">
 				{pack.features.map((feature) => (
 					<div className="flex items-start gap-2.5" key={feature}>
-						<CheckCircleIcon className="size-4 shrink-0 text-emerald-600 dark:text-[var(--lime)] mt-0.5" />
+						<CoolIcon name="circle-check" size={16} duotone secondaryColor="var(--lime)" className="shrink-0 text-emerald-600 dark:text-[var(--lime)] mt-0.5" />
 						<p className="leading-tight text-[var(--ink)]/90">{feature}</p>
 					</div>
 				))}

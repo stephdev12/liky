@@ -6,7 +6,7 @@ import {
 	AvatarFallback,
 	AvatarImage,
 } from "@/components/ui/avatar";
-import { QuoteIcon } from "lucide-react";
+import { CoolIcon } from "@/components/icons/coolicon";
 import React from "react";
 import { motion } from "motion/react";
 
@@ -103,7 +103,7 @@ function TestimonialCard({
 				className
 			)}
 		>
-			<QuoteIcon className="size-6 text-[var(--lime)] opacity-90 mb-4" />
+			<CoolIcon name="double-quotes-l" size={26} duotone secondaryColor="var(--lime)" className="text-[var(--lime)] opacity-90 mb-4" />
 			<p className="text-sm text-foreground/90 leading-relaxed font-normal flex-1">
 				&ldquo;{quote}&rdquo;
 			</p>

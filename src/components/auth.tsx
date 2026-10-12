@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/input-group";
 import { AuthDivider } from "@/components/auth-divider";
 import { DecorIcon } from "@/components/decor-icon";
-import { Loader2, CheckCircle2, AlertCircle, Eye, EyeOff, ArrowLeft } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
@@ -181,7 +181,7 @@ export function AuthPage({ onSuccess, className, isModal = false }: AuthProps) {
             href="/"
             className="inline-flex items-center gap-2 text-xs font-medium text-[var(--mute)] hover:text-[var(--ink)] transition-colors group px-1 py-1 rounded-md"
           >
-            <ArrowLeft className="size-3.5 duration-150 ease-out group-hover:-translate-x-0.5 text-[var(--mute)] group-hover:text-[var(--ink)]" />
+            <CoolIcon name="arrow-left-md" size={15} duotone={false} className="duration-150 ease-out group-hover:-translate-x-0.5 text-[var(--mute)] group-hover:text-[var(--ink)]" />
             <span>Retour à l&apos;accueil</span>
           </Link>
         </div>
@@ -258,14 +258,14 @@ export function AuthPage({ onSuccess, className, isModal = false }: AuthProps) {
           {/* Messages de statut & erreur */}
           {statusMessage && (
             <div className="flex items-start gap-2 p-3 rounded-[12px] bg-[var(--mn)] border border-[var(--lime)]/50 text-[12px] text-[var(--ink)]">
-              <CheckCircle2 className="size-4 text-[var(--lime)] shrink-0 mt-0.5" />
+              <CoolIcon name="circle-check" size={16} duotone secondaryColor="var(--lime)" className="text-[var(--lime)] shrink-0 mt-0.5" />
               <span>{statusMessage}</span>
             </div>
           )}
 
           {errorMessage && (
             <div className="flex items-start gap-2 p-3 rounded-[12px] bg-red-500/10 border border-red-500/30 text-[12px] text-red-500">
-              <AlertCircle className="size-4 shrink-0 mt-0.5" />
+              <CoolIcon name="circle-warning" size={16} duotone secondaryColor="#EF4444" className="shrink-0 mt-0.5" />
               <span>{errorMessage}</span>
             </div>
           )}
@@ -316,7 +316,7 @@ export function AuthPage({ onSuccess, className, isModal = false }: AuthProps) {
                   className="px-3 text-[var(--mute)] hover:text-[var(--ink)] transition-colors cursor-pointer"
                   title={showPassword ? "Masquer" : "Afficher"}
                 >
-                  {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                  {showPassword ? <CoolIcon name="hide" size={16} duotone={false} /> : <CoolIcon name="show" size={16} duotone={false} />}
                 </button>
               </InputGroup>
             </div>

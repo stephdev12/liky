@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Moon, Sun } from "lucide-react";
+import { CoolIcon } from "@/components/icons/coolicon";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
 
@@ -43,7 +43,7 @@ export function ThemeToggle({ className }: { className?: string }) {
 					className
 				)}
 			>
-				<Sun className="size-4" />
+				<CoolIcon name="sun" size={16} duotone secondaryColor="var(--lime)" />
 			</button>
 		);
 	}
@@ -67,7 +67,7 @@ export function ThemeToggle({ className }: { className?: string }) {
 						transition={{ duration: 0.25, ease: "easeOut" }}
 						className="flex items-center justify-center text-[var(--lime)]"
 					>
-						<Moon className="size-4 fill-[var(--lime)]/20" />
+						<CoolIcon name="moon" size={16} duotone secondaryColor="var(--lime)" />
 					</motion.div>
 				) : (
 					<motion.div
@@ -78,7 +78,7 @@ export function ThemeToggle({ className }: { className?: string }) {
 						transition={{ duration: 0.25, ease: "easeOut" }}
 						className="flex items-center justify-center text-amber-500"
 					>
-						<Sun className="size-4" />
+						<CoolIcon name="sun" size={16} duotone secondaryColor="var(--lime)" />
 					</motion.div>
 				)}
 			</AnimatePresence>
