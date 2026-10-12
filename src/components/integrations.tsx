@@ -1,10 +1,10 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { cn } from "@/lib/utils";
 import { motion } from "motion/react";
-import Link from "next/link";
 import { CoolIcon } from "@/components/icons/coolicon";
+import { McpModal } from "@/components/mcp-modal";
 
 type TileData = {
 	row: number;
@@ -14,8 +14,11 @@ type TileData = {
 };
 
 export function Integrations() {
+	const [mcpModalOpen, setMcpModalOpen] = useState(false);
+
 	return (
 		<section id="integrations" className="py-24 md:py-32 px-4 bg-[var(--bg)] border-t border-[var(--line)] overflow-hidden">
+			<McpModal isOpen={mcpModalOpen} onClose={() => setMcpModalOpen(false)} />
 			<div className="mx-auto grid max-w-5xl grid-cols-1 gap-12 md:grid-cols-2 md:items-center">
 				{/* Left Content */}
 				<motion.div
@@ -33,14 +36,15 @@ export function Integrations() {
 					</p>
 					<div className="flex flex-wrap items-center gap-3 pt-2">
 						<motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-							<Link
-								href="/auth"
-								className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#D8FF64] text-[#171717] font-semibold text-[13.5px] hover:bg-[#cbf54a] transition-all shadow-xs [&_*]:text-[#171717]"
+							<button
+								type="button"
+								onClick={() => setMcpModalOpen(true)}
+								className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#D8FF64] text-[#171717] font-semibold text-[13.5px] hover:bg-[#cbf54a] transition-all shadow-xs cursor-pointer [&_*]:text-[#171717]"
 							>
 								<CoolIcon name="terminal" size={16} duotone secondaryColor="#171717" className="shrink-0 text-[#171717]" />
 								<span className="text-[#171717]">Obtenir la clé MCP</span>
 								<CoolIcon name="arrow-right-sm" size={15} duotone={false} className="shrink-0 text-[#171717]" />
-							</Link>
+							</button>
 						</motion.div>
 						<span className="text-[12.5px] text-muted-foreground font-mono">
 							Compatible Claude Code, Cursor & ChatGPT

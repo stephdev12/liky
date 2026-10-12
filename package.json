@@ -2,14 +2,19 @@
   "name": "likyai",
   "version": "0.1.0",
   "private": true,
+  "bin": {
+    "likyai-mcp": "./bin/likyai-mcp.mjs"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "mcp": "node bin/likyai-mcp.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
+    "@modelcontextprotocol/sdk": "^1.32.1",
     "@number-flow/react": "^0.6.2",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.117.3",
