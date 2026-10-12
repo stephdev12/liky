@@ -59,7 +59,7 @@ export function DesktopNav() {
 										key={`item-${item.label}-${i}`}
 										className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-[var(--hover)] text-xs text-muted-foreground hover:text-foreground transition-colors group"
 									>
-										<div className="size-6 rounded-md bg-emerald-500/10 dark:bg-[var(--lime)]/10 border border-emerald-500/20 dark:border-[var(--lime)]/20 text-emerald-700 dark:text-[var(--lime)] flex items-center justify-center shrink-0 transition-colors">
+										<div className="size-6 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-400 flex items-center justify-center shrink-0 transition-colors">
 											{item.icon}
 										</div>
 										<span className="group-hover:text-foreground">{item.label}</span>

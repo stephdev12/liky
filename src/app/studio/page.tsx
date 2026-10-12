@@ -886,7 +886,7 @@ export default function StudioPage() {
             </svg>
           </div>
           <div className="flex items-center gap-2">
-            <Loader2 className="size-4 animate-spin text-[var(--lime)]" />
+            <Loader2 className="size-4 animate-spin text-emerald-600 dark:text-emerald-400" />
             <span className="text-[13px] font-medium text-[var(--mute)]">
               Accès sécurisé au Studio likyAI…
             </span>
@@ -967,7 +967,7 @@ export default function StudioPage() {
                   name={cat.icon}
                   duotone
                   size={24}
-                  secondaryColor={active ? "var(--lime)" : "currentColor"}
+                  secondaryColor="currentColor"
                   secondaryOpacity={active ? 0.45 : 0.2}
                   className={active ? "text-[var(--ink)]" : "text-[var(--mute)]"}
                 />
@@ -987,7 +987,7 @@ export default function StudioPage() {
           onClick={() => setLibraryOpen(true)}
           title="Ouvrir la bibliothèque de créations"
         >
-          <CoolIcon name="folders" duotone size={16} secondaryColor="var(--lime)" secondaryOpacity={0.4} />
+          <CoolIcon name="folders" duotone size={16} secondaryColor="currentColor" secondaryOpacity={0.4} />
           <span className="hidden sm:inline">Bibliothèque</span>
           <span className="px-1.5 py-0.2 rounded-full bg-[var(--mn)] text-[10px] sm:text-[10.5px] font-mono text-[var(--mute)]">
             {cards.length}
@@ -1004,7 +1004,7 @@ export default function StudioPage() {
           aria-label="Changer de thème"
         >
           {isDark ? (
-            <CoolIcon name="sun" duotone size={19} secondaryColor="var(--lime)" secondaryOpacity={0.45} />
+            <CoolIcon name="sun" duotone size={19} secondaryColor="currentColor" secondaryOpacity={0.45} />
           ) : (
             <CoolIcon name="moon" duotone size={19} secondaryColor="var(--ink)" secondaryOpacity={0.25} />
           )}
@@ -1032,7 +1032,7 @@ export default function StudioPage() {
 
             <div className="cred">
               <div className="w-10 h-10 rounded-[12px] bg-[var(--mn)] border border-[var(--line)] flex items-center justify-center shrink-0 text-[var(--ink)]">
-                <CoolIcon name="credit-card-01" duotone size={22} secondaryColor="var(--lime)" secondaryOpacity={0.45} />
+                <CoolIcon name="credit-card-01" duotone size={22} secondaryColor="currentColor" secondaryOpacity={0.45} />
               </div>
               <div>
                 <small>Crédits</small>
@@ -1124,7 +1124,7 @@ export default function StudioPage() {
                     name={cat.icon}
                     duotone
                     size={13}
-                    secondaryColor={active ? "var(--lime)" : "currentColor"}
+                    secondaryColor="currentColor"
                     secondaryOpacity={active ? 0.9 : 0.3}
                   />
                   <span>{cat.label}</span>

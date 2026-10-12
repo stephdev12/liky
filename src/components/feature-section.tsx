@@ -112,7 +112,7 @@ function SetupVisual() {
 		<>
 			<div className="relative mx-auto flex size-28 sm:size-32 items-center justify-center rounded-full border-4 border-dashed bg-background shadow-xs outline outline-border outline-offset-4">
 				<div className="absolute inset-0 z-10 scale-110 bg-radial from-[var(--lime)]/10 via-transparent to-transparent blur-lg" />
-				<CustomTimerIcon className="size-12 sm:size-14 fill-[var(--lime)]" />
+				<CustomTimerIcon className="size-12 sm:size-14 fill-emerald-600 dark:fill-emerald-400" />
 			</div>
 
 			<div className="relative mt-8 space-y-1.5 text-center">
@@ -130,7 +130,7 @@ function UserBasedSecurity() {
 		<>
 			<div className="relative mx-auto flex size-28 sm:size-32 items-center justify-center rounded-full border bg-background shadow-xs outline outline-border outline-offset-4">
 				<CustomLockIcon className="size-20 sm:size-24" />
-				<div className="absolute inset-0 scale-110 bg-radial from-[var(--lime)]/10 via-transparent to-transparent blur-lg" />
+				<div className="absolute inset-0 scale-110 bg-radial from-emerald-500/10 via-transparent to-transparent blur-lg" />
 			</div>
 
 			<div className="relative mt-8 space-y-1.5 text-center">
@@ -148,8 +148,8 @@ function ReportsVisual() {
 		<>
 			<div className="min-h-32">
 				<div className="absolute top-6 left-6 sm:top-8 sm:left-8 flex items-center gap-2">
-					<div className="flex size-8 items-center justify-center rounded-full bg-[var(--lime)]/20 text-foreground">
-						<CoolIcon name="trending-up" size={16} duotone secondaryColor="var(--lime)" />
+					<div className="flex size-8 items-center justify-center rounded-full bg-emerald-500/15 text-foreground">
+						<CoolIcon name="trending-up" size={16} duotone secondaryColor="currentColor" className="text-emerald-600 dark:text-emerald-400" />
 					</div>
 					<div className="font-mono font-medium text-xs text-muted-foreground">Mobile Money</div>
 				</div>
@@ -170,7 +170,7 @@ function DashboardVisual() {
 		<div className="grid h-full sm:grid-cols-2 overflow-hidden">
 			<div className="relative z-10 space-y-6 py-6 sm:py-8 px-6 sm:ps-8 sm:pe-2">
 				<div className="flex size-12 items-center justify-center rounded-full border bg-card shadow-xs outline outline-border/80 outline-offset-2">
-					<CoolIcon name="mouse" size={20} duotone secondaryColor="var(--lime)" className="text-[var(--lime)]" />
+					<CoolIcon name="mouse" size={20} duotone secondaryColor="currentColor" className="text-foreground" />
 				</div>
 				<div className="space-y-2">
 					<FeatureTitle className="text-base">
@@ -211,7 +211,7 @@ function PresenceVisual() {
 		<div className="grid max-h-120 sm:grid-cols-2 overflow-hidden">
 			<div className="space-y-6 pt-6 sm:pt-8 pb-4 px-6 sm:pl-8 sm:pr-4 sm:pb-8">
 				<div className="flex size-12 items-center justify-center rounded-full border bg-card shadow-xs outline outline-border/80 outline-offset-2">
-					<CoolIcon name="globe" size={20} duotone secondaryColor="var(--lime)" className="text-[var(--lime)]" />
+					<CoolIcon name="globe" size={20} duotone secondaryColor="currentColor" className="text-emerald-600 dark:text-emerald-400" />
 				</div>
 				<div className="space-y-2">
 					<FeatureTitle className="text-base">

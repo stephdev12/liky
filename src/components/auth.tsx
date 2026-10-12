@@ -198,8 +198,8 @@ export function AuthPage({ onSuccess, className, isModal = false }: AuthProps) {
         <div className="absolute -inset-y-6 -right-px w-px bg-[var(--line)]" />
         <div className="absolute -inset-x-6 -top-px h-px bg-[var(--line)]" />
         <div className="absolute -inset-x-6 -bottom-px h-px bg-[var(--line)]" />
-        <DecorIcon position="top-left" className="text-[var(--lime)] stroke-[var(--lime)]" />
-        <DecorIcon position="bottom-right" className="text-[var(--lime)] stroke-[var(--lime)]" />
+        <DecorIcon position="top-left" className="text-border stroke-border" />
+        <DecorIcon position="bottom-right" className="text-border stroke-border" />
 
         <div className="w-full max-w-sm animate-in space-y-5">
           {/* En-tête avec logo */}
@@ -257,8 +257,8 @@ export function AuthPage({ onSuccess, className, isModal = false }: AuthProps) {
 
           {/* Messages de statut & erreur */}
           {statusMessage && (
-            <div className="flex items-start gap-2 p-3 rounded-[12px] bg-[var(--mn)] border border-[var(--lime)]/50 text-[12px] text-[var(--ink)]">
-              <CoolIcon name="circle-check" size={16} duotone secondaryColor="var(--lime)" className="text-[var(--lime)] shrink-0 mt-0.5" />
+            <div className="flex items-start gap-2 p-3 rounded-[12px] bg-emerald-500/10 border border-emerald-500/30 text-[12px] text-emerald-700 dark:text-emerald-400">
+              <CoolIcon name="circle-check" size={16} duotone secondaryColor="currentColor" className="text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
               <span>{statusMessage}</span>
             </div>
           )}
@@ -278,7 +278,7 @@ export function AuthPage({ onSuccess, className, isModal = false }: AuthProps) {
               </label>
               <InputGroup>
                 <InputGroupAddon align="inline-start">
-                  <CoolIcon name="mail" size={15} duotone secondaryColor="var(--lime)" />
+                  <CoolIcon name="mail" size={15} duotone secondaryColor="currentColor" className="text-muted-foreground" />
                 </InputGroupAddon>
                 <InputGroupInput
                   placeholder="nom@exemple.com"
@@ -298,7 +298,7 @@ export function AuthPage({ onSuccess, className, isModal = false }: AuthProps) {
               </label>
               <InputGroup>
                 <InputGroupAddon align="inline-start">
-                  <CoolIcon name="lock" size={15} duotone secondaryColor="var(--lime)" />
+                  <CoolIcon name="lock" size={15} duotone secondaryColor="currentColor" className="text-muted-foreground" />
                 </InputGroupAddon>
                 <InputGroupInput
                   placeholder={authMode === "signup" ? "Au moins 6 caractères" : "••••••••"}
@@ -328,7 +328,7 @@ export function AuthPage({ onSuccess, className, isModal = false }: AuthProps) {
                 </label>
                 <InputGroup>
                   <InputGroupAddon align="inline-start">
-                    <CoolIcon name="lock" size={15} duotone secondaryColor="var(--lime)" />
+                    <CoolIcon name="lock" size={15} duotone secondaryColor="currentColor" className="text-muted-foreground" />
                   </InputGroupAddon>
                   <InputGroupInput
                     placeholder="Répétez le mot de passe"

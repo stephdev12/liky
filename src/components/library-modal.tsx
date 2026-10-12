@@ -88,7 +88,7 @@ export function LibraryModal({
                 name="folders"
                 duotone
                 size={20}
-                secondaryColor="var(--lime)"
+                secondaryColor="currentColor"
                 secondaryOpacity={0.4}
               />
             </div>
@@ -157,7 +157,7 @@ export function LibraryModal({
                 name="image-01"
                 size={14}
                 duotone
-                secondaryColor={filter === "image" ? "var(--lime)" : "currentColor"}
+                secondaryColor="currentColor"
               />
               <span>Images</span>
               <span
@@ -184,7 +184,7 @@ export function LibraryModal({
                 name="camera"
                 size={14}
                 duotone
-                secondaryColor={filter === "video" ? "var(--lime)" : "currentColor"}
+                secondaryColor="currentColor"
               />
               <span>Vidéos</span>
               <span
@@ -211,7 +211,7 @@ export function LibraryModal({
                 name="headphones"
                 size={14}
                 duotone
-                secondaryColor={filter === "music" ? "var(--lime)" : "currentColor"}
+                secondaryColor="currentColor"
               />
               <span>Musique</span>
               <span
@@ -238,7 +238,7 @@ export function LibraryModal({
                 name="user-voice"
                 size={14}
                 duotone
-                secondaryColor={filter === "voice" ? "var(--lime)" : "currentColor"}
+                secondaryColor="currentColor"
               />
               <span>Voix off</span>
               <span
@@ -283,7 +283,7 @@ export function LibraryModal({
           {filteredItems.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center p-8">
               <div className="w-16 h-16 rounded-[20px] bg-[var(--mn)] border border-[var(--line)] flex items-center justify-center text-[var(--mute)] mb-4">
-                <CoolIcon name="folder" duotone size={32} secondaryColor="var(--lime)" secondaryOpacity={0.4} />
+                <CoolIcon name="folder" duotone size={32} secondaryColor="currentColor" secondaryOpacity={0.4} />
               </div>
               <h3 className="text-[15px] font-semibold text-[var(--ink)] mb-1">
                 Aucune création trouvée
@@ -338,7 +338,7 @@ export function LibraryModal({
                           />
                           <div className="absolute inset-0 flex items-center justify-center bg-black/25">
                             <div className="w-9 h-9 rounded-full bg-black/70 backdrop-blur-md border border-white/20 flex items-center justify-center text-white shadow-lg transition-transform group-hover:scale-110">
-                              <CoolIcon name="play" duotone size={16} secondaryColor="var(--lime)" />
+                              <CoolIcon name="play" duotone size={16} secondaryColor="currentColor" />
                             </div>
                           </div>
                         </div>
@@ -360,7 +360,7 @@ export function LibraryModal({
                               name={item.mode === "music" ? "headphones" : "user-voice"}
                               duotone
                               size={15}
-                              secondaryColor="var(--lime)"
+                              secondaryColor="currentColor"
                             />
                           </div>
                           {/* Mini waveforms */}
@@ -369,7 +369,7 @@ export function LibraryModal({
                               (h, idx) => (
                                 <span
                                   key={idx}
-                                  className="flex-1 rounded-full bg-[var(--lime)] opacity-85"
+                                  className="flex-1 rounded-full bg-emerald-500 opacity-85"
                                   style={{ height: `${h}%` }}
                                 />
                               )
@@ -392,7 +392,7 @@ export function LibraryModal({
                           }
                           duotone
                           size={11}
-                          secondaryColor="var(--lime)"
+                          secondaryColor="currentColor"
                         />
                         <span className="capitalize">{item.mode}</span>
                       </div>
@@ -411,7 +411,7 @@ export function LibraryModal({
                           className="p-1 hover:bg-white/20 rounded-lg text-white transition-colors cursor-pointer"
                           title="Réessayer"
                         >
-                          <CoolIcon name="redo" duotone size={13} secondaryColor="var(--lime)" />
+                          <CoolIcon name="redo" duotone size={13} secondaryColor="currentColor" />
                         </button>
                         <button
                           type="button"
@@ -439,7 +439,7 @@ export function LibraryModal({
                           className="p-1 hover:bg-white/20 rounded-lg text-white transition-colors cursor-pointer"
                           title="Modifier"
                         >
-                          <CoolIcon name="edit-pencil-01" duotone size={13} secondaryColor="var(--lime)" />
+                          <CoolIcon name="edit-pencil-01" duotone size={13} secondaryColor="currentColor" />
                         </button>
                         {onDeleteItem && (
                           <button
@@ -459,7 +459,7 @@ export function LibraryModal({
                       {/* Bouton Voir l'aperçu au centre au survol */}
                       <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none">
                         <span className="px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-white text-[11px] font-medium flex items-center gap-1.5 shadow-md">
-                          <CoolIcon name="expand" duotone size={12} secondaryColor="var(--lime)" />
+                          <CoolIcon name="expand" duotone size={12} secondaryColor="currentColor" />
                           <span>Ouvrir l&apos;aperçu</span>
                         </span>
                       </div>
@@ -485,7 +485,7 @@ export function LibraryModal({
                         <span className="truncate max-w-[140px]">
                           {item.params?.format || item.params?.Format || item.params?.qual || "Standard"}
                         </span>
-                        <span className="text-[var(--lime)] font-medium text-[10.5px] group-hover:underline">
+                        <span className="text-emerald-600 dark:text-emerald-400 font-medium text-[10.5px] group-hover:underline">
                           Détails →
                         </span>
                       </div>

@@ -10,11 +10,17 @@ import {
   listLikyModels,
   getLikyBalance,
 } from "./likyai-engine";
+import {
+  McpUserSession,
+  deductUserCredits,
+  recordMcpGeneration,
+} from "./auth";
 
 /**
  * Crée et configure une instance de serveur MCP officiel LikyAI
  */
-export function createLikyMcpServer() {
+export function createLikyMcpServer(options?: { user?: McpUserSession | null }) {
+  const user = options?.user;
   const server = new McpServer({
     name: "likyai",
     version: "1.0.0",
@@ -57,6 +63,10 @@ export function createLikyMcpServer() {
     },
     async (args) => {
       try {
+        if (user) {
+          await deductUserCredits(user.userId, 5);
+        }
+
         const res = await generateImage({
           prompt: args.prompt,
           model: args.model,
@@ -67,9 +77,25 @@ export function createLikyMcpServer() {
         });
 
         const urls = res.status.resultUrls || [];
+        if (user) {
+          await recordMcpGeneration({
+            userId: user.userId,
+            tool: "image",
+            modelName: res.model,
+            prompt: args.prompt,
+            creditsCost: 5,
+            mediaUrl: urls[0],
+            taskId: res.taskId,
+            status: res.status.state === "success" ? "success" : "generating",
+          });
+        }
+
         let summary = `[LikyAI] Image générée avec succès (Modèle: ${res.model}, Mode: ${res.mode})\n`;
         summary += `TaskId: ${res.taskId}\n`;
         summary += `État: ${res.status.state}\n`;
+        if (user) {
+          summary += `Compte débité: ${user.email} (5 crédits)\n`;
+        }
 
         if (urls.length > 0) {
           summary += `\nLien de l'image: ${urls[0]}\n`;
@@ -143,6 +169,10 @@ export function createLikyMcpServer() {
     },
     async (args) => {
       try {
+        if (user) {
+          await deductUserCredits(user.userId, 15);
+        }
+
         const res = await generateVideo({
           prompt: args.prompt,
           model: args.model,
@@ -154,9 +184,25 @@ export function createLikyMcpServer() {
         });
 
         const urls = res.status.resultUrls || [];
+        if (user) {
+          await recordMcpGeneration({
+            userId: user.userId,
+            tool: "video",
+            modelName: res.model,
+            prompt: args.prompt,
+            creditsCost: 15,
+            mediaUrl: urls[0],
+            taskId: res.taskId,
+            status: res.status.state === "success" ? "success" : "generating",
+          });
+        }
+
         let summary = `[LikyAI] Tâche vidéo créée (Modèle: ${res.model}, Mode: ${res.mode})\n`;
         summary += `TaskId: ${res.taskId}\n`;
         summary += `État: ${res.status.state}\n`;
+        if (user) {
+          summary += `Compte débité: ${user.email} (15 crédits)\n`;
+        }
 
         if (urls.length > 0) {
           summary += `\nLien de la vidéo: ${urls[0]}\n`;
@@ -218,6 +264,10 @@ export function createLikyMcpServer() {
     },
     async (args) => {
       try {
+        if (user) {
+          await deductUserCredits(user.userId, 10);
+        }
+
         const res = await generateMusic({
           prompt: args.prompt,
           genre: args.genre,
@@ -228,9 +278,25 @@ export function createLikyMcpServer() {
         });
 
         const urls = res.status.resultUrls || [];
+        if (user) {
+          await recordMcpGeneration({
+            userId: user.userId,
+            tool: "music",
+            modelName: res.model,
+            prompt: args.prompt,
+            creditsCost: 10,
+            mediaUrl: urls[0],
+            taskId: res.taskId,
+            status: res.status.state === "success" ? "success" : "generating",
+          });
+        }
+
         let summary = `[LikyAI] Composition musicale initiée (Modèle: ${res.model})\n`;
         summary += `TaskId: ${res.taskId}\n`;
         summary += `État: ${res.status.state}\n`;
+        if (user) {
+          summary += `Compte débité: ${user.email} (10 crédits)\n`;
+        }
 
         if (urls.length > 0) {
           summary += `\nLien du morceau audio: ${urls[0]}\n`;
@@ -284,6 +350,10 @@ export function createLikyMcpServer() {
     },
     async (args) => {
       try {
+        if (user) {
+          await deductUserCredits(user.userId, 5);
+        }
+
         const res = await generateVoice({
           prompt: args.prompt,
           voice: args.voice,
@@ -293,9 +363,25 @@ export function createLikyMcpServer() {
         });
 
         const urls = res.status.resultUrls || [];
+        if (user) {
+          await recordMcpGeneration({
+            userId: user.userId,
+            tool: "voice",
+            modelName: res.model,
+            prompt: args.prompt,
+            creditsCost: 5,
+            mediaUrl: urls[0],
+            taskId: res.taskId,
+            status: res.status.state === "success" ? "success" : "generating",
+          });
+        }
+
         let summary = `[LikyAI] Voix off générée (Modèle: ${res.model})\n`;
         summary += `TaskId: ${res.taskId}\n`;
         summary += `État: ${res.status.state}\n`;
+        if (user) {
+          summary += `Compte débité: ${user.email} (5 crédits)\n`;
+        }
 
         if (urls.length > 0) {
           summary += `\nLien audio MP3: ${urls[0]}\n`;
@@ -429,14 +515,31 @@ export function createLikyMcpServer() {
       inputSchema: {},
     },
     async () => {
+      if (user) {
+        return {
+          content: [
+            {
+              type: "text",
+              text:
+                `[LikyAI Compte Connecté]\n` +
+                `• Utilisateur: ${user.email}\n` +
+                `• Solde: ${user.credits} crédits disponibles\n` +
+                `• Mode MCP: Personnel (vos crédits sont débités à chaque génération)\n` +
+                `• Statut: Actif\n` +
+                `Pour recharger: achetez vos crédits directement via Mobile Money sur https://liky.ai/#pricing.`,
+            },
+          ],
+        };
+      }
+
       const b = getLikyBalance();
       const text =
-        `[LikyAI Compte]\n` +
+        `[LikyAI Compte Démo]\n` +
         `• Solde: ${b.credits} crédits disponibles\n` +
         `• Forfait: ${b.plan}\n` +
         `• Accès MCP: ${b.mcpAccess}\n` +
         `• Statut: ${b.status}\n` +
-        `Pour recharger: achetez un pack (60, 200, 500 crédits) directement via Mobile Money sur liky.ai/#pricing.`;
+        `Connectez votre compte LikyAI via OAuth ou fournissez votre clé API pour utiliser vos crédits personnels.`;
 
       return {
         content: [{ type: "text", text }],

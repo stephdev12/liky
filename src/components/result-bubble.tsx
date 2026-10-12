@@ -124,7 +124,7 @@ export function ResultBubble({
                 }
                 duotone
                 size={18}
-                secondaryColor="var(--lime)"
+                secondaryColor="currentColor"
                 secondaryOpacity={0.4}
               />
             </div>
@@ -200,7 +200,7 @@ export function ResultBubble({
                       key={i}
                       className={cn(
                         "w-1 rounded-full transition-all duration-150",
-                        active ? "bg-[var(--lime)]" : "bg-[var(--line-strong)]"
+                        active ? "bg-emerald-500" : "bg-[var(--line-strong)]"
                       )}
                       style={{
                         height: `${Math.max(10, Math.min(55, h))}px`,
@@ -221,7 +221,7 @@ export function ResultBubble({
                   name={isPlaying ? "pause" : "play"}
                   duotone
                   size={15}
-                  secondaryColor="var(--lime)"
+                  secondaryColor="currentColor"
                   secondaryOpacity={0.4}
                 />
                 <span>{isPlaying ? "Mettre en pause" : "Écouter l'audio"}</span>
@@ -269,7 +269,7 @@ export function ResultBubble({
                   name="redo"
                   duotone
                   size={15}
-                  secondaryColor="var(--lime)"
+                  secondaryColor="currentColor"
                   secondaryOpacity={0.4}
                 />
                 <span>Réessayer</span>

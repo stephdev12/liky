@@ -28,15 +28,15 @@ export function LinkItem({
 			<div
 				className={cn(
 					"flex aspect-square size-10 shrink-0 items-center justify-center rounded-xl transition-all shadow-2xs",
-					"bg-emerald-500/10 dark:bg-[var(--lime)]/10 border border-emerald-500/20 dark:border-[var(--lime)]/20",
-					"text-emerald-700 dark:text-[var(--lime)] group-hover:bg-emerald-500/15 dark:group-hover:bg-[var(--lime)]/15 group-hover:border-emerald-500/35 dark:group-hover:border-[var(--lime)]/35",
+					"bg-emerald-500/10 border border-emerald-500/20",
+					"text-emerald-700 dark:text-emerald-400 group-hover:bg-emerald-500/15 group-hover:border-emerald-500/35",
 					"[&_svg]:size-5"
 				)}
 			>
 				{icon}
 			</div>
 			<div className="flex flex-col items-start justify-center min-w-0">
-				<span className="font-medium text-[13px] text-foreground leading-tight group-hover:text-emerald-700 dark:group-hover:text-[var(--lime)] transition-colors">
+				<span className="font-medium text-[13px] text-foreground leading-tight group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
 					{label}
 				</span>
 				{description && (

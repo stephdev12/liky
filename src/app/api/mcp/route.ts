@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createLikyMcpServer } from "@/lib/mcp/server";
+import { resolveMcpUser } from "@/lib/mcp/auth";
 import { JSONRPCMessage } from "@modelcontextprotocol/sdk/types.js";
 import { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
 
@@ -59,13 +60,13 @@ class StatelessMcpTransport implements Transport {
 
 /**
  * GET /api/mcp
- * Endpoint d'information, de santé et de découverte du serveur MCP LikyAI
+ * Endpoint d'information, de santé et de découverte du serveur MCP LikyAI (avec OAuth)
  */
 export async function GET(req: NextRequest) {
-  const url = new URL(req.url);
   const host = req.headers.get("host") || "liky.ai";
   const protocol = host.includes("localhost") ? "http" : "https";
-  const mcpEndpoint = `${protocol}://${host}/api/mcp`;
+  const baseUrl = `${protocol}://${host}`;
+  const mcpEndpoint = `${baseUrl}/api/mcp`;
 
   return NextResponse.json({
     status: "online",
@@ -75,6 +76,13 @@ export async function GET(req: NextRequest) {
     description: "Serveur MCP universel pour LikyAI (Images, Vidéos, Musiques, Voix off).",
     transport: "Streamable HTTP & JSON-RPC 2.0",
     endpoint: mcpEndpoint,
+    oauth: {
+      authorization_endpoint: `${baseUrl}/mcp/authorize`,
+      token_endpoint: `${baseUrl}/api/mcp/oauth/token`,
+      response_types_supported: ["code"],
+      grant_types_supported: ["authorization_code"],
+      scope_supported: ["mcp:tools"],
+    },
     capabilities: {
       tools: [
         "likyai_generate_image",
@@ -89,12 +97,21 @@ export async function GET(req: NextRequest) {
       prompts: ["creative-campaign"],
     },
     clientConfigExample: {
+      chatgpt: {
+        connection: mcpEndpoint,
+        authentication: "OAuth",
+        authorization_url: `${baseUrl}/mcp/authorize`,
+        token_url: `${baseUrl}/api/mcp/oauth/token`,
+      },
+      claude_web: {
+        connection: mcpEndpoint,
+      },
       claude_desktop: {
         mcpServers: {
           likyai: {
             url: mcpEndpoint,
             headers: {
-              Authorization: "Bearer <VOTRE_CLE_API>",
+              Authorization: "Bearer <VOTRE_CLE_API_LIKYAI>",
             },
           },
         },
@@ -117,8 +134,11 @@ export async function POST(req: NextRequest) {
     const authHeader = req.headers.get("authorization");
     const apiKey = authHeader?.replace(/^Bearer\s+/i, "") || req.nextUrl.searchParams.get("key");
 
-    // Instanciation du serveur MCP LikyAI
-    const mcpServer = createLikyMcpServer();
+    // Résolution de l'utilisateur et de son solde de crédits
+    const user = await resolveMcpUser(authHeader || apiKey);
+
+    // Instanciation du serveur MCP LikyAI avec le contexte utilisateur
+    const mcpServer = createLikyMcpServer({ user });
     const transport = new StatelessMcpTransport();
 
     await mcpServer.connect(transport);

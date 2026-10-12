@@ -69,7 +69,7 @@ export function ImageGallery() {
 											src={`https://picsum.photos/seed/${item.seed}/${width}/${height}`}
 										/>
 										<div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4 flex flex-col justify-end">
-											<span className="text-[11px] font-mono text-[var(--lime)] font-medium tracking-wide">
+											<span className="text-[11px] font-mono text-emerald-400 font-semibold tracking-wide">
 												{item.model} · {item.type}
 											</span>
 											<span className="text-sm font-semibold text-white drop-shadow-xs">

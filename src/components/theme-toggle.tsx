@@ -43,7 +43,7 @@ export function ThemeToggle({ className }: { className?: string }) {
 					className
 				)}
 			>
-				<CoolIcon name="sun" size={16} duotone secondaryColor="var(--lime)" />
+				<CoolIcon name="sun" size={16} duotone secondaryColor="currentColor" />
 			</button>
 		);
 	}
@@ -65,9 +65,9 @@ export function ThemeToggle({ className }: { className?: string }) {
 						animate={{ y: 0, opacity: 1, rotate: 0 }}
 						exit={{ y: 16, opacity: 0, rotate: 45 }}
 						transition={{ duration: 0.25, ease: "easeOut" }}
-						className="flex items-center justify-center text-[var(--lime)]"
+						className="flex items-center justify-center text-emerald-400"
 					>
-						<CoolIcon name="moon" size={16} duotone secondaryColor="var(--lime)" />
+						<CoolIcon name="moon" size={16} duotone secondaryColor="currentColor" />
 					</motion.div>
 				) : (
 					<motion.div
@@ -78,7 +78,7 @@ export function ThemeToggle({ className }: { className?: string }) {
 						transition={{ duration: 0.25, ease: "easeOut" }}
 						className="flex items-center justify-center text-amber-500"
 					>
-						<CoolIcon name="sun" size={16} duotone secondaryColor="var(--lime)" />
+						<CoolIcon name="sun" size={16} duotone secondaryColor="currentColor" />
 					</motion.div>
 				)}
 			</AnimatePresence>

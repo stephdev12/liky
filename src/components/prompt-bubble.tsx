@@ -295,7 +295,7 @@ export function PromptBubble({
               }
               size={15}
               duotone
-              secondaryColor="var(--lime)"
+              secondaryColor="currentColor"
               secondaryOpacity={0.45}
             />
           </div>

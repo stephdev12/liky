@@ -60,7 +60,7 @@ export function SectionShowcase({
               >
                 {/* Badge d'ordre compact (1 à 4) */}
                 <div className="absolute top-1.5 left-1.5 z-20 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-black/70 backdrop-blur-md border border-white/15 text-white text-[9.5px] font-medium leading-none">
-                  <span className="font-mono text-[var(--lime)] font-semibold">#{index + 1}</span>
+                  <span className="font-mono text-emerald-400 font-semibold">#{index + 1}</span>
                   <span className="opacity-60">·</span>
                   <span className="capitalize">{c.mode}</span>
                 </div>
@@ -115,7 +115,7 @@ export function SectionShowcase({
                           />
                           <div className="absolute inset-0 flex items-center justify-center bg-black/25">
                             <div className="w-7 h-7 rounded-full bg-black/70 backdrop-blur-md border border-white/20 flex items-center justify-center text-white shadow-md transition-transform group-hover:scale-110">
-                              <CoolIcon name="play" duotone size={13} secondaryColor="var(--lime)" />
+                              <CoolIcon name="play" duotone size={13} secondaryColor="currentColor" />
                             </div>
                           </div>
                         </div>
@@ -136,7 +136,7 @@ export function SectionShowcase({
                               name={c.mode === "music" ? "headphones" : "user-voice"}
                               duotone
                               size={13}
-                              secondaryColor="var(--lime)"
+                              secondaryColor="currentColor"
                             />
                           </div>
 
@@ -145,7 +145,7 @@ export function SectionShowcase({
                               (h, wi) => (
                                 <span
                                   key={wi}
-                                  className="flex-1 rounded-full bg-[var(--lime)] opacity-85"
+                                  className="flex-1 rounded-full bg-emerald-500 opacity-85"
                                   style={{ height: `${h}%` }}
                                 />
                               )
@@ -168,7 +168,7 @@ export function SectionShowcase({
                           className="p-1 hover:bg-white/20 rounded-md text-white transition-colors cursor-pointer"
                           title="Réessayer"
                         >
-                          <CoolIcon name="redo" duotone size={11} secondaryColor="var(--lime)" />
+                          <CoolIcon name="redo" duotone size={11} secondaryColor="currentColor" />
                         </button>
                         <button
                           type="button"
@@ -196,14 +196,14 @@ export function SectionShowcase({
                           className="p-1 hover:bg-white/20 rounded-md text-white transition-colors cursor-pointer"
                           title="Modifier"
                         >
-                          <CoolIcon name="edit-pencil-01" duotone size={11} secondaryColor="var(--lime)" />
+                          <CoolIcon name="edit-pencil-01" duotone size={11} secondaryColor="currentColor" />
                         </button>
                       </div>
 
                       {/* Badge "Aperçu" au centre au survol */}
                       <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none z-10">
                         <span className="px-2 py-0.5 rounded-full bg-black/70 backdrop-blur-md border border-white/20 text-white text-[10px] font-medium flex items-center gap-1 shadow-md">
-                          <CoolIcon name="expand" duotone size={10} secondaryColor="var(--lime)" />
+                          <CoolIcon name="expand" duotone size={10} secondaryColor="currentColor" />
                           <span>Aperçu</span>
                         </span>
                       </div>

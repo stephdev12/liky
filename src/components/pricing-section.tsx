@@ -116,7 +116,7 @@ function PricingCard({ pack, index = 0 }: { pack: CreditPack; index?: number }) 
 					</span>
 					<span className="text-sm font-semibold text-[var(--mute)]">crédits</span>
 				</div>
-				<div className="mt-1 text-[13px] font-semibold text-foreground dark:text-[var(--lime)]">
+				<div className="mt-1 text-[13px] font-semibold text-foreground dark:text-emerald-400">
 					{pack.priceFcfa.toLocaleString("fr-FR")} FCFA <span className="text-[11px] text-[var(--mute)] font-normal">via Mobile Money</span>
 				</div>
 			</div>
@@ -124,7 +124,7 @@ function PricingCard({ pack, index = 0 }: { pack: CreditPack; index?: number }) 
 			<div className="space-y-3 p-6 text-muted-foreground text-[13px] flex-1">
 				{pack.features.map((feature) => (
 					<div className="flex items-start gap-2.5" key={feature}>
-						<CoolIcon name="circle-check" size={16} duotone secondaryColor="var(--lime)" className="shrink-0 text-emerald-600 dark:text-[var(--lime)] mt-0.5" />
+						<CoolIcon name="circle-check" size={16} duotone secondaryColor="currentColor" className="shrink-0 text-emerald-600 dark:text-emerald-400 mt-0.5" />
 						<p className="leading-tight text-[var(--ink)]/90">{feature}</p>
 					</div>
 				))}
