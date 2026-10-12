@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 export const LogoIcon = ({ className, ...props }: React.ComponentProps<"div">) => (
 	<div
 		className={cn(
-			"w-7 h-7 rounded-[8px] bg-[var(--lime)] flex items-center justify-center text-[#171717] shrink-0",
+			"w-7 h-7 rounded-[8px] bg-[var(--lime)] flex items-center justify-center text-[#171717] shrink-0 border border-black/10 dark:border-transparent shadow-2xs",
 			className
 		)}
 		{...props}

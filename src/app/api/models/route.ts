@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getModelsByTool, ToolKind, MODEL_REGISTRY } from "@/lib/models/registry";
 import { fetchKieModels, getKieApiKey } from "@/lib/kie/client";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
