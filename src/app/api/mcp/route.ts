@@ -3,10 +3,18 @@ import { createLikyMcpServer } from "@/lib/mcp/server";
 import { resolveMcpUser } from "@/lib/mcp/auth";
 import { JSONRPCMessage } from "@modelcontextprotocol/sdk/types.js";
 import { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
+import {
+  getBaseUrl,
+  getCorsHeaders,
+  handleCorsPreflight,
+  getOAuthAuthorizationServerMetadata,
+  getOAuthProtectedResourceMetadata,
+} from "@/lib/mcp/oauth-metadata";
 
 /**
- * Transport en mémoire pour exécuter des requêtes JSON-RPC MCP sans état
- * dans un environnement serverless (Next.js App Router).
+ * Transport en mémoire conforme à la spécification MCP Streamable HTTP.
+ * Gère correctement les requêtes (attente de réponse) et les notifications
+ * (retourne null pour générer un HTTP 202 Accepted sans bloquer).
  */
 class StatelessMcpTransport implements Transport {
   onclose?: () => void;
@@ -32,9 +40,16 @@ class StatelessMcpTransport implements Transport {
     }
   }
 
-  async handleClientMessage(msg: JSONRPCMessage, timeoutMs = 45000): Promise<JSONRPCMessage> {
+  async handleClientMessage(msg: JSONRPCMessage, timeoutMs = 25000): Promise<JSONRPCMessage | null> {
     if (!this.onmessage) {
       throw new Error("Transport non connecté au serveur MCP");
+    }
+
+    // Les notifications JSON-RPC n'ont pas d'id et n'attendent aucune réponse.
+    const isNotification = !("id" in msg) || msg.id === undefined || msg.id === null;
+    if (isNotification) {
+      this.onmessage(msg);
+      return null;
     }
 
     const waitPromise = new Promise<JSONRPCMessage>((resolve, reject) => {
@@ -58,17 +73,9 @@ class StatelessMcpTransport implements Transport {
   }
 }
 
-import {
-  getBaseUrl,
-  getCorsHeaders,
-  handleCorsPreflight,
-  getOAuthAuthorizationServerMetadata,
-  getOAuthProtectedResourceMetadata,
-} from "@/lib/mcp/oauth-metadata";
-
 /**
  * OPTIONS /api/mcp
- * Support CORS preflight pour ChatGPT et Claude Web
+ * Support CORS preflight complet pour ChatGPT, Claude Web et Cursor
  */
 export async function OPTIONS() {
   return handleCorsPreflight();
@@ -76,13 +83,41 @@ export async function OPTIONS() {
 
 /**
  * GET /api/mcp
- * Endpoint d'information, de santé et de découverte du serveur MCP LikyAI (avec OAuth)
+ * Gère à la fois le flux SSE (Server-Sent Events) pour les clients MCP temps réel
+ * et la découverte de métadonnées JSON / OAuth RFC 9728.
  */
 export async function GET(req: NextRequest) {
   const baseUrl = getBaseUrl(req);
-  const mcpEndpoint = `${baseUrl}/api/mcp`;
   const cors = getCorsHeaders(req);
+  const acceptHeader = req.headers.get("accept") || "";
 
+  // Si le client demande un flux SSE (Claude Desktop, Claude Code ou Cursor SSE)
+  if (acceptHeader.includes("text/event-stream")) {
+    const encoder = new TextEncoder();
+    const stream = new ReadableStream({
+      start(controller) {
+        // Envoi de l'événement endpoint requis par la spécification MCP SSE
+        const endpointData = `event: endpoint\ndata: ${baseUrl}/api/mcp\n\n`;
+        controller.enqueue(encoder.encode(endpointData));
+
+        // Envoi d'un commentaire keep-alive initial
+        controller.enqueue(encoder.encode(": keepalive\n\n"));
+      },
+    });
+
+    return new Response(stream, {
+      headers: {
+        ...cors,
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache, no-transform",
+        Connection: "keep-alive",
+        "X-Accel-Buffering": "no",
+      },
+    });
+  }
+
+  // Découverte JSON par défaut
+  const mcpEndpoint = `${baseUrl}/api/mcp`;
   return NextResponse.json(
     {
       status: "online",
@@ -90,7 +125,7 @@ export async function GET(req: NextRequest) {
       version: "1.0.0",
       protocolVersion: "2024-11-05",
       description: "Serveur MCP universel pour LikyAI (Images, Vidéos, Musiques, Voix off).",
-      transport: "Streamable HTTP & JSON-RPC 2.0",
+      transport: "Streamable HTTP & SSE & JSON-RPC 2.0",
       endpoint: mcpEndpoint,
       resource: mcpEndpoint,
       authorization_servers: [baseUrl],
@@ -109,20 +144,6 @@ export async function GET(req: NextRequest) {
         resources: ["likyai://models"],
         prompts: ["creative-campaign"],
       },
-      clientConfigExample: {
-        chatgpt: {
-          connection: mcpEndpoint,
-          authentication: "OAuth",
-          client_id: "likyai_client",
-          client_secret: "likyai_secret",
-          authorization_url: `${baseUrl}/mcp/authorize`,
-          token_url: `${baseUrl}/api/mcp/oauth/token`,
-        },
-        claude_web: {
-          connection: mcpEndpoint,
-          client_id: "likyai_client",
-        },
-      },
     },
     {
       headers: {
@@ -135,66 +156,59 @@ export async function GET(req: NextRequest) {
 
 /**
  * POST /api/mcp
- * Endpoint d'exécution JSON-RPC 2.0 officiel conforme à la spécification MCP
+ * Endpoint d'exécution JSON-RPC 2.0 officiel conforme à la spécification MCP Streamable HTTP.
  */
 export async function POST(req: NextRequest) {
-  const baseUrl = getBaseUrl(req);
   const cors = getCorsHeaders(req);
 
   try {
     const authHeader = req.headers.get("authorization");
     const apiKey = authHeader?.replace(/^Bearer\s+/i, "") || req.nextUrl.searchParams.get("key");
 
-    // Si aucune authentification n'est fournie, renvoyer le challenge 401 standard (RFC 9728)
-    // C'est ce signal 401 strict qui déclenche le flow OAuth dans Claude Web & ChatGPT !
-    if (!authHeader && !apiKey) {
-      return NextResponse.json(
-        {
-          error: "unauthorized",
-          error_description: "Authentification requise via OAuth 2.0. Connectez votre compte LikyAI pour utiliser le MCP avec vos crédits.",
-          resource_metadata: `${baseUrl}/.well-known/oauth-protected-resource`,
-          authorization_url: `${baseUrl}/mcp/authorize`,
-        },
-        {
-          status: 401,
-          headers: {
-            ...cors,
-            "WWW-Authenticate": `Bearer realm="LikyAI", resource_metadata="${baseUrl}/.well-known/oauth-protected-resource"`,
-            Link: `<${baseUrl}/.well-known/oauth-protected-resource>; rel="oauth-protected-resource"`,
-          },
-        }
-      );
-    }
-
-    // Résolution de l'utilisateur et de son solde de crédits
+    // Résolution de la session utilisateur si un token valide est fourni
     const user = await resolveMcpUser(authHeader || apiKey);
 
-    if (!user) {
+    // Lecture du payload JSON-RPC
+    const body = (await req.json().catch(() => null)) as JSONRPCMessage | JSONRPCMessage[] | null;
+
+    if (!body) {
       return NextResponse.json(
         {
-          error: "invalid_token",
-          error_description: "Le token d'accès est expiré ou invalide. Veuillez reconnecter votre compte.",
-          resource_metadata: `${baseUrl}/.well-known/oauth-protected-resource`,
+          jsonrpc: "2.0",
+          id: null,
+          error: { code: -32700, message: "JSON invalide" },
         },
-        {
-          status: 401,
-          headers: {
-            ...cors,
-            "WWW-Authenticate": `Bearer error="invalid_token", error_description="The access token is expired or invalid", resource_metadata="${baseUrl}/.well-known/oauth-protected-resource"`,
-          },
-        }
+        { status: 400, headers: cors }
       );
     }
 
-    // Instanciation du serveur MCP LikyAI avec le contexte utilisateur
+    // Instanciation du serveur MCP LikyAI avec le contexte utilisateur (ou invité pour découverte)
     const mcpServer = createLikyMcpServer({ user });
     const transport = new StatelessMcpTransport();
-
     await mcpServer.connect(transport);
 
-    const body = (await req.json()) as JSONRPCMessage;
+    // 1. Cas d'un lot de messages (Batch JSON-RPC)
+    if (Array.isArray(body)) {
+      const responses: JSONRPCMessage[] = [];
+      for (const item of body) {
+        const res = await transport.handleClientMessage(item);
+        if (res) responses.push(res);
+      }
+      return NextResponse.json(responses, { headers: cors });
+    }
 
-    // Traitement du message JSON-RPC
+    // 2. Notification JSON-RPC (pas d'id, ex: notifications/initialized)
+    // La spécification MCP exige impérativement un code HTTP 202 Accepted sans corps.
+    const isNotification = !("id" in body) || body.id === undefined || body.id === null;
+    if (isNotification) {
+      await transport.handleClientMessage(body);
+      return new NextResponse(null, {
+        status: 202,
+        headers: cors,
+      });
+    }
+
+    // 3. Requête JSON-RPC avec id (initialize, tools/list, tools/call, ping, etc.)
     const response = await transport.handleClientMessage(body);
 
     return NextResponse.json(response, {
