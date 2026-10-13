@@ -10,27 +10,27 @@ export const LogoIcon = ({ className, ...props }: React.ComponentProps<"div">) =
     )}
     {...props}
   >
-    {/* Version sur fond blanc / thème clair (Logo noir avec feuille lime) -> scale x2.5 */}
-    <div className="relative size-full flex items-center justify-center dark:hidden">
+    {/* Version sur fond blanc / thème clair (Logo noir avec feuille lime) */}
+    <div className="relative size-full flex items-center justify-center dark:hidden [html[data-theme='dark']_&]:hidden">
       <Image
         src="/assets/logo-black.png"
         alt="likyAI"
-        width={36}
-        height={36}
+        width={48}
+        height={48}
         priority
-        className="size-full object-contain scale-[2.5]"
+        className="size-full object-contain scale-[2.0]"
       />
     </div>
 
-    {/* Version sur fond noir / thème sombre (Logo blanc avec feuille lime) -> scale x2.0 */}
-    <div className="relative size-full hidden dark:flex items-center justify-center">
+    {/* Version sur fond noir / thème sombre (Logo blanc avec feuille lime) */}
+    <div className="relative size-full hidden items-center justify-center dark:flex [html[data-theme='dark']_&]:flex">
       <Image
         src="/assets/logo-white.png"
         alt="likyAI"
-        width={36}
-        height={36}
+        width={48}
+        height={48}
         priority
-        className="size-full object-contain scale-[2.0]"
+        className="size-full object-contain scale-[2.5]"
       />
     </div>
   </div>

@@ -940,8 +940,8 @@ export default function StudioPage() {
       </main>
 
       {/* ── LOGO OFFICIEL SUPÉRIEUR GAUCHE ── */}
-      <div className="flex items-center">
-        <Logo className="cursor-pointer" onClick={() => router.push("/")} />
+      <div className="logo cursor-pointer" onClick={() => router.push("/")}>
+        <Logo />
       </div>
 
       {/* ── NAVIGATION CENTRALE HAUTE (4 OUTILS - DESKTOP) ── */}

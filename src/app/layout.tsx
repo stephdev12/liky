@@ -21,6 +21,13 @@ const newsreader = Newsreader({
 export const metadata: Metadata = {
   title: "likyAI — Tes idées prennent vie.",
   description: "Plateforme créative tout-en-un : Image, Vidéo, Musique, Voix off payables en crédits mobile money.",
+  icons: {
+    icon: [
+      { url: "/assets/logo-black.png", media: "(prefers-color-scheme: light)" },
+      { url: "/assets/logo-white.png", media: "(prefers-color-scheme: dark)" },
+    ],
+    apple: "/assets/logo-black.png",
+  },
 };
 
 export default function RootLayout({
