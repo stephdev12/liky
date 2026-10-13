@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createKieTask, getKieApiKey, resolveKieModel, buildKieInputPayload } from "@/lib/kie/client";
+import { calculateToolCost } from "@/lib/billing/pricing-calculator";
 import { saveSimulatedTask } from "../tasks/[taskId]/route";
 
 const GenerateSchema = z.object({
@@ -24,6 +25,8 @@ export async function POST(req: NextRequest) {
     }
 
     const { tool, modelId, prompt, params, creditsCost } = parsed.data;
+    const computedCost = calculateToolCost(tool, params || {}).cost;
+    const finalCreditsCost = creditsCost && creditsCost > 0 ? creditsCost : computedCost;
     const apiKey = getKieApiKey();
 
     if (!apiKey) {
@@ -43,7 +46,7 @@ export async function POST(req: NextRequest) {
         tool,
         prompt,
         createdAt: Date.now(),
-        creditsCost,
+        creditsCost: finalCreditsCost,
         resultUrl: mediaUrl,
         metadata: params,
       });
@@ -55,7 +58,7 @@ export async function POST(req: NextRequest) {
         status: "waiting",
         tool,
         modelId,
-        creditsCost,
+        creditsCost: finalCreditsCost,
       });
     }
 
@@ -87,7 +90,7 @@ export async function POST(req: NextRequest) {
       status: "waiting",
       tool,
       modelId: officialKieModel,
-      creditsCost,
+      creditsCost: finalCreditsCost,
     });
   } catch (error) {
     console.error("API /api/generate error:", error);

@@ -65,13 +65,16 @@ create table if not exists public.transactions (
   type text not null check (type in ('topup', 'generation', 'refund', 'bonus')),
   amount integer not null, -- Positif pour les recharges/bonus, négatif pour les générations
   description text not null,
-  operator text check (operator in ('MTN MoMo', 'Orange Money', 'Wave', 'Card', null)),
+  operator text, -- Ex: 'Wave', 'Orange Money', 'MTN MoMo', 'Moov Money', 'Celtiis Cash', 'Card'
   phone text,
   amount_fcfa integer, -- Ex: 1000, 2500, 5000 FCFA
   status text not null default 'completed' check (status in ('pending', 'completed', 'failed', 'refunded')),
   reference text,
   created_at timestamptz not null default timezone('utc'::text, now())
 );
+
+-- Assure la compatibilité si la table existe déjà avec l'ancienne contrainte restrictive
+alter table public.transactions drop constraint if exists transactions_operator_check;
 
 comment on table public.transactions is 'Journal comptable des recharges et des consommations de crédits.';
 

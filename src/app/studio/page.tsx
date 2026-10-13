@@ -13,6 +13,8 @@ import type { User } from "@supabase/supabase-js";
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/logo";
+import { TopupModal } from "@/components/topup-modal";
+import { calculateToolCost } from "@/lib/billing/pricing-calculator";
 
 /* ─────────────────────────────────────────────────────────
  * CONFIGURATION DU STUDIO LIKYAI (Ground Truth Prototype)
@@ -200,9 +202,6 @@ export default function StudioPage() {
   const [mode, setMode] = useState<"image" | "video" | "music" | "voice">("image");
   const [vt, setVt] = useState<string | null>(null);
   const [credits, setCredits] = useState<number>(60);
-  const [pack, setPack] = useState<number>(1);
-  const [operator, setOperator] = useState<string>("MTN MoMo");
-  const [phone, setPhone] = useState<string>("");
   const [cards, setCards] = useState<CanvasCard[]>([]);
   const [log, setLog] = useState<{ t: string; d: string; v: number }[]>([]);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
@@ -475,30 +474,9 @@ export default function StudioPage() {
     }
   };
 
-  /* Calcul du coût en crédits */
+  /* Calcul du coût en crédits fidèle au moteur de facturation */
   const calculateCost = (): number => {
-    if (mode === "music") {
-      const dur = parseInt(vals["MDurée"] || "30") || 30;
-      return 10 * Math.ceil(dur / 15);
-    }
-    if (mode === "voice") {
-      const len = (vals.prompt || "").length;
-      return Math.max(2, 2 * Math.ceil(len / 100));
-    }
-    if (mode === "image") {
-      const ms = MODELS_CONFIG.image;
-      const m = ms.find((x) => x.id === vals.model) || ms[0];
-      const qi = m.q.indexOf(vals.qual || m.q[0]);
-      const mult = qi >= 0 ? m.qm[qi] : 1;
-      const cnt = parseInt(vals.count || "1") || 1;
-      return Math.round(m.base * mult * cnt);
-    }
-    if (mode === "video") {
-      const m2 = MODELS_CONFIG.video.find((x) => x.id === vals.vmodel) || MODELS_CONFIG.video[0];
-      const d = parseInt(vals["Durée"] || "5") || 5;
-      return m2.base * d;
-    }
-    return 5;
+    return calculateToolCost(mode, vals).cost;
   };
 
   const currentCost = calculateCost();
@@ -865,23 +843,6 @@ export default function StudioPage() {
     e.target.style.height = `${Math.min(e.target.scrollHeight, 140)}px`;
   };
 
-  /* Validation Mobile Money */
-  const handlePayment = () => {
-    const raw = phone.replace(/\D/g, "");
-    if (raw.length < 8) {
-      showToast("Entre un numéro mobile money valide (min 8 chiffres)");
-      return;
-    }
-    const chosenPack = PACKS[pack];
-    const newCreds = credits + chosenPack.c;
-    saveCredits(newCreds);
-    setLog((prev) => [
-      { t: `Recharge ${operator}`, d: `${chosenPack.f.toLocaleString("fr-FR")} FCFA`, v: chosenPack.c },
-      ...prev,
-    ]);
-    setScrim1Open(false);
-    showToast(`+${chosenPack.c} crédits ajoutés (démo)`);
-  };
 
   if (authLoading || !user) {
     return (
@@ -1167,73 +1128,27 @@ export default function StudioPage() {
         )}
       </div>
 
-      {/* ── MODALE 1 : RECHARGE MOBILE MONEY ── */}
-      <div
-        className={`scrim ${scrim1Open ? "open" : ""}`}
-        id="scrim"
-        onClick={(e) => {
-          if (e.target === e.currentTarget) setScrim1Open(false);
+      {/* ── MODALE 1 : RECHARGE MOBILE MONEY & CARTE (COSS WHITE-LABEL) ── */}
+      <TopupModal
+        isOpen={scrim1Open}
+        onClose={() => setScrim1Open(false)}
+        onSuccess={(addedCredits, newTotal) => {
+          if (typeof newTotal === "number") {
+            setCredits(newTotal);
+          } else {
+            setCredits((prev) => prev + addedCredits);
+          }
+          setLog((prev) => [
+            {
+              t: "Recharge Mobile Money",
+              d: `+${addedCredits} crédits`,
+              v: addedCredits,
+            },
+            ...prev,
+          ]);
+          showToast(`+${addedCredits} crédits ajoutés à votre compte !`);
         }}
-      >
-        <div className="modal">
-          <h3>Recharger mes crédits</h3>
-          <p>Paiement par mobile money, sans carte bancaire.</p>
-
-          <div className="packs" id="packs">
-            {PACKS.map((p, i) => (
-              <button
-                key={p.c}
-                type="button"
-                className={i === pack ? "on" : ""}
-                onClick={() => setPack(i)}
-              >
-                <b>{p.c}</b>
-                <span>{p.f.toLocaleString("fr-FR")} FCFA</span>
-              </button>
-            ))}
-          </div>
-
-          <div className="ops" id="ops">
-            <button
-              type="button"
-              className={operator === "MTN MoMo" ? "on" : ""}
-              onClick={() => setOperator("MTN MoMo")}
-            >
-              MTN MoMo
-            </button>
-            <button
-              type="button"
-              className={operator === "Orange Money" ? "on" : ""}
-              onClick={() => setOperator("Orange Money")}
-            >
-              Orange Money
-            </button>
-          </div>
-
-          <input
-            className="field"
-            id="phone"
-            type="tel"
-            inputMode="tel"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            placeholder="Numéro mobile money (ex. 6 70 00 00 00)"
-          />
-
-          <button type="button" className="pay" id="pay" onClick={handlePayment}>
-            Payer {PACKS[pack].f.toLocaleString("fr-FR")} FCFA
-          </button>
-
-          <button
-            type="button"
-            className="x"
-            id="close"
-            onClick={() => setScrim1Open(false)}
-          >
-            Annuler
-          </button>
-        </div>
-      </div>
+      />
 
       {/* ── MODALE 2 : HISTORIQUE ── */}
       <div
