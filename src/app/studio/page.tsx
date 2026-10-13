@@ -908,9 +908,22 @@ export default function StudioPage() {
 
   return (
     <>
-      {/* ── LOGO OFFICIEL SUPÉRIEUR GAUCHE ── */}
-      <div className="logo cursor-pointer" onClick={() => router.push("/")}>
+      {/* ── LOGO OFFICIEL SUPÉRIEUR GAUCHE + RETOUR AUX STUDIOS ── */}
+      <div className="logo cursor-pointer flex items-center gap-2.5" onClick={() => router.push("/")}>
         <Logo />
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            router.push("/studios");
+          }}
+          className="flex items-center gap-1.5 h-[34px] px-3 rounded-full bg-[var(--surf)] border border-[var(--line)] shadow-card text-[12px] font-medium text-[var(--ink)] hover:border-[var(--line-strong)] hover:bg-[var(--hover)] transition-all cursor-pointer"
+          title="Retourner au Hub des studios"
+        >
+          <CoolIcon name="arrow-left-sm" size={13} duotone={false} />
+          <span className="hidden sm:inline">Retour aux studios</span>
+          <span className="sm:hidden">Studios</span>
+        </button>
       </div>
 
       {/* ── WORKSPACE : LES 4 DERNIÈRES GÉNÉRATIONS DU CANVAS LIBRE ── */}
@@ -1057,6 +1070,19 @@ export default function StudioPage() {
                   }}
                 >
                   Recharger
+                </button>
+                <button
+                  type="button"
+                  className="mi"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    router.push("/studios");
+                  }}
+                >
+                  <div className="w-6 h-6 rounded-[7px] bg-[var(--mn)] border border-[var(--line)] flex items-center justify-center shrink-0 text-[var(--ink)]">
+                    <CoolIcon name="more-grid-big" duotone size={15} />
+                  </div>
+                  Hub des studios
                 </button>
                 <button
                   type="button"

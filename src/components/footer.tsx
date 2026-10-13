@@ -40,7 +40,7 @@ const footerLinks: FooterSection[] = [
 			{ title: "Conditions d'utilisation", href: "#" },
 			{ title: "Confidentialité", href: "#" },
 			{ title: "Support créateurs", href: "#" },
-			{ title: "Accès Studio", href: "/studio" },
+			{ title: "Accès Studios", href: "/studios" },
 		],
 	},
 ];

@@ -35,7 +35,7 @@ export function Header() {
 						<Link href="/auth">Connexion</Link>
 					</Button>
 					<Button asChild size="sm" className="h-8 rounded-full text-xs font-semibold bg-[#D8FF64] text-[#171717] hover:bg-[#cbf54a] transition-all shadow-xs [&_*]:text-[#171717]">
-						<Link href="/studio" className="text-[#171717]">Lancer le Studio</Link>
+						<Link href="/studios" className="text-[#171717]">Lancer le Studio</Link>
 					</Button>
 				</div>
 				<div className="flex items-center gap-2 md:hidden">

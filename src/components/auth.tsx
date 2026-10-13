@@ -46,7 +46,7 @@ export function AuthPage({ onSuccess, className, isModal = false }: AuthProps) {
         if (onSuccess) {
           onSuccess();
         } else {
-          router.replace("/studio");
+          router.replace("/studios");
         }
       }
     });
@@ -99,7 +99,7 @@ export function AuthPage({ onSuccess, className, isModal = false }: AuthProps) {
           if (onSuccess) {
             onSuccess();
           } else {
-            router.replace("/studio");
+            router.replace("/studios");
           }
         }
       } else {
@@ -108,7 +108,7 @@ export function AuthPage({ onSuccess, className, isModal = false }: AuthProps) {
           email: trimmedEmail,
           password,
           options: {
-            emailRedirectTo: typeof window !== "undefined" ? `${window.location.origin}/studio` : undefined,
+            emailRedirectTo: typeof window !== "undefined" ? `${window.location.origin}/studios` : undefined,
           },
         });
 
@@ -128,7 +128,7 @@ export function AuthPage({ onSuccess, className, isModal = false }: AuthProps) {
           if (onSuccess) {
             onSuccess();
           } else {
-            router.replace("/studio");
+            router.replace("/studios");
           }
         } else if (data.user) {
           // Si Supabase requiert confirmation d'email
@@ -154,7 +154,7 @@ export function AuthPage({ onSuccess, className, isModal = false }: AuthProps) {
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: typeof window !== "undefined" ? `${window.location.origin}/studio` : undefined,
+          redirectTo: typeof window !== "undefined" ? `${window.location.origin}/studios` : undefined,
         },
       });
 

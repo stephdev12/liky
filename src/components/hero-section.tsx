@@ -79,7 +79,7 @@ export function HeroSection() {
 							className="w-full sm:w-auto h-11 px-7 rounded-full font-semibold text-sm bg-[#D8FF64] text-[#171717] hover:bg-[#cbf54a] shadow-xs transition-all"
 							size="lg"
 						>
-							<Link href="/studio" className="text-[#171717] flex items-center justify-center gap-1.5">
+							<Link href="/studios" className="text-[#171717] flex items-center justify-center gap-1.5">
 								<CoolIcon name="bulb" size={16} duotone secondaryColor="#171717" className="text-[#171717]" />
 								<span>Commencer à créer</span>
 							</Link>

@@ -32,7 +32,7 @@ export function DesktopNav() {
 							</p>
 							<Link
 								className="font-medium text-xs text-[var(--ink)] hover:underline flex items-center gap-1 font-mono"
-								href="/studio"
+								href="/studios"
 							>
 								Ouvrir le Studio &rarr;
 							</Link>

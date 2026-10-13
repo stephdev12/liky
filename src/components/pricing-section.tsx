@@ -48,7 +48,7 @@ export function PricingSection() {
 				initialPackId={activeTopupPack || "pack_createur"}
 				onSuccess={() => {
 					setActiveTopupPack(null);
-					router.push("/studio");
+					router.push("/studios");
 				}}
 			/>
 		</section>

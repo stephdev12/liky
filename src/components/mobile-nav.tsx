@@ -79,7 +79,7 @@ export function MobileNav() {
 						</div>
 						<div className="mt-6 flex flex-col gap-2.5 pb-6">
 							<Button asChild className="w-full h-10 rounded-full font-semibold bg-[#D8FF64] text-[#171717] hover:bg-[#cbf54a] shadow-xs [&_*]:text-[#171717]">
-								<Link href="/studio" onClick={() => setOpen(false)} className="text-[#171717]">
+								<Link href="/studios" onClick={() => setOpen(false)} className="text-[#171717]">
 									Lancer le Studio
 								</Link>
 							</Button>
