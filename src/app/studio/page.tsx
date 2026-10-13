@@ -18,7 +18,7 @@ import { StudioSelectorModal } from "@/components/studios/studio-selector-modal"
 import { BrandKitDrawer } from "@/components/studios/brand-kit-drawer";
 import { CharacterModal } from "@/components/studios/character-modal";
 import { ProductScraperModal } from "@/components/studios/product-scraper-modal";
-import { ComposerChips } from "@/components/studios/composer-chips";
+import { StudioWorkspace } from "@/components/studios/studio-workspace";
 import { STUDIOS, getStudioBySlug } from "@/lib/studios/config";
 import type { StudioSlug, QualityTier, Character } from "@/lib/studios/types";
 import { cn } from "@/lib/utils";
@@ -229,7 +229,7 @@ export default function StudioPage() {
   const [isDark, setIsDark] = useState(false);
 
   /* Studios v2 States */
-  const [activeStudio, setActiveStudio] = useState<StudioSlug | null>("ugc");
+  const [activeStudio, setActiveStudio] = useState<StudioSlug | null>(null);
   const [studioSelectorOpen, setStudioSelectorOpen] = useState(false);
   const [brandKitOpen, setBrandKitOpen] = useState(false);
   const [characterModalOpen, setCharacterModalOpen] = useState(false);
@@ -860,6 +860,113 @@ export default function StudioPage() {
     setVals((prev) => ({ ...prev, prompt: "" }));
   };
 
+  /* Génération d'un workflow dédié au sein d'un Studio */
+  const handleStudioGenerate = (
+    promptText: string,
+    studioSlug: StudioSlug,
+    params: Record<string, any>
+  ) => {
+    const p = promptText.trim();
+    if (!p) {
+      showToast("Veuillez décrire votre création");
+      return;
+    }
+    const studioConfig = getStudioBySlug(studioSlug);
+    const cost = studioConfig ? studioConfig.supportedModels[qualityTier].credits : 15;
+    if (cost > credits) {
+      showToast("Tu n'as plus assez de crédits pour cette création.");
+      setScrim1Open(true);
+      return;
+    }
+
+    triggerGlimmSweep();
+    const newCreds = credits - cost;
+    saveCredits(newCreds);
+    setLog((prev) => [
+      { t: `Studio ${studioConfig?.name || ""}`, d: p.slice(0, 28).replace(/[<>&]/g, ""), v: -cost },
+      ...prev,
+    ]);
+
+    const cardId = `studio-${Date.now()}`;
+    const chosenModelName = studioConfig
+      ? `${studioConfig.name} · ${studioConfig.supportedModels[qualityTier].name}`
+      : "Studio LikyAI";
+    const generatedModelId = studioConfig ? studioConfig.supportedModels[qualityTier].id : "standard";
+    const studioTool = studioSlug === "posters" || studioSlug === "assets" ? "image" : "video";
+
+    const newCard: CanvasCard = {
+      id: cardId,
+      mode: studioTool,
+      caption: `${studioConfig?.name || "Studio"} · ${p.slice(0, 42)}${p.length > 42 ? "…" : ""}`,
+      fullPrompt: p,
+      modelName: chosenModelName,
+      creditsCost: cost,
+      status: "thinking",
+      elapsed: 0,
+      thinkingStage: 0,
+      expandedThinking: false,
+      params: { ...params, studio: studioSlug, qualityTier },
+      createdAt: Date.now(),
+    };
+
+    setCards((cur) => [newCard, ...cur]);
+    showToast(`Création lancée dans le Studio ${studioConfig?.name || ""} !`);
+
+    if (user) {
+      try {
+        const supabase = createClient();
+        supabase.from("generations").insert({
+          user_id: user.id,
+          task_id: cardId,
+          tool: studioTool,
+          model_name: chosenModelName,
+          prompt: p,
+          status: "generating",
+          credits_cost: cost,
+          parameters: { ...params, studio: studioSlug, qualityTier },
+        }).then(() => {});
+      } catch {}
+    }
+
+    fetch("/api/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        tool: studioTool,
+        modelId: generatedModelId,
+        prompt: p,
+        params: { ...params, studio: studioSlug, qualityTier },
+        creditsCost: cost,
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.taskId) {
+          pollTaskUntilDone(data.taskId, cardId, chosenModelName, p, cost);
+        } else {
+          const errorMsg = data.error || "Échec lors de la génération";
+          setCards((cur) =>
+            cur.map((c) =>
+              c.id === cardId
+                ? { ...c, status: "ready", caption: `Erreur : ${errorMsg}` }
+                : c
+            )
+          );
+          showToast(`Erreur : ${errorMsg}`);
+        }
+      })
+      .catch(() => {
+        setCards((cur) =>
+          cur.map((c) =>
+            c.id === cardId
+              ? { ...c, status: "ready", caption: "Erreur de connexion" }
+              : c
+          )
+        );
+        showToast("Erreur de connexion lors du lancement de la création.");
+      });
+  };
+
   /* Timer de chargement actif pour les cartes en cours */
   useEffect(() => {
     const hasLoading = cards.some((c) => c.status !== "ready");
@@ -921,352 +1028,333 @@ export default function StudioPage() {
 
   return (
     <>
-      {/* ── WORKSPACE : LES 4 DERNIÈRES GÉNÉRATIONS DE LA SECTION ── */}
-      <main id="board" className="relative w-full min-h-screen overflow-y-auto">
-        <SectionShowcase
-          mode={mode}
-          cards={cards.filter((c) => c.mode === mode)}
-          allModeCardsCount={cards.filter((c) => c.mode === mode).length}
-          onOpenCard={(c) => openResultForCard(c as CanvasCard)}
-          onRetryCard={(c) =>
-            handleRetryFromResult({
-              id: c.id,
-              tool: c.mode,
-              modelName: c.modelName,
-              prompt: c.fullPrompt,
-              mediaUrl: c.mediaUrl || `/assets/organic/organic-${((c.orgIndex || 0) % 4) + 1}.webp`,
-              creditsCost: c.creditsCost,
-              params: c.params,
-              createdAt: Date.now(),
-            })
-          }
-          onEditCard={(c) =>
-            handleEditFromResult({
-              id: c.id,
-              tool: c.mode,
-              modelName: c.modelName,
-              prompt: c.fullPrompt,
-              mediaUrl: c.mediaUrl || `/assets/organic/organic-${((c.orgIndex || 0) % 4) + 1}.webp`,
-              creditsCost: c.creditsCost,
-              params: c.params,
-              createdAt: Date.now(),
-            })
-          }
-          onOpenLibrary={() => setLibraryOpen(true)}
-          onSelectSamplePrompt={(sample) => {
-            setVals((prev) => ({ ...prev, prompt: sample }));
-            setIsPromptShrunk(false);
-            setTimeout(() => promptInputRef.current?.focus(), 120);
-          }}
-        />
-      </main>
-
       {/* ── LOGO OFFICIEL SUPÉRIEUR GAUCHE ── */}
       <div className="logo cursor-pointer" onClick={() => router.push("/")}>
         <Logo />
       </div>
 
-      {/* ── NAVIGATION CENTRALE HAUTE (4 OUTILS - DESKTOP) ── */}
-      {/* ── NAVIGATION CENTRALE HAUTE (STUDIOS + 4 OUTILS - DESKTOP) ── */}
-      <div className="top hidden sm:flex">
-        <div className="nav" id="nav">
-          {/* Bouton Switcher de Studio */}
-          <button
-            type="button"
-            className={cn(
-              "px-3 py-1.5 rounded-full flex items-center gap-1.5 border transition-all cursor-pointer",
-              activeStudio
-                ? "bg-[var(--ink)] text-[var(--bg)] border-transparent font-medium shadow-xs"
-                : "bg-transparent text-[var(--mute)] border-transparent hover:text-[var(--ink)] hover:bg-[var(--mn)]"
-            )}
-            onClick={() => setStudioSelectorOpen(true)}
-            title="Ouvrir les Studios de création LikyAI"
-          >
-            <CoolIcon
-              name="more-grid-big"
-              duotone
-              size={17}
-              secondaryColor="currentColor"
-              secondaryOpacity={activeStudio ? 0.8 : 0.3}
+      {activeStudio ? (
+        <StudioWorkspace
+          activeStudio={activeStudio}
+          onSelectStudio={setActiveStudio}
+          onCloseStudio={() => setActiveStudio(null)}
+          credits={credits}
+          onOpenTopup={() => setScrim1Open(true)}
+          selectedCharacter={selectedCharacter}
+          onOpenCharacterModal={() => setCharacterModalOpen(true)}
+          onClearCharacter={() => setSelectedCharacter(null)}
+          selectedProduct={selectedProduct}
+          onOpenProductScraper={() => setScraperModalOpen(true)}
+          onClearProduct={() => setSelectedProduct(null)}
+          onOpenBrandKit={() => setBrandKitOpen(true)}
+          qualityTier={qualityTier}
+          onChangeQualityTier={setQualityTier}
+          onGenerate={handleStudioGenerate}
+          recentGenerations={cards.filter((c) => c.params?.studio === activeStudio)}
+          onOpenResult={openResultForCard}
+        />
+      ) : (
+        <>
+          {/* ── WORKSPACE : LES 4 DERNIÈRES GÉNÉRATIONS DU CANVAS LIBRE ── */}
+          <main id="board" className="relative w-full min-h-screen overflow-y-auto">
+            <SectionShowcase
+              mode={mode}
+              cards={cards.filter((c) => c.mode === mode)}
+              allModeCardsCount={cards.filter((c) => c.mode === mode).length}
+              onOpenCard={(c) => openResultForCard(c as CanvasCard)}
+              onRetryCard={(c) =>
+                handleRetryFromResult({
+                  id: c.id,
+                  tool: c.mode,
+                  modelName: c.modelName,
+                  prompt: c.fullPrompt,
+                  mediaUrl: c.mediaUrl || `/assets/organic/organic-${((c.orgIndex || 0) % 4) + 1}.webp`,
+                  creditsCost: c.creditsCost,
+                  params: c.params,
+                  createdAt: Date.now(),
+                })
+              }
+              onEditCard={(c) =>
+                handleEditFromResult({
+                  id: c.id,
+                  tool: c.mode,
+                  modelName: c.modelName,
+                  prompt: c.fullPrompt,
+                  mediaUrl: c.mediaUrl || `/assets/organic/organic-${((c.orgIndex || 0) % 4) + 1}.webp`,
+                  creditsCost: c.creditsCost,
+                  params: c.params,
+                  createdAt: Date.now(),
+                })
+              }
+              onOpenLibrary={() => setLibraryOpen(true)}
+              onSelectSamplePrompt={(sample) => {
+                setVals((prev) => ({ ...prev, prompt: sample }));
+                setIsPromptShrunk(false);
+                setTimeout(() => promptInputRef.current?.focus(), 120);
+              }}
             />
-            <span className="font-heading text-[12.5px] font-semibold tracking-tight">
-              {activeStudio ? getStudioBySlug(activeStudio)?.name : "Studios"}
-            </span>
-            <CoolIcon name="chevron-down" size={11} duotone={false} className="opacity-70" />
-          </button>
+          </main>
 
-          <div className="h-4 w-px bg-[var(--line)] my-auto mx-1" />
+          {/* ── NAVIGATION CENTRALE HAUTE (STUDIOS PRO + 4 OUTILS LIBRES) ── */}
+          <div className="top hidden sm:flex items-center gap-2">
+            {/* Bouton Pro Studios distinct */}
+            <button
+              type="button"
+              onClick={() => setActiveStudio("ugc")}
+              className="h-[38px] px-3.5 rounded-full bg-[var(--surf)] border border-[var(--line)] shadow-card flex items-center gap-2 text-[12px] sm:text-[12.5px] font-medium text-[var(--ink)] hover:border-[var(--ink)]/40 hover:bg-[var(--mn)] transition-all cursor-pointer"
+              title="Ouvrir les Studios de création LikyAI"
+            >
+              <CoolIcon name="more-grid-big" size={15} duotone secondaryColor="currentColor" secondaryOpacity={0.4} />
+              <span className="font-heading font-semibold">Studios Pro</span>
+              <span className="text-[10px] font-mono px-1.5 py-0.2 rounded-full bg-[var(--mn)] text-[var(--mute)]">
+                6
+              </span>
+            </button>
 
-          {CATEGORIES.map((cat) => {
-            const active = !activeStudio && mode === cat.id;
-            return (
-              <button
-                key={cat.id}
-                type="button"
-                className={active ? "on" : ""}
-                onClick={() => {
-                  setActiveStudio(null);
-                  setMode(cat.id);
-                  setVt(null);
-                }}
-              >
-                <CoolIcon
-                  name={cat.icon}
-                  duotone
-                  size={24}
-                  secondaryColor="currentColor"
-                  secondaryOpacity={active ? 0.45 : 0.2}
-                  className={active ? "text-[var(--ink)]" : "text-[var(--mute)]"}
-                />
-                <span>{cat.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* ── ACTIONS HAUT DROITE RESPONSIVES (BRAND KIT, BIBLIOTHÈQUE, THÈME & AVATAR) ── */}
-      <div className="top-actions">
-        {/* Bouton Brand Kit */}
-        <button
-          type="button"
-          className="h-[36px] sm:h-[38px] px-2.5 sm:px-3 rounded-full bg-[var(--surf)] border border-[var(--line)] shadow-card flex items-center gap-1.5 text-[12px] sm:text-[12.5px] font-medium text-[var(--ink)] hover:border-[var(--ink)]/40 transition-all cursor-pointer"
-          onClick={() => setBrandKitOpen(true)}
-          title="Ouvrir le Brand Kit de la marque"
-        >
-          <CoolIcon name="image-01" duotone size={16} secondaryColor="currentColor" secondaryOpacity={0.4} />
-          <span className="hidden sm:inline">Brand Kit</span>
-        </button>
-
-        {/* Bouton Bibliothèque unique (compact sur mobile, développé sur desktop) */}
-        <button
-          type="button"
-          className="h-[36px] sm:h-[38px] px-2.5 sm:px-3.5 rounded-full bg-[var(--surf)] border border-[var(--line)] shadow-card flex items-center gap-1.5 sm:gap-2 text-[12px] sm:text-[12.5px] font-medium text-[var(--ink)] hover:border-[var(--ink)]/40 transition-all cursor-pointer"
-          onClick={() => setLibraryOpen(true)}
-          title="Ouvrir la bibliothèque de créations"
-        >
-          <CoolIcon name="folders" duotone size={16} secondaryColor="currentColor" secondaryOpacity={0.4} />
-          <span className="hidden sm:inline">Bibliothèque</span>
-          <span className="px-1.5 py-0.2 rounded-full bg-[var(--mn)] text-[10px] sm:text-[10.5px] font-mono text-[var(--mute)]">
-            {cards.length}
-          </span>
-        </button>
-
-        {/* Bouton Thème */}
-        <button
-          type="button"
-          className="theme"
-          id="theme"
-          onClick={toggleTheme}
-          title={isDark ? "Passer en clair" : "Passer en sombre"}
-          aria-label="Changer de thème"
-        >
-          {isDark ? (
-            <CoolIcon name="sun" duotone size={19} secondaryColor="currentColor" secondaryOpacity={0.45} />
-          ) : (
-            <CoolIcon name="moon" duotone size={19} secondaryColor="var(--ink)" secondaryOpacity={0.25} />
-          )}
-        </button>
-
-        {/* Menu Profil / Avatar */}
-        <div className="avatar">
-          <button
-            type="button"
-            className="av"
-            id="av"
-            aria-label="Profil"
-            onClick={() => setMenuOpen((o) => !o)}
-          >
-            <i>{user?.email ? user.email.charAt(0).toUpperCase() : "A"}</i>
-          </button>
-
-          <div className={`menu ${menuOpen ? "open" : ""}`} id="menu">
-            <div className="px-3 py-2 border-b border-[var(--line)]">
-              <small className="block text-[10.5px] text-[var(--mute)] truncate">Connecté en tant que</small>
-              <strong className="block text-[12px] font-semibold text-[var(--ink)] truncate max-w-[200px]">
-                {user?.email || "Compte studio"}
-              </strong>
+            <div className="nav" id="nav">
+              {CATEGORIES.map((cat) => {
+                const active = mode === cat.id;
+                return (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    className={active ? "on" : ""}
+                    onClick={() => {
+                      setMode(cat.id);
+                      setVt(null);
+                    }}
+                  >
+                    <CoolIcon
+                      name={cat.icon}
+                      duotone
+                      size={24}
+                      secondaryColor="currentColor"
+                      secondaryOpacity={active ? 0.45 : 0.2}
+                      className={active ? "text-[var(--ink)]" : "text-[var(--mute)]"}
+                    />
+                    <span>{cat.label}</span>
+                  </button>
+                );
+              })}
             </div>
-
-            <div className="cred">
-              <div className="w-10 h-10 rounded-[12px] bg-[var(--mn)] border border-[var(--line)] flex items-center justify-center shrink-0 text-[var(--ink)]">
-                <CoolIcon name="credit-card-01" duotone size={22} secondaryColor="currentColor" secondaryOpacity={0.45} />
-              </div>
-              <div>
-                <small>Crédits</small>
-                <strong id="credits">{credits}</strong>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              className="mi pri"
-              id="topup"
-              onClick={() => {
-                setMenuOpen(false);
-                setScrim1Open(true);
-              }}
-            >
-              Recharger
-            </button>
-            <button
-              type="button"
-              className="mi"
-              id="hs"
-              onClick={() => {
-                setMenuOpen(false);
-                setScrim2Open(true);
-              }}
-            >
-              <div className="w-6 h-6 rounded-[7px] bg-[var(--mn)] border border-[var(--line)] flex items-center justify-center shrink-0 text-[var(--ink)]">
-                <CoolIcon name="folder" duotone size={15} />
-              </div>
-              Historique
-            </button>
-            <button
-              type="button"
-              className="mi"
-              id="st"
-              onClick={() => {
-                setMenuOpen(false);
-                setScrim3Open(true);
-              }}
-            >
-              <div className="w-6 h-6 rounded-[7px] bg-[var(--mn)] border border-[var(--line)] flex items-center justify-center shrink-0 text-[var(--ink)]">
-                <CoolIcon name="settings" duotone size={15} />
-              </div>
-              Paramètres
-            </button>
-            <div className="hr" />
-            <button
-              type="button"
-              className="mi text-red-400 hover:text-red-300"
-              id="out"
-              onClick={() => {
-                setMenuOpen(false);
-                handleSignOut();
-              }}
-            >
-              <div className="w-6 h-6 rounded-[7px] bg-red-500/10 border border-red-500/20 flex items-center justify-center shrink-0 text-red-400">
-                <CoolIcon name="log-out" duotone size={15} />
-              </div>
-              Se déconnecter
-            </button>
           </div>
-        </div>
-      </div>
 
-      {/* ── DOCK INFÉRIEUR ── */}
-      <div className="dock" id="dock" ref={dockRef}>
-        {/* Navigation des catégories sur Mobile (placée en bas pour libérer l'espace de travail) */}
-        <div className="flex sm:hidden justify-center mb-2 pointer-events-auto">
-          <div className="flex items-center gap-1 p-1 bg-[var(--surf)] border border-[var(--line)] rounded-full shadow-card backdrop-blur-md overflow-x-auto max-w-[95vw]">
+          {/* ── ACTIONS HAUT DROITE RESPONSIVES (BRAND KIT, BIBLIOTHÈQUE, THÈME & AVATAR) ── */}
+          <div className="top-actions">
+            {/* Bouton Brand Kit */}
             <button
               type="button"
-              onClick={() => setStudioSelectorOpen(true)}
-              className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11.5px] font-medium transition-all cursor-pointer whitespace-nowrap",
-                activeStudio
-                  ? "bg-[var(--ink)] text-[var(--bg)] shadow-xs font-semibold"
-                  : "text-[var(--mute)] hover:text-[var(--ink)] hover:bg-[var(--mn)]"
-              )}
+              className="h-[36px] sm:h-[38px] px-2.5 sm:px-3 rounded-full bg-[var(--surf)] border border-[var(--line)] shadow-card flex items-center gap-1.5 text-[12px] sm:text-[12.5px] font-medium text-[var(--ink)] hover:border-[var(--ink)]/40 transition-all cursor-pointer"
+              onClick={() => setBrandKitOpen(true)}
+              title="Ouvrir le Brand Kit de la marque"
             >
-              <CoolIcon
-                name="more-grid-big"
-                duotone
-                size={13}
-                secondaryColor="currentColor"
-                secondaryOpacity={activeStudio ? 0.9 : 0.3}
-              />
-              <span>{activeStudio ? getStudioBySlug(activeStudio)?.name : "Studios"}</span>
+              <CoolIcon name="image-01" duotone size={16} secondaryColor="currentColor" secondaryOpacity={0.4} />
+              <span className="hidden sm:inline">Brand Kit</span>
             </button>
 
-            <div className="h-3.5 w-px bg-[var(--line)] my-auto mx-0.5" />
+            {/* Bouton Bibliothèque unique */}
+            <button
+              type="button"
+              className="h-[36px] sm:h-[38px] px-2.5 sm:px-3.5 rounded-full bg-[var(--surf)] border border-[var(--line)] shadow-card flex items-center gap-1.5 sm:gap-2 text-[12px] sm:text-[12.5px] font-medium text-[var(--ink)] hover:border-[var(--ink)]/40 transition-all cursor-pointer"
+              onClick={() => setLibraryOpen(true)}
+              title="Ouvrir la bibliothèque de créations"
+            >
+              <CoolIcon name="folders" duotone size={16} secondaryColor="currentColor" secondaryOpacity={0.4} />
+              <span className="hidden sm:inline">Bibliothèque</span>
+              <span className="px-1.5 py-0.2 rounded-full bg-[var(--mn)] text-[10px] sm:text-[10.5px] font-mono text-[var(--mute)]">
+                {cards.length}
+              </span>
+            </button>
 
-            {CATEGORIES.map((cat) => {
-              const active = !activeStudio && mode === cat.id;
-              return (
+            {/* Bouton Thème */}
+            <button
+              type="button"
+              className="theme"
+              id="theme"
+              onClick={toggleTheme}
+              title={isDark ? "Passer en clair" : "Passer en sombre"}
+              aria-label="Changer de thème"
+            >
+              {isDark ? (
+                <CoolIcon name="sun" duotone size={19} secondaryColor="currentColor" secondaryOpacity={0.45} />
+              ) : (
+                <CoolIcon name="moon" duotone size={19} secondaryColor="var(--ink)" secondaryOpacity={0.25} />
+              )}
+            </button>
+
+            {/* Menu Profil / Avatar */}
+            <div className="avatar">
+              <button
+                type="button"
+                className="av"
+                id="av"
+                aria-label="Profil"
+                onClick={() => setMenuOpen((o) => !o)}
+              >
+                <i>{user?.email ? user.email.charAt(0).toUpperCase() : "A"}</i>
+              </button>
+
+              <div className={`menu ${menuOpen ? "open" : ""}`} id="menu">
+                <div className="px-3 py-2 border-b border-[var(--line)]">
+                  <small className="block text-[10.5px] text-[var(--mute)] truncate">Connecté en tant que</small>
+                  <strong className="block text-[12px] font-semibold text-[var(--ink)] truncate max-w-[200px]">
+                    {user?.email || "Compte studio"}
+                  </strong>
+                </div>
+
+                <div className="cred">
+                  <div className="w-10 h-10 rounded-[12px] bg-[var(--mn)] border border-[var(--line)] flex items-center justify-center shrink-0 text-[var(--ink)]">
+                    <CoolIcon name="credit-card-01" duotone size={22} secondaryColor="currentColor" secondaryOpacity={0.45} />
+                  </div>
+                  <div>
+                    <small>Crédits</small>
+                    <strong id="credits">{credits}</strong>
+                  </div>
+                </div>
+
                 <button
-                  key={cat.id}
                   type="button"
+                  className="mi pri"
+                  id="topup"
                   onClick={() => {
-                    setActiveStudio(null);
-                    setMode(cat.id);
-                    setVt(null);
+                    setMenuOpen(false);
+                    setScrim1Open(true);
                   }}
-                  className={cn(
-                    "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11.5px] font-medium transition-all cursor-pointer whitespace-nowrap",
-                    active
-                      ? "bg-[var(--ink)] text-[var(--bg)] shadow-xs font-semibold"
-                      : "text-[var(--mute)] hover:text-[var(--ink)] hover:bg-[var(--mn)]"
-                  )}
+                >
+                  Recharger
+                </button>
+                <button
+                  type="button"
+                  className="mi"
+                  id="hs"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    setScrim2Open(true);
+                  }}
+                >
+                  <div className="w-6 h-6 rounded-[7px] bg-[var(--mn)] border border-[var(--line)] flex items-center justify-center shrink-0 text-[var(--ink)]">
+                    <CoolIcon name="folder" duotone size={15} />
+                  </div>
+                  Historique
+                </button>
+                <button
+                  type="button"
+                  className="mi"
+                  id="st"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    setScrim3Open(true);
+                  }}
+                >
+                  <div className="w-6 h-6 rounded-[7px] bg-[var(--mn)] border border-[var(--line)] flex items-center justify-center shrink-0 text-[var(--ink)]">
+                    <CoolIcon name="settings" duotone size={15} />
+                  </div>
+                  Paramètres
+                </button>
+                <div className="hr" />
+                <button
+                  type="button"
+                  className="mi text-red-400 hover:text-red-300"
+                  id="out"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    handleSignOut();
+                  }}
+                >
+                  <div className="w-6 h-6 rounded-[7px] bg-red-500/10 border border-red-500/20 flex items-center justify-center shrink-0 text-red-400">
+                    <CoolIcon name="log-out" duotone size={15} />
+                  </div>
+                  Se déconnecter
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* ── DOCK INFÉRIEUR (CANVAS SEULEMENT - PROPRE ET SANS CLUTTER) ── */}
+          <div className="dock" id="dock" ref={dockRef}>
+            {/* Navigation des catégories sur Mobile */}
+            <div className="flex sm:hidden justify-center mb-2 pointer-events-auto">
+              <div className="flex items-center gap-1 p-1 bg-[var(--surf)] border border-[var(--line)] rounded-full shadow-card backdrop-blur-md overflow-x-auto max-w-[95vw]">
+                <button
+                  type="button"
+                  onClick={() => setActiveStudio("ugc")}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11.5px] font-medium transition-all cursor-pointer whitespace-nowrap text-[var(--mute)] hover:text-[var(--ink)] hover:bg-[var(--mn)]"
                 >
                   <CoolIcon
-                    name={cat.icon}
+                    name="more-grid-big"
                     duotone
                     size={13}
                     secondaryColor="currentColor"
-                    secondaryOpacity={active ? 0.9 : 0.3}
+                    secondaryOpacity={0.4}
                   />
-                  <span>{cat.label}</span>
+                  <span>Studios Pro</span>
                 </button>
-              );
-            })}
-          </div>
-        </div>
 
-        {/* Chips de contexte du Studio (Qualité Draft/Final, Personnage @, Produit URL, Brand Kit, Format) */}
-        {activeStudio && (
-          <div className="w-full max-w-3xl mx-auto mb-2 pointer-events-auto animate-in fade-in slide-in-from-bottom-2 duration-200">
-            <ComposerChips
-              studio={getStudioBySlug(activeStudio)!}
-              onOpenStudioSelector={() => setStudioSelectorOpen(true)}
-              onOpenBrandKit={() => setBrandKitOpen(true)}
-              onOpenCharacterModal={() => setCharacterModalOpen(true)}
-              onOpenScraperModal={() => setScraperModalOpen(true)}
-              selectedCharacterName={selectedCharacter?.name}
-              selectedProductName={selectedProduct?.title}
-              qualityTier={qualityTier}
-              onChangeQualityTier={setQualityTier}
-              selectedFormat={studioFormat}
-              onChangeFormat={(fmt) => {
-                setStudioFormat(fmt);
-                setVals((prev) => ({ ...prev, format: fmt }));
-              }}
-            />
-          </div>
-        )}
+                <div className="h-3.5 w-px bg-[var(--line)] my-auto mx-0.5" />
 
-        {/* Mode Vidéo sans type choisi -> Grille de cartes .types avec textures organiques */}
-        {mode === "video" && !vt ? (
-          <div className="types">
-            {Object.entries(VTYPES).map(([k, cfg], i) => (
-              <button
-                key={k}
-                type="button"
-                className={`o${i % 4}`}
-                onClick={() => setVt(k)}
-              >
-                <b>{cfg.n}</b>
-                <span>{cfg.d}</span>
-              </button>
-            ))}
+                {CATEGORIES.map((cat) => {
+                  const active = mode === cat.id;
+                  return (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      onClick={() => {
+                        setMode(cat.id);
+                        setVt(null);
+                      }}
+                      className={cn(
+                        "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11.5px] font-medium transition-all cursor-pointer whitespace-nowrap",
+                        active
+                          ? "bg-[var(--ink)] text-[var(--bg)] shadow-xs font-semibold"
+                          : "text-[var(--mute)] hover:text-[var(--ink)] hover:bg-[var(--mn)]"
+                      )}
+                    >
+                      <CoolIcon
+                        name={cat.icon}
+                        duotone
+                        size={13}
+                        secondaryColor="currentColor"
+                        secondaryOpacity={active ? 0.9 : 0.3}
+                      />
+                      <span>{cat.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Mode Vidéo sans type choisi -> Grille de cartes .types avec textures organiques */}
+            {mode === "video" && !vt ? (
+              <div className="types">
+                {Object.entries(VTYPES).map(([k, cfg], i) => (
+                  <button
+                    key={k}
+                    type="button"
+                    className={`o${i % 4}`}
+                    onClick={() => setVt(k)}
+                  >
+                    <b>{cfg.n}</b>
+                    <span>{cfg.d}</span>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <PromptBubble
+                mode={mode}
+                vt={vt}
+                setVt={setVt}
+                vals={vals}
+                setVals={setVals}
+                onGenerate={handleGenerate}
+                cost={currentCost}
+                glimmRef={glimmRef}
+                isShrunk={isPromptShrunk}
+                setIsShrunk={setIsPromptShrunk}
+              />
+            )}
           </div>
-        ) : (
-          <PromptBubble
-            mode={mode}
-            vt={vt}
-            setVt={setVt}
-            vals={vals}
-            setVals={setVals}
-            onGenerate={handleGenerate}
-            cost={currentCost}
-            glimmRef={glimmRef}
-            isShrunk={isPromptShrunk}
-            setIsShrunk={setIsPromptShrunk}
-          />
-        )}
-      </div>
+        </>
+      )}
 
       {/* ── MODALE 1 : RECHARGE MOBILE MONEY & CARTE (COSS WHITE-LABEL) ── */}
       <TopupModal
