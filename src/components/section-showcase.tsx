@@ -12,6 +12,7 @@ interface SectionShowcaseProps {
   onOpenCard: (card: LibraryCardItem) => void;
   onRetryCard: (card: LibraryCardItem) => void;
   onEditCard: (card: LibraryCardItem) => void;
+  onAnimateCard?: (card: LibraryCardItem) => void;
   onOpenLibrary: () => void;
   onSelectSamplePrompt?: (prompt: string) => void;
 }
@@ -23,6 +24,7 @@ export function SectionShowcase({
   onOpenCard,
   onRetryCard,
   onEditCard,
+  onAnimateCard,
   onOpenLibrary,
 }: SectionShowcaseProps) {
   // Les 4 dernières générations de la section (le début du tableau est le plus récent)
@@ -159,6 +161,19 @@ export function SectionShowcase({
                         className="absolute top-1.5 right-1.5 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-150 bg-black/70 backdrop-blur-md p-0.5 rounded-lg border border-white/15 z-20"
                         onClick={(e) => e.stopPropagation()}
                       >
+                        {c.mode === "image" && onAnimateCard && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onAnimateCard(c);
+                            }}
+                            className="p-1 hover:bg-white/20 rounded-md text-white transition-colors cursor-pointer"
+                            title="Animer en vidéo"
+                          >
+                            <CoolIcon name="camera" duotone size={11} secondaryColor="currentColor" />
+                          </button>
+                        )}
                         <button
                           type="button"
                           onClick={(e) => {

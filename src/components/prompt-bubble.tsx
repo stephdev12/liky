@@ -19,9 +19,37 @@ export const MODELS_CONFIG = {
     { id: "seed", n: "Seedream", base: 5, q: ["2K", "4K"], qm: [1, 1.8], desc: "Haute résolution 4K" },
   ],
   video: [
-    { id: "kling", n: "Kling", base: 3, desc: "Mouvements réalistes fluides" },
-    { id: "veo", n: "Veo", base: 8, desc: "Qualité cinéma premium" },
-    { id: "seedance", n: "Seedance", base: 4, desc: "Marketing & UGC dynamique" },
+    { id: "kling", n: "Kling 3.0", base: 14, desc: "Mouvements réalistes & physique cinématographique" },
+    { id: "wan", n: "Wan 2.7", base: 10, desc: "Fidélité visuelle et netteté premium" },
+    { id: "seedance", n: "Seedance 2.0", base: 4, desc: "Marketing & UGC ultra-rapide" },
+  ],
+};
+
+/* ── MODÈLES RECOMMANDÉS PAR TYPE DE VIDÉO (SÉLECTION STRICTE & COHÉRENTE) ── */
+export const VTYPE_RECOMMENDED_MODELS: Record<
+  string,
+  { id: string; name: string; baseCost: number; tagline: string }[]
+> = {
+  ugc: [
+    { id: "seedance", name: "Seedance 2.0 Mini", baseCost: 4, tagline: "Synchronisation vocale et réalisme UGC authentique" },
+    { id: "wan", name: "Wan 2.7", baseCost: 10, tagline: "Fidélité naturelle et fluidité d'expression" },
+  ],
+  marketing: [
+    { id: "kling", name: "Kling 3.0 Turbo", baseCost: 14, tagline: "Rendu 4K publicitaire & physique réaliste" },
+    { id: "seedance", name: "Seedance 2.0", baseCost: 4, tagline: "Rythme dynamique pour formats publicitaires" },
+  ],
+  animation: [
+    { id: "kling", name: "Kling 3.0 Motion", baseCost: 14, tagline: "Animation photo ultra-fluide & physique réaliste (N°1 Image-to-Video)" },
+    { id: "wan", name: "Wan 2.7 I2V", baseCost: 10, tagline: "Mouvements de caméra cinématographiques et fidélité au sujet" },
+  ],
+  saas: [
+    { id: "wan", name: "Wan 2.7", baseCost: 10, tagline: "Netteté absolue des interfaces UI, textes lisibles et curseurs" },
+    { id: "kling", name: "Kling 3.0 Turbo", baseCost: 14, tagline: "Transitions dynamiques et zooms produit fluides" },
+  ],
+  libre: [
+    { id: "kling", name: "Kling 3.0 Turbo", baseCost: 14, tagline: "Mouvements réalistes fluides et rendu cinématique" },
+    { id: "wan", name: "Wan 2.7", baseCost: 10, tagline: "Génération vidéo haute fidélité générale" },
+    { id: "seedance", name: "Seedance 2.0 Mini", baseCost: 4, tagline: "Génération vidéo rapide et économique" },
   ],
 };
 
@@ -250,10 +278,24 @@ export function PromptBubble({
       ? dynamicModels
       : MODELS_CONFIG.image.map((m) => ({ id: m.id, name: m.n, baseCost: m.base, tagline: m.desc }));
 
-  const videoModelList =
-    dynamicModels.length > 0 && mode === "video"
-      ? dynamicModels
-      : MODELS_CONFIG.video.map((m) => ({ id: m.id, name: m.n, baseCost: m.base, tagline: m.desc }));
+  /* Modèles vidéo filtrés strictement par type sélectionné (ou libre par défaut) */
+  const videoModelList = React.useMemo(() => {
+    if (vt && VTYPE_RECOMMENDED_MODELS[vt]) {
+      return VTYPE_RECOMMENDED_MODELS[vt];
+    }
+    return VTYPE_RECOMMENDED_MODELS.libre;
+  }, [vt]);
+
+  /* Synchronisation automatique du modèle vidéo lorsque le type change */
+  useEffect(() => {
+    if (mode === "video") {
+      const allowed = (vt && VTYPE_RECOMMENDED_MODELS[vt]) || VTYPE_RECOMMENDED_MODELS.libre;
+      const isAllowed = allowed.some((m) => m.id === vals.vmodel);
+      if (!isAllowed && allowed.length > 0) {
+        setVals((p) => ({ ...p, vmodel: allowed[0].id }));
+      }
+    }
+  }, [mode, vt, vals.vmodel, setVals]);
 
   const currentModel =
     mode === "image"
@@ -770,14 +812,37 @@ export function PromptBubble({
                 }
 
                 if (fld.file) {
-                  return (
+                  return vals.sourceImageUrl ? (
+                    <div
+                      key={fld.k}
+                      className="inline-flex items-center h-8 gap-1.5 px-2.5 rounded-[12px] shrink-0 whitespace-nowrap bg-[var(--mn)] text-[var(--ink)] border border-[var(--line-strong)]"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={vals.sourceImageUrl}
+                        alt="Source"
+                        className="w-5 h-5 rounded-[5px] object-cover border border-[var(--line)]"
+                      />
+                      <span className="text-[12px] font-semibold text-[var(--ink)] max-w-[120px] truncate">
+                        {vals.fileName || "Photo source"}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setVals((p) => ({ ...p, sourceImageUrl: "", fileName: "" }))}
+                        className="p-0.5 rounded hover:bg-[var(--line)] text-[var(--mute)] hover:text-[var(--ink)] cursor-pointer ml-0.5"
+                        title="Retirer la photo source"
+                      >
+                        <CoolIcon name="close-sm" size={11} duotone={false} />
+                      </button>
+                    </div>
+                  ) : (
                     <label
                       key={fld.k}
                       className="inline-flex items-center h-8 gap-1.5 px-3 rounded-[12px] shrink-0 whitespace-nowrap bg-[var(--mn)] text-[var(--ink)] border border-[var(--line)] hover:border-[var(--line-strong)] hover:bg-[var(--hover)] cursor-pointer select-none transition-all"
                     >
                       <CoolIcon name="paperclip-attechment-tilt" size={15} duotone className="text-[var(--mute)]" />
                       <span className="text-[12.5px] font-medium text-[var(--ink)] max-w-[140px] truncate">
-                        {vals.fileName || "Ajouter une image"}
+                        {vals.fileName || "Ajouter une photo"}
                       </span>
                       <input
                         ref={fileInputRef}
@@ -787,7 +852,12 @@ export function PromptBubble({
                         onChange={(e) => {
                           const f = e.target.files?.[0];
                           if (f) {
-                            setVals((p) => ({ ...p, fileName: f.name.slice(0, 18) }));
+                            const previewUrl = URL.createObjectURL(f);
+                            setVals((p) => ({
+                              ...p,
+                              fileName: f.name.slice(0, 18),
+                              sourceImageUrl: previewUrl,
+                            }));
                           }
                         }}
                       />
@@ -797,6 +867,24 @@ export function PromptBubble({
 
                 return null;
               })}
+
+              {/* Select Nombre de créations vidéo simultanées (Multi-génération) */}
+              <Select
+                value={vals.count || "1"}
+                onValueChange={(val) => val && setVals((p) => ({ ...p, count: val }))}
+              >
+                <SelectTrigger label="Nombre">
+                  <SelectValue placeholder="Nombre" />
+                </SelectTrigger>
+                <SelectPopup>
+                  <SelectLabel>Générations simultanées</SelectLabel>
+                  {["1", "2", "4"].map((cnt) => (
+                    <SelectItem key={cnt} value={cnt}>
+                      {cnt} {cnt === "1" ? "variation" : "variations simultanées"}
+                    </SelectItem>
+                  ))}
+                </SelectPopup>
+              </Select>
             </>
           )}
         </div>

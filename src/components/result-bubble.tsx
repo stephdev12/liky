@@ -24,14 +24,16 @@ interface ResultBubbleProps {
   onClose: () => void;
   onRetry: (result: GenerationResultData) => void;
   onEdit: (result: GenerationResultData) => void;
+  onAnimate?: (result: GenerationResultData) => void;
 }
 
 /**
  * Bulle d'affichage du résultat de génération
- * Affiche le rendu (image, vidéo, audio) avec les 3 actions clés :
- * - Réessayer (Coolicon redo duotone)
- * - Télécharger (Coolicon download duotone)
- * - Modifier (Coolicon edit-pencil-01 duotone) qui ouvre la bulle de prompt
+ * Affiche le rendu (image, vidéo, audio) avec les actions clés :
+ * - Animer en vidéo (si image)
+ * - Réessayer
+ * - Télécharger
+ * - Modifier qui ouvre la bulle de prompt
  */
 export function ResultBubble({
   result,
@@ -39,6 +41,7 @@ export function ResultBubble({
   onClose,
   onRetry,
   onEdit,
+  onAnimate,
 }: ResultBubbleProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioProgress, setAudioProgress] = useState(0);
@@ -298,27 +301,52 @@ export function ResultBubble({
               </button>
             </div>
 
-            {/* 3. Bouton MODIFIER (Ouvre la bulle de prompt) : Pleine largeur sur mobile */}
-            <button
-              type="button"
-              onClick={() => onEdit(result)}
-              className={cn(
-                "inline-flex items-center justify-center gap-1.5 h-10 sm:h-9 px-4 rounded-[12px]",
-                "font-semibold text-[13px] cursor-pointer transition-all active:scale-[0.98] select-none",
-                "bg-[#D8FF64] text-[#171717] hover:opacity-90 shadow-sm w-full sm:w-auto"
+            {/* Actions principales : Animer en vidéo & Modifier */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+              {isImage && onAnimate && (
+                <button
+                  type="button"
+                  onClick={() => onAnimate(result)}
+                  className={cn(
+                    "inline-flex items-center justify-center gap-1.5 h-10 sm:h-9 px-3.5 sm:px-4 rounded-[12px]",
+                    "bg-[var(--surf)] text-[var(--ink)] border border-[var(--line-strong)] hover:border-[var(--ink)] hover:bg-[var(--hover)]",
+                    "font-semibold text-[12.5px] sm:text-[13px] cursor-pointer transition-all active:scale-[0.98] select-none shadow-xs"
+                  )}
+                  title="Animer instantanément cette photo en vidéo avec Kling ou Wan"
+                >
+                  <CoolIcon
+                    name="camera"
+                    duotone
+                    size={15}
+                    secondaryColor="currentColor"
+                    secondaryOpacity={0.4}
+                  />
+                  <span>Animer en vidéo</span>
+                </button>
               )}
-              title="Ouvrir dans la bulle de prompt pour affiner les options ou le texte"
-            >
-              <CoolIcon
-                name="edit-pencil-01"
-                duotone
-                size={15}
-                secondaryColor="#171717"
-                secondaryOpacity={0.25}
-                className="text-[#171717]"
-              />
-              <span>Modifier</span>
-            </button>
+
+              {/* Bouton MODIFIER (Ouvre la bulle de prompt) */}
+              <button
+                type="button"
+                onClick={() => onEdit(result)}
+                className={cn(
+                  "inline-flex items-center justify-center gap-1.5 h-10 sm:h-9 px-4 rounded-[12px]",
+                  "font-semibold text-[13px] cursor-pointer transition-all active:scale-[0.98] select-none",
+                  "bg-[#D8FF64] text-[#171717] hover:opacity-90 shadow-sm w-full sm:w-auto"
+                )}
+                title="Ouvrir dans la bulle de prompt pour affiner les options ou le texte"
+              >
+                <CoolIcon
+                  name="edit-pencil-01"
+                  duotone
+                  size={15}
+                  secondaryColor="#171717"
+                  secondaryOpacity={0.25}
+                  className="text-[#171717]"
+                />
+                <span>Modifier</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>

@@ -14,13 +14,7 @@ import { Loader2 } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { TopupModal } from "@/components/topup-modal";
 import { calculateToolCost } from "@/lib/billing/pricing-calculator";
-import { StudioSelectorModal } from "@/components/studios/studio-selector-modal";
-import { BrandKitDrawer } from "@/components/studios/brand-kit-drawer";
-import { CharacterModal } from "@/components/studios/character-modal";
-import { ProductScraperModal } from "@/components/studios/product-scraper-modal";
-import { StudioWorkspace } from "@/components/studios/studio-workspace";
-import { STUDIOS, getStudioBySlug } from "@/lib/studios/config";
-import type { StudioSlug, QualityTier, Character } from "@/lib/studios/types";
+import { VTYPE_RECOMMENDED_MODELS } from "@/components/prompt-bubble";
 import { cn } from "@/lib/utils";
 
 /* ─────────────────────────────────────────────────────────
@@ -227,17 +221,6 @@ export default function StudioPage() {
   const [scrim3Open, setScrim3Open] = useState(false); // Paramètres
   const [themeMode, setThemeMode] = useState<"light" | "dark" | "auto">("auto");
   const [isDark, setIsDark] = useState(false);
-
-  /* Studios v2 States */
-  const [activeStudio, setActiveStudio] = useState<StudioSlug | null>(null);
-  const [studioSelectorOpen, setStudioSelectorOpen] = useState(false);
-  const [brandKitOpen, setBrandKitOpen] = useState(false);
-  const [characterModalOpen, setCharacterModalOpen] = useState(false);
-  const [scraperModalOpen, setScraperModalOpen] = useState(false);
-  const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
-  const [selectedProduct, setSelectedProduct] = useState<{ title: string; price?: string; currency?: string } | null>(null);
-  const [qualityTier, setQualityTier] = useState<QualityTier>("final");
-  const [studioFormat, setStudioFormat] = useState<string>("9:16");
 
   /* Valeurs des inputs & chips du dock */
   const [vals, setVals] = useState<Record<string, string>>({
@@ -494,12 +477,6 @@ export default function StudioPage() {
 
   /* Calcul du coût en crédits fidèle au moteur de facturation */
   const calculateCost = (): number => {
-    if (activeStudio) {
-      const studio = getStudioBySlug(activeStudio);
-      if (studio) {
-        return studio.supportedModels[qualityTier].credits;
-      }
-    }
     return calculateToolCost(mode, vals).cost;
   };
 
@@ -520,6 +497,30 @@ export default function StudioPage() {
       createdAt: Date.now(),
     });
     setResultBubbleOpen(true);
+  };
+
+  /* Action ANIMER UNE IMAGE EN VIDÉO (Image-to-Video Kling Motion / Wan I2V) */
+  const handleAnimateImage = (item: { mediaUrl?: string; fullPrompt?: string; prompt?: string }) => {
+    setResultBubbleOpen(false);
+    setMode("video");
+    setVt("animation");
+    const animModel = VTYPE_RECOMMENDED_MODELS.animation[0].id;
+    const promptText = item.fullPrompt || item.prompt || "";
+    setVals((prev) => ({
+      ...prev,
+      vmodel: animModel,
+      sourceImageUrl: item.mediaUrl || "",
+      fileName: "Photo source",
+      Mouvement: prev.Mouvement || "Zoom avant",
+      prompt: promptText
+        ? `Animation cinématographique de cette photo : ${promptText}`
+        : "Animation cinématographique fluide, mouvement de caméra subtil",
+    }));
+    setIsPromptShrunk(false);
+    setTimeout(() => {
+      promptInputRef.current?.focus();
+    }, 120);
+    showToast("Photo source chargée ! Choisis le mouvement et lance l'animation vidéo.");
   };
 
   /* Action MODIFIER : Ouvre la bulle de prompt avec le texte et réglages */
@@ -692,7 +693,7 @@ export default function StudioPage() {
     ]);
 
     const isImg = mode === "image";
-    const count = isImg ? parseInt(vals.count || "1") || 1 : 1;
+    const count = (mode === "image" || mode === "video") ? parseInt(vals.count || "1") || 1 : 1;
     const aud = mode === "music" || mode === "voice";
 
     const fmt = aud
@@ -715,17 +716,14 @@ export default function StudioPage() {
       H = Math.round(W / ar);
     }
 
-    const studioConfig = activeStudio ? getStudioBySlug(activeStudio) : null;
-
-    const chosenModelName = studioConfig
-      ? `${studioConfig.name} · ${studioConfig.supportedModels[qualityTier].name}`
-      : mode === "image"
-      ? vals.model || "Nano Banana"
-      : mode === "video"
-      ? vals.vmodel || "Kling"
-      : mode === "music"
-      ? vals.Genre || "Suno V6"
-      : vals.Voix || "ElevenLabs";
+    const chosenModelName =
+      mode === "image"
+        ? vals.model || "Nano Banana"
+        : mode === "video"
+        ? vals.vmodel || "Kling 3.0"
+        : mode === "music"
+        ? vals.Genre || "Suno V6"
+        : vals.Voix || "ElevenLabs";
 
     const newCardsBatch: CanvasCard[] = [];
 
@@ -736,9 +734,7 @@ export default function StudioPage() {
 
       const waveformsList = aud ? Array.from({ length: 28 }, () => Math.round(12 + Math.random() * 60)) : undefined;
 
-      const captionPrefix = studioConfig
-        ? `${studioConfig.name} · `
-        : aud
+      const captionPrefix = aud
         ? (mode === "music" ? "Musique · " : "Voix off · ")
         : isImg
         ? ""
@@ -749,19 +745,11 @@ export default function StudioPage() {
 
       const generationParams = {
         ...vals,
-        ...(activeStudio
-          ? {
-              studio: activeStudio,
-              qualityTier,
-              character: selectedCharacter ? { id: selectedCharacter.id, name: selectedCharacter.name } : undefined,
-              product: selectedProduct ? { title: selectedProduct.title, price: selectedProduct.price, currency: selectedProduct.currency } : undefined,
-            }
-          : {}),
       };
 
       newCardsBatch.push({
         id: cardId,
-        mode: studioConfig ? (studioConfig.id === "posters" || studioConfig.id === "assets" ? "image" : "video") : mode,
+        mode,
         vt,
         caption: capText,
         fullPrompt: p,
@@ -787,7 +775,7 @@ export default function StudioPage() {
             .insert({
               user_id: user.id,
               task_id: cardId,
-              tool: studioConfig ? (studioConfig.id === "posters" || studioConfig.id === "assets" ? "image" : "video") : mode,
+              tool: mode,
               model_name: chosenModelName,
               prompt: p,
               status: "generating",
@@ -798,20 +786,19 @@ export default function StudioPage() {
         } catch {}
       }
 
-      const generatedModelId = studioConfig
-        ? studioConfig.supportedModels[qualityTier].id
-        : mode === "image"
-        ? vals.model || "nano"
-        : mode === "video"
-        ? vals.vmodel || "seedance"
-        : "standard";
+      const generatedModelId =
+        mode === "image"
+          ? vals.model || "nano"
+          : mode === "video"
+          ? vals.vmodel || "kling"
+          : "standard";
 
       // Appel réel backend /api/generate
       fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          tool: studioConfig ? (studioConfig.id === "posters" || studioConfig.id === "assets" ? "image" : "video") : mode,
+          tool: mode,
           modelId: generatedModelId,
           prompt: p,
           params: generationParams,
@@ -858,113 +845,6 @@ export default function StudioPage() {
     // Ajoute en première position (les 4 plus récentes apparaissent toujours en tête)
     setCards((cur) => [...newCardsBatch, ...cur]);
     setVals((prev) => ({ ...prev, prompt: "" }));
-  };
-
-  /* Génération d'un workflow dédié au sein d'un Studio */
-  const handleStudioGenerate = (
-    promptText: string,
-    studioSlug: StudioSlug,
-    params: Record<string, any>
-  ) => {
-    const p = promptText.trim();
-    if (!p) {
-      showToast("Veuillez décrire votre création");
-      return;
-    }
-    const studioConfig = getStudioBySlug(studioSlug);
-    const cost = studioConfig ? studioConfig.supportedModels[qualityTier].credits : 15;
-    if (cost > credits) {
-      showToast("Tu n'as plus assez de crédits pour cette création.");
-      setScrim1Open(true);
-      return;
-    }
-
-    triggerGlimmSweep();
-    const newCreds = credits - cost;
-    saveCredits(newCreds);
-    setLog((prev) => [
-      { t: `Studio ${studioConfig?.name || ""}`, d: p.slice(0, 28).replace(/[<>&]/g, ""), v: -cost },
-      ...prev,
-    ]);
-
-    const cardId = `studio-${Date.now()}`;
-    const chosenModelName = studioConfig
-      ? `${studioConfig.name} · ${studioConfig.supportedModels[qualityTier].name}`
-      : "Studio LikyAI";
-    const generatedModelId = studioConfig ? studioConfig.supportedModels[qualityTier].id : "standard";
-    const studioTool = studioSlug === "posters" || studioSlug === "assets" ? "image" : "video";
-
-    const newCard: CanvasCard = {
-      id: cardId,
-      mode: studioTool,
-      caption: `${studioConfig?.name || "Studio"} · ${p.slice(0, 42)}${p.length > 42 ? "…" : ""}`,
-      fullPrompt: p,
-      modelName: chosenModelName,
-      creditsCost: cost,
-      status: "thinking",
-      elapsed: 0,
-      thinkingStage: 0,
-      expandedThinking: false,
-      params: { ...params, studio: studioSlug, qualityTier },
-      createdAt: Date.now(),
-    };
-
-    setCards((cur) => [newCard, ...cur]);
-    showToast(`Création lancée dans le Studio ${studioConfig?.name || ""} !`);
-
-    if (user) {
-      try {
-        const supabase = createClient();
-        supabase.from("generations").insert({
-          user_id: user.id,
-          task_id: cardId,
-          tool: studioTool,
-          model_name: chosenModelName,
-          prompt: p,
-          status: "generating",
-          credits_cost: cost,
-          parameters: { ...params, studio: studioSlug, qualityTier },
-        }).then(() => {});
-      } catch {}
-    }
-
-    fetch("/api/generate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        tool: studioTool,
-        modelId: generatedModelId,
-        prompt: p,
-        params: { ...params, studio: studioSlug, qualityTier },
-        creditsCost: cost,
-      }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success && data.taskId) {
-          pollTaskUntilDone(data.taskId, cardId, chosenModelName, p, cost);
-        } else {
-          const errorMsg = data.error || "Échec lors de la génération";
-          setCards((cur) =>
-            cur.map((c) =>
-              c.id === cardId
-                ? { ...c, status: "ready", caption: `Erreur : ${errorMsg}` }
-                : c
-            )
-          );
-          showToast(`Erreur : ${errorMsg}`);
-        }
-      })
-      .catch(() => {
-        setCards((cur) =>
-          cur.map((c) =>
-            c.id === cardId
-              ? { ...c, status: "ready", caption: "Erreur de connexion" }
-              : c
-          )
-        );
-        showToast("Erreur de connexion lors du lancement de la création.");
-      });
   };
 
   /* Timer de chargement actif pour les cartes en cours */
@@ -1033,124 +913,79 @@ export default function StudioPage() {
         <Logo />
       </div>
 
-      {activeStudio ? (
-        <StudioWorkspace
-          activeStudio={activeStudio}
-          onSelectStudio={setActiveStudio}
-          onCloseStudio={() => setActiveStudio(null)}
-          credits={credits}
-          onOpenTopup={() => setScrim1Open(true)}
-          selectedCharacter={selectedCharacter}
-          onOpenCharacterModal={() => setCharacterModalOpen(true)}
-          onClearCharacter={() => setSelectedCharacter(null)}
-          selectedProduct={selectedProduct}
-          onOpenProductScraper={() => setScraperModalOpen(true)}
-          onClearProduct={() => setSelectedProduct(null)}
-          onOpenBrandKit={() => setBrandKitOpen(true)}
-          qualityTier={qualityTier}
-          onChangeQualityTier={setQualityTier}
-          onGenerate={handleStudioGenerate}
-          recentGenerations={cards.filter((c) => c.params?.studio === activeStudio)}
-          onOpenResult={openResultForCard}
+      {/* ── WORKSPACE : LES 4 DERNIÈRES GÉNÉRATIONS DU CANVAS LIBRE ── */}
+      <main id="board" className="relative w-full min-h-screen overflow-y-auto">
+        <SectionShowcase
+          mode={mode}
+          cards={cards.filter((c) => c.mode === mode)}
+          allModeCardsCount={cards.filter((c) => c.mode === mode).length}
+          onOpenCard={(c) => openResultForCard(c as CanvasCard)}
+          onAnimateCard={handleAnimateImage}
+          onRetryCard={(c) =>
+            handleRetryFromResult({
+              id: c.id,
+              tool: c.mode,
+              modelName: c.modelName,
+              prompt: c.fullPrompt,
+              mediaUrl: c.mediaUrl || `/assets/organic/organic-${((c.orgIndex || 0) % 4) + 1}.webp`,
+              creditsCost: c.creditsCost,
+              params: c.params,
+              createdAt: Date.now(),
+            })
+          }
+          onEditCard={(c) =>
+            handleEditFromResult({
+              id: c.id,
+              tool: c.mode,
+              modelName: c.modelName,
+              prompt: c.fullPrompt,
+              mediaUrl: c.mediaUrl || `/assets/organic/organic-${((c.orgIndex || 0) % 4) + 1}.webp`,
+              creditsCost: c.creditsCost,
+              params: c.params,
+              createdAt: Date.now(),
+            })
+          }
+          onOpenLibrary={() => setLibraryOpen(true)}
+          onSelectSamplePrompt={(sample) => {
+            setVals((prev) => ({ ...prev, prompt: sample }));
+            setIsPromptShrunk(false);
+            setTimeout(() => promptInputRef.current?.focus(), 120);
+          }}
         />
-      ) : (
-        <>
-          {/* ── WORKSPACE : LES 4 DERNIÈRES GÉNÉRATIONS DU CANVAS LIBRE ── */}
-          <main id="board" className="relative w-full min-h-screen overflow-y-auto">
-            <SectionShowcase
-              mode={mode}
-              cards={cards.filter((c) => c.mode === mode)}
-              allModeCardsCount={cards.filter((c) => c.mode === mode).length}
-              onOpenCard={(c) => openResultForCard(c as CanvasCard)}
-              onRetryCard={(c) =>
-                handleRetryFromResult({
-                  id: c.id,
-                  tool: c.mode,
-                  modelName: c.modelName,
-                  prompt: c.fullPrompt,
-                  mediaUrl: c.mediaUrl || `/assets/organic/organic-${((c.orgIndex || 0) % 4) + 1}.webp`,
-                  creditsCost: c.creditsCost,
-                  params: c.params,
-                  createdAt: Date.now(),
-                })
-              }
-              onEditCard={(c) =>
-                handleEditFromResult({
-                  id: c.id,
-                  tool: c.mode,
-                  modelName: c.modelName,
-                  prompt: c.fullPrompt,
-                  mediaUrl: c.mediaUrl || `/assets/organic/organic-${((c.orgIndex || 0) % 4) + 1}.webp`,
-                  creditsCost: c.creditsCost,
-                  params: c.params,
-                  createdAt: Date.now(),
-                })
-              }
-              onOpenLibrary={() => setLibraryOpen(true)}
-              onSelectSamplePrompt={(sample) => {
-                setVals((prev) => ({ ...prev, prompt: sample }));
-                setIsPromptShrunk(false);
-                setTimeout(() => promptInputRef.current?.focus(), 120);
-              }}
-            />
-          </main>
+      </main>
 
-          {/* ── NAVIGATION CENTRALE HAUTE (STUDIOS PRO + 4 OUTILS LIBRES) ── */}
-          <div className="top hidden sm:flex items-center gap-2">
-            {/* Bouton Pro Studios distinct */}
-            <button
-              type="button"
-              onClick={() => setActiveStudio("ugc")}
-              className="h-[38px] px-3.5 rounded-full bg-[var(--surf)] border border-[var(--line)] shadow-card flex items-center gap-2 text-[12px] sm:text-[12.5px] font-medium text-[var(--ink)] hover:border-[var(--ink)]/40 hover:bg-[var(--mn)] transition-all cursor-pointer"
-              title="Ouvrir les Studios de création LikyAI"
-            >
-              <CoolIcon name="more-grid-big" size={15} duotone secondaryColor="currentColor" secondaryOpacity={0.4} />
-              <span className="font-heading font-semibold">Studios Pro</span>
-              <span className="text-[10px] font-mono px-1.5 py-0.2 rounded-full bg-[var(--mn)] text-[var(--mute)]">
-                6
-              </span>
-            </button>
+      {/* ── NAVIGATION CENTRALE HAUTE (4 OUTILS PURS : IMAGE · VIDÉO · MUSIQUE · VOIX OFF) ── */}
+      <div className="top hidden sm:flex items-center">
+        <div className="nav" id="nav">
+          {CATEGORIES.map((cat) => {
+            const active = mode === cat.id;
+            return (
+              <button
+                key={cat.id}
+                type="button"
+                className={active ? "on" : ""}
+                onClick={() => {
+                  setMode(cat.id);
+                  setVt(null);
+                }}
+              >
+                <CoolIcon
+                  name={cat.icon}
+                  duotone
+                  size={24}
+                  secondaryColor="currentColor"
+                  secondaryOpacity={active ? 0.45 : 0.2}
+                  className={active ? "text-[var(--ink)]" : "text-[var(--mute)]"}
+                />
+                <span>{cat.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
-            <div className="nav" id="nav">
-              {CATEGORIES.map((cat) => {
-                const active = mode === cat.id;
-                return (
-                  <button
-                    key={cat.id}
-                    type="button"
-                    className={active ? "on" : ""}
-                    onClick={() => {
-                      setMode(cat.id);
-                      setVt(null);
-                    }}
-                  >
-                    <CoolIcon
-                      name={cat.icon}
-                      duotone
-                      size={24}
-                      secondaryColor="currentColor"
-                      secondaryOpacity={active ? 0.45 : 0.2}
-                      className={active ? "text-[var(--ink)]" : "text-[var(--mute)]"}
-                    />
-                    <span>{cat.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* ── ACTIONS HAUT DROITE RESPONSIVES (BRAND KIT, BIBLIOTHÈQUE, THÈME & AVATAR) ── */}
-          <div className="top-actions">
-            {/* Bouton Brand Kit */}
-            <button
-              type="button"
-              className="h-[36px] sm:h-[38px] px-2.5 sm:px-3 rounded-full bg-[var(--surf)] border border-[var(--line)] shadow-card flex items-center gap-1.5 text-[12px] sm:text-[12.5px] font-medium text-[var(--ink)] hover:border-[var(--ink)]/40 transition-all cursor-pointer"
-              onClick={() => setBrandKitOpen(true)}
-              title="Ouvrir le Brand Kit de la marque"
-            >
-              <CoolIcon name="image-01" duotone size={16} secondaryColor="currentColor" secondaryOpacity={0.4} />
-              <span className="hidden sm:inline">Brand Kit</span>
-            </button>
+      {/* ── ACTIONS HAUT DROITE RESPONSIVES (BIBLIOTHÈQUE, THÈME & AVATAR) ── */}
+      <div className="top-actions">
 
             {/* Bouton Bibliothèque unique */}
             <button
@@ -1275,23 +1110,6 @@ export default function StudioPage() {
             {/* Navigation des catégories sur Mobile */}
             <div className="flex sm:hidden justify-center mb-2 pointer-events-auto">
               <div className="flex items-center gap-1 p-1 bg-[var(--surf)] border border-[var(--line)] rounded-full shadow-card backdrop-blur-md overflow-x-auto max-w-[95vw]">
-                <button
-                  type="button"
-                  onClick={() => setActiveStudio("ugc")}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11.5px] font-medium transition-all cursor-pointer whitespace-nowrap text-[var(--mute)] hover:text-[var(--ink)] hover:bg-[var(--mn)]"
-                >
-                  <CoolIcon
-                    name="more-grid-big"
-                    duotone
-                    size={13}
-                    secondaryColor="currentColor"
-                    secondaryOpacity={0.4}
-                  />
-                  <span>Studios Pro</span>
-                </button>
-
-                <div className="h-3.5 w-px bg-[var(--line)] my-auto mx-0.5" />
-
                 {CATEGORIES.map((cat) => {
                   const active = mode === cat.id;
                   return (
@@ -1353,8 +1171,6 @@ export default function StudioPage() {
               />
             )}
           </div>
-        </>
-      )}
 
       {/* ── MODALE 1 : RECHARGE MOBILE MONEY & CARTE (COSS WHITE-LABEL) ── */}
       <TopupModal
@@ -1505,63 +1321,14 @@ export default function StudioPage() {
         }}
       />
 
-      {/* ── BULLE D'AFFICHAGE DU RÉSULTAT (RÉESSAYER · TÉLÉCHARGER · MODIFIER) ── */}
+      {/* ── BULLE D'AFFICHAGE DU RÉSULTAT (ANIMER EN VIDÉO · RÉESSAYER · TÉLÉCHARGER · MODIFIER) ── */}
       <ResultBubble
         result={activeResult}
         isOpen={resultBubbleOpen}
         onClose={() => setResultBubbleOpen(false)}
         onRetry={handleRetryFromResult}
         onEdit={handleEditFromResult}
-      />
-
-      {/* ── MODALES STUDIOS V2 (HIGGSFIELD ARCHITECTURE) ── */}
-      <StudioSelectorModal
-        isOpen={studioSelectorOpen}
-        onClose={() => setStudioSelectorOpen(false)}
-        currentStudio={activeStudio}
-        onSelectStudio={(slug) => {
-          setActiveStudio(slug);
-          const s = getStudioBySlug(slug);
-          if (s) {
-            setMode(s.id === "posters" || s.id === "assets" ? "image" : "video");
-            showToast(`Studio activé : ${s.name}`);
-          }
-        }}
-      />
-
-      <BrandKitDrawer
-        isOpen={brandKitOpen}
-        onClose={() => setBrandKitOpen(false)}
-        onSelectProduct={(product) => {
-          setSelectedProduct(product);
-          showToast(`Produit sélectionné : ${product.title}`);
-        }}
-      />
-
-      <CharacterModal
-        isOpen={characterModalOpen}
-        onClose={() => setCharacterModalOpen(false)}
-        onSaveCharacter={(character) => {
-          setSelectedCharacter(character);
-          showToast(`Personnage « ${character.name} » prêt pour la création.`);
-        }}
-      />
-
-      <ProductScraperModal
-        isOpen={scraperModalOpen}
-        onClose={() => setScraperModalOpen(false)}
-        onApplyProduct={(product, format) => {
-          setSelectedProduct({
-            title: product.title,
-            price: product.price,
-            currency: product.currency,
-          });
-          const uspText = product.keyBenefits?.length ? ` Points forts : ${product.keyBenefits.join(", ")}.` : "";
-          const priceText = product.price ? ` (${product.price} ${product.currency})` : "";
-          const autoPrompt = `Spot publicitaire format ${format.toUpperCase()} pour ${product.title}${priceText}.${uspText}`;
-          setVals((prev) => ({ ...prev, prompt: autoPrompt }));
-          showToast(`Produit extrait ! Prompt suggéré injecté.`);
-        }}
+        onAnimate={handleAnimateImage}
       />
     </>
   );

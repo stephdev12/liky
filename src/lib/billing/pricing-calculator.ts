@@ -170,9 +170,11 @@ export function calculateImageCost(params: {
 export function calculateVideoCost(params: {
   model?: string;
   durationSeconds?: number;
+  count?: number;
 }): { cost: number; modelName: string; resolvedModel: string; duration: number; baseKieCredits: number } {
   const rawModel = (params.model || "seedance").toLowerCase();
   const duration = Math.max(4, Math.min(30, params.durationSeconds || 5));
+  const count = Math.max(1, Math.min(4, params.count || 1));
 
   let ratePerSec = 4;
   let modelName = "Seedance 2.0 Mini";
@@ -191,8 +193,8 @@ export function calculateVideoCost(params: {
     kieRatePerSec = 5;
   }
 
-  const cost = ratePerSec * duration;
-  const baseKieCredits = kieRatePerSec * duration;
+  const cost = Math.round(ratePerSec * duration * count);
+  const baseKieCredits = Math.round(kieRatePerSec * duration * count);
   return { cost, modelName, resolvedModel, duration, baseKieCredits };
 }
 
@@ -239,9 +241,11 @@ export function calculateToolCost(
   if (tool === "video") {
     const rawDur = String(params["Durée"] || params.duration || "5");
     const dur = parseInt(rawDur.replace(/\D/g, "")) || 5;
+    const count = parseInt(params.count || "1") || 1;
     const res = calculateVideoCost({
       model: params.vmodel || params.model,
       durationSeconds: dur,
+      count,
     });
     return { cost: res.cost, modelName: res.modelName, baseKieCredits: res.baseKieCredits };
   }
