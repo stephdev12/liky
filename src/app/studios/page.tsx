@@ -46,7 +46,7 @@ const STUDIOS_DATA: StudioCardConfig[] = [
     desc: "Affiches et vidéos publicitaires, aux couleurs de ta marque.",
     chips: ["Modèle automatique", "Affiches · Vidéos pub"],
     image: "/assets/studios/studio-ad-builder.jpg",
-    route: "/ad",
+    route: "/studios/ad-builder",
     themeStyle: "lime",
     bullets: [
       "Aucun choix de modèle : le meilleur est sélectionné pour toi",
@@ -61,7 +61,7 @@ const STUDIOS_DATA: StudioCardConfig[] = [
     desc: "Vidéos haute qualité avec les meilleurs modèles du moment.",
     chips: ["Choix du modèle", "@ images"],
     image: "/assets/studios/studio-cinema.jpg",
-    route: "/cinema",
+    route: "/studios/cinema",
     themeStyle: "dark",
     bullets: [
       "Seulement les meilleurs moteurs vidéo (Veo 3.1, Kling 3.0, Wan 2.7)",
@@ -76,7 +76,7 @@ const STUDIOS_DATA: StudioCardConfig[] = [
     desc: "Un influenceur IA qui présente ton produit, filmé comme un vrai avis.",
     chips: ["Influenceur IA", "Image ou lien produit"],
     image: "/assets/studios/studio-ugc.jpg",
-    route: "/ugc",
+    route: "/studios/ugc",
     themeStyle: "stone",
     bullets: [
       "Crée ton personnage ou choisis-en un dans la galerie",
@@ -91,7 +91,7 @@ const STUDIOS_DATA: StudioCardConfig[] = [
     desc: "Courts-métrages et mini-histoires pour TikTok et les réseaux.",
     chips: ["Stickman · 2D · 3D", "Histoires en scènes"],
     image: "/assets/studios/studio-animation.jpg",
-    route: "/animation",
+    route: "/studios/animation",
     themeStyle: "warm",
     bullets: [
       "Écris ou génère une histoire en scènes cohérentes",
@@ -235,45 +235,69 @@ export default function StudiosHubPage() {
       router.push("/studio");
       return;
     }
+    if (studio.id === "ad") {
+      router.push("/studios/ad-builder");
+      return;
+    }
     if (studio.id === "cinema") {
-      router.push("/studio?mode=video&vt=libre");
+      router.push("/studios/cinema");
       return;
     }
     if (studio.id === "ugc") {
-      router.push("/studio?mode=video&vt=ugc");
+      router.push("/studios/ugc");
       return;
     }
     if (studio.id === "anim") {
-      router.push("/studio?mode=video&vt=animation");
+      router.push("/studios/animation");
       return;
     }
     router.push("/studio");
   };
 
-  // Simulation d'analyse Ad Builder
-  const handleStartScan = (url: string) => {
+  // Scan réel via l'API scan-website
+  const handleStartScan = async (url: string) => {
     if (!url.trim()) return;
     setAdStep("scan");
     setScanStepIndex(0);
 
-    const steps = [
-      () => setScanStepIndex(1),
-      () => setScanStepIndex(2),
-      () => setScanStepIndex(3),
-      () => {
-        setScanStepIndex(4);
+    const stepTimer = setInterval(() => {
+      setScanStepIndex((prev) => (prev < 3 ? prev + 1 : prev));
+    }, 700);
+
+    try {
+      const res = await fetch("/api/studios/scan-website", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url }),
+      });
+      const data = await res.json();
+      clearInterval(stepTimer);
+      setScanStepIndex(4);
+
+      if (res.ok && data.brandKit) {
+        setBrandResult({
+          colors: data.brandKit.colors.palette,
+          fonts: [data.brandKit.fonts.heading, data.brandKit.fonts.body],
+          tone: data.brandKit.tone.adjectives,
+        });
+      } else {
         setBrandResult({
           colors: ["#1B2E15", "#4B6B38", "#D8FF64", "#F4F7EE"],
-          fonts: ["Sentient Display", "Geist Sans"],
+          fonts: ["Newsreader", "Geist Sans"],
           tone: ["Chaleureux", "Direct", "Accessible"],
         });
-        setAdStep("brand");
-      },
-    ];
-
-    steps.forEach((fn, idx) => {
-      setTimeout(fn, (idx + 1) * 750);
-    });
+      }
+      setAdStep("brand");
+    } catch {
+      clearInterval(stepTimer);
+      setScanStepIndex(4);
+      setBrandResult({
+        colors: ["#1B2E15", "#4B6B38", "#D8FF64", "#F4F7EE"],
+        fonts: ["Newsreader", "Geist Sans"],
+        tone: ["Chaleureux", "Direct", "Accessible"],
+      });
+      setAdStep("brand");
+    }
   };
 
   if (authLoading || !user) {
@@ -551,7 +575,7 @@ export default function StudiosHubPage() {
                         onClick={() => {
                           setActiveStudioModal(null);
                           showToast("Projet libre créé dans Ad Builder");
-                          router.push("/studio?mode=image&style=Affiche");
+                          router.push("/studios/ad-builder");
                         }}
                         className="w-full text-left p-4 rounded-[16px] border border-[var(--line)] hover:border-[var(--ink)] hover:bg-[var(--mn)] transition-all cursor-pointer"
                       >
@@ -717,7 +741,7 @@ export default function StudiosHubPage() {
                       onClick={() => {
                         setActiveStudioModal(null);
                         showToast("Marque injectée ! Projet Ad Builder prêt.");
-                        router.push("/studio?mode=image&style=Affiche");
+                        router.push("/studios/ad-builder");
                       }}
                       className="w-full h-11 rounded-[14px] bg-[#D8FF64] text-[#171717] font-semibold text-[13px] hover:opacity-90 transition-opacity cursor-pointer mb-2"
                     >

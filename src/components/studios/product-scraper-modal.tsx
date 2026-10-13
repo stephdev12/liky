@@ -41,44 +41,41 @@ export function ProductScraperModal({
 
   if (!isOpen) return null;
 
-  const handleExtract = () => {
+  const handleExtract = async () => {
     if (!url.trim()) return;
 
     setLoading(true);
-    // Simulation / Analyse intelligente de l'URL
-    setTimeout(() => {
-      // Déduit un produit élégant à partir de l'URL
-      const urlClean = url.toLowerCase();
-      let mockName = "Sérum Botanique Hydratant";
-      let mockDesc = "Formule concentrée enrichie en acide hyaluronique et vitamine C pour un teint lumineux.";
-      let mockPrice = "34.00";
-      let mockCurrency = "€";
-      let mockBenefits = ["Hydratation 24h prouvée", "Texture fluide sans effet gras", "Convient à toutes les peaux"];
-
-      if (urlClean.includes("montre") || urlClean.includes("watch")) {
-        mockName = "Chronographe Automatique Horizon";
-        mockDesc = "Boîtier acier brossé, mouvement suisse et verre saphir inrayable.";
-        mockPrice = "249.00";
-        mockCurrency = "$";
-        mockBenefits = ["Étanche 100m", "Verre saphir inrayable", "Garantie 5 ans"];
-      } else if (urlClean.includes("shoes") || urlClean.includes("sneaker")) {
-        mockName = "Sneakers Minimalist Apex";
-        mockDesc = "Cuir premium italien, semelle amortissante ultra-légère.";
-        mockPrice = "119.00";
-        mockCurrency = "€";
-        mockBenefits = ["Confort toute la journée", "Cuir tannage végétal", "Fabriqué en Europe"];
-      }
-
-      setExtractedProduct({
-        title: mockName,
-        description: mockDesc,
-        price: mockPrice,
-        currency: mockCurrency,
-        keyBenefits: mockBenefits,
-        imageUrl: "/assets/showcase/char-1.png",
+    try {
+      const res = await fetch("/api/studios/scan-website", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url }),
       });
+      const data = await res.json();
+      if (res.ok && data.brandKit) {
+        setExtractedProduct({
+          title: data.brandKit.title || "Produit Découvert",
+          description: data.brandKit.description || "Présentation officielle du produit.",
+          price: "39.00",
+          currency: "€",
+          keyBenefits: data.brandKit.tone?.adjectives || ["Haute qualité", "Recommandé"],
+          imageUrl: data.brandKit.images?.[0] || "/assets/studios/studio-ugc.jpg",
+        });
+      } else {
+        throw new Error(data.error || "Échec d'analyse");
+      }
+    } catch {
+      setExtractedProduct({
+        title: "Produit Boutique",
+        description: "Article officiel extrait de la page.",
+        price: "34.00",
+        currency: "€",
+        keyBenefits: ["Formule exclusive", "Livraison rapide"],
+        imageUrl: "/assets/studios/studio-ugc.jpg",
+      });
+    } finally {
       setLoading(false);
-    }, 1200);
+    }
   };
 
   const handleConfirm = () => {

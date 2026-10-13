@@ -11,7 +11,7 @@ import { LibraryModal, type LibraryCardItem } from "@/components/library-modal";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
 import { Loader2 } from "lucide-react";
-import { Logo } from "@/components/logo";
+import { Logo, LogoIcon } from "@/components/logo";
 import { TopupModal } from "@/components/topup-modal";
 import { calculateToolCost } from "@/lib/billing/pricing-calculator";
 import { VTYPE_RECOMMENDED_MODELS } from "@/components/prompt-bubble";
@@ -908,23 +908,32 @@ export default function StudioPage() {
 
   return (
     <>
-      {/* ── LOGO OFFICIEL SUPÉRIEUR GAUCHE + RETOUR AUX STUDIOS ── */}
-      <div className="logo cursor-pointer flex items-center gap-2.5" onClick={() => router.push("/")}>
-        <Logo />
+      {/* ── TOP BAR GAUCHE : RETOUR AUX STUDIOS + LOGO LIKYAI ── */}
+      <header className="fixed top-[calc(14px+env(safe-area-inset-top,0px))] left-3 sm:left-4 z-30 flex items-center gap-2 sm:gap-2.5 pointer-events-auto">
         <button
           type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            router.push("/studios");
-          }}
-          className="flex items-center gap-1.5 h-[34px] px-3 rounded-full bg-[var(--surf)] border border-[var(--line)] shadow-card text-[12px] font-medium text-[var(--ink)] hover:border-[var(--line-strong)] hover:bg-[var(--hover)] transition-all cursor-pointer"
+          onClick={() => router.push("/studios")}
+          className="flex items-center justify-center gap-1.5 h-[34px] sm:h-[36px] px-2.5 sm:px-3 rounded-full bg-[var(--surf)] border border-[var(--line)] shadow-card text-[12px] font-medium text-[var(--ink)] hover:border-[var(--ink)]/40 hover:bg-[var(--hover)] transition-all cursor-pointer shrink-0"
           title="Retourner au Hub des studios"
+          aria-label="Retourner au Hub des studios"
         >
-          <CoolIcon name="arrow-left-sm" size={13} duotone={false} />
-          <span className="hidden sm:inline">Retour aux studios</span>
-          <span className="sm:hidden">Studios</span>
+          <CoolIcon name="arrow-left-sm" size={14} duotone={false} className="shrink-0 text-[var(--ink)]" />
+          <span className="hidden sm:inline font-sans text-[12px] font-medium text-[var(--ink)] tracking-normal">
+            Retour aux studios
+          </span>
         </button>
-      </div>
+
+        <div
+          className="cursor-pointer flex items-center gap-2 select-none hover:opacity-85 transition-opacity"
+          onClick={() => router.push("/")}
+          title="Accueil LikyAI"
+        >
+          <LogoIcon />
+          <span className="hidden min-[420px]:inline font-heading text-[18px] sm:text-[20px] font-normal tracking-tight text-[var(--ink)]">
+            likyAI
+          </span>
+        </div>
+      </header>
 
       {/* ── WORKSPACE : LES 4 DERNIÈRES GÉNÉRATIONS DU CANVAS LIBRE ── */}
       <main id="board" className="relative w-full min-h-screen overflow-y-auto">
