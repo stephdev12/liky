@@ -768,7 +768,7 @@ export default function StudioPage() {
           if (data.success && data.taskId) {
             pollTaskUntilDone(data.taskId, cardId, chosenModelName, p, Math.round(currentCost / count));
           } else {
-            const errorMsg = data.error || "Échec lors de la génération avec KIE.ai";
+            const errorMsg = data.error || "Échec lors de la génération";
             setCards((cur) =>
               cur.map((c) =>
                 c.id === cardId

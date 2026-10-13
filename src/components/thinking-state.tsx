@@ -39,7 +39,7 @@ const DEFAULT_VARIANTS: Record<
     rows: [
       { primary: "Analyse du prompt et modération" },
       { primary: "Réservation des crédits" },
-      { primary: "Envoi de la tâche au modèle KIE" },
+      { primary: "Envoi de la tâche au cluster IA" },
       { primary: "Rapatriement vers le stockage sécurisé" },
     ],
   },

@@ -31,7 +31,7 @@ const footerLinks: FooterSection[] = [
 			{ title: "Tarifs & Crédits", href: "#pricing" },
 			{ title: "Paiement Mobile Money", href: "#pricing" },
 			{ title: "Galerie & Showcase", href: "#gallery" },
-			{ title: "API KIE & Modèles", href: "#" },
+			{ title: "Catalogue des Modèles", href: "#" },
 		],
 	},
 	{
@@ -92,7 +92,7 @@ export function Footer() {
 					&copy; 2026 likyAI. Tous droits réservés.
 				</p>
 				<p className="text-[11px] font-mono text-[var(--mute)]">
-					Paiement Mobile Money · Protocole MCP natif
+					propulsé par onlice
 				</p>
 			</div>
 		</footer>
