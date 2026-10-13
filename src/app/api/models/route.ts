@@ -1,12 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, connection } from "next/server";
 import { getModelsByTool, ToolKind, MODEL_REGISTRY } from "@/lib/models/registry";
 import { fetchKieModels, getKieApiKey } from "@/lib/kie/client";
 
-export const dynamic = "force-dynamic";
-
 export async function GET(req: NextRequest) {
+  await connection();
   try {
-    const { searchParams } = new URL(req.url);
+    const { searchParams } = req.nextUrl;
     const tool = searchParams.get("tool") as ToolKind | null;
 
     // Modèles statiques par défaut
