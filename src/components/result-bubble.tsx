@@ -14,7 +14,7 @@ export interface GenerationResultData {
   duration?: number;
   elapsedTime?: number;
   format?: string;
-  params?: Record<string, string>;
+  params?: Record<string, any>;
   createdAt: number;
 }
 

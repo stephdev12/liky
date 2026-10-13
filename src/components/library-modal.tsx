@@ -14,7 +14,7 @@ export interface LibraryCardItem {
   creditsCost: number;
   status: "thinking" | "generating" | "ready";
   elapsed: number;
-  params?: Record<string, string>;
+  params?: Record<string, any>;
   createdAt?: number;
   orgIndex?: number;
   hues?: number[];

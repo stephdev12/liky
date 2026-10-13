@@ -11,10 +11,17 @@ import { LibraryModal, type LibraryCardItem } from "@/components/library-modal";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
 import { Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { Logo } from "@/components/logo";
 import { TopupModal } from "@/components/topup-modal";
 import { calculateToolCost } from "@/lib/billing/pricing-calculator";
+import { StudioSelectorModal } from "@/components/studios/studio-selector-modal";
+import { BrandKitDrawer } from "@/components/studios/brand-kit-drawer";
+import { CharacterModal } from "@/components/studios/character-modal";
+import { ProductScraperModal } from "@/components/studios/product-scraper-modal";
+import { ComposerChips } from "@/components/studios/composer-chips";
+import { STUDIOS, getStudioBySlug } from "@/lib/studios/config";
+import type { StudioSlug, QualityTier, Character } from "@/lib/studios/types";
+import { cn } from "@/lib/utils";
 
 /* ─────────────────────────────────────────────────────────
  * CONFIGURATION DU STUDIO LIKYAI (Ground Truth Prototype)
@@ -220,6 +227,17 @@ export default function StudioPage() {
   const [scrim3Open, setScrim3Open] = useState(false); // Paramètres
   const [themeMode, setThemeMode] = useState<"light" | "dark" | "auto">("auto");
   const [isDark, setIsDark] = useState(false);
+
+  /* Studios v2 States */
+  const [activeStudio, setActiveStudio] = useState<StudioSlug | null>("ugc");
+  const [studioSelectorOpen, setStudioSelectorOpen] = useState(false);
+  const [brandKitOpen, setBrandKitOpen] = useState(false);
+  const [characterModalOpen, setCharacterModalOpen] = useState(false);
+  const [scraperModalOpen, setScraperModalOpen] = useState(false);
+  const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<{ title: string; price?: string; currency?: string } | null>(null);
+  const [qualityTier, setQualityTier] = useState<QualityTier>("final");
+  const [studioFormat, setStudioFormat] = useState<string>("9:16");
 
   /* Valeurs des inputs & chips du dock */
   const [vals, setVals] = useState<Record<string, string>>({
@@ -476,6 +494,12 @@ export default function StudioPage() {
 
   /* Calcul du coût en crédits fidèle au moteur de facturation */
   const calculateCost = (): number => {
+    if (activeStudio) {
+      const studio = getStudioBySlug(activeStudio);
+      if (studio) {
+        return studio.supportedModels[qualityTier].credits;
+      }
+    }
     return calculateToolCost(mode, vals).cost;
   };
 
@@ -691,14 +715,17 @@ export default function StudioPage() {
       H = Math.round(W / ar);
     }
 
-    const chosenModelName =
-      mode === "image"
-        ? vals.model || "Nano Banana"
-        : mode === "video"
-        ? vals.vmodel || "Kling"
-        : mode === "music"
-        ? vals.Genre || "Suno V6"
-        : vals.Voix || "ElevenLabs";
+    const studioConfig = activeStudio ? getStudioBySlug(activeStudio) : null;
+
+    const chosenModelName = studioConfig
+      ? `${studioConfig.name} · ${studioConfig.supportedModels[qualityTier].name}`
+      : mode === "image"
+      ? vals.model || "Nano Banana"
+      : mode === "video"
+      ? vals.vmodel || "Kling"
+      : mode === "music"
+      ? vals.Genre || "Suno V6"
+      : vals.Voix || "ElevenLabs";
 
     const newCardsBatch: CanvasCard[] = [];
 
@@ -709,12 +736,32 @@ export default function StudioPage() {
 
       const waveformsList = aud ? Array.from({ length: 28 }, () => Math.round(12 + Math.random() * 60)) : undefined;
 
-      const captionPrefix = aud ? (mode === "music" ? "Musique · " : "Voix off · ") : isImg ? "" : vt ? `${VTYPES[vt]?.n || "Vidéo"} · ` : "";
+      const captionPrefix = studioConfig
+        ? `${studioConfig.name} · `
+        : aud
+        ? (mode === "music" ? "Musique · " : "Voix off · ")
+        : isImg
+        ? ""
+        : vt
+        ? `${VTYPES[vt]?.n || "Vidéo"} · `
+        : "";
       const capText = `${captionPrefix}${p.slice(0, 46)}${p.length > 46 ? "…" : ""}`;
+
+      const generationParams = {
+        ...vals,
+        ...(activeStudio
+          ? {
+              studio: activeStudio,
+              qualityTier,
+              character: selectedCharacter ? { id: selectedCharacter.id, name: selectedCharacter.name } : undefined,
+              product: selectedProduct ? { title: selectedProduct.title, price: selectedProduct.price, currency: selectedProduct.currency } : undefined,
+            }
+          : {}),
+      };
 
       newCardsBatch.push({
         id: cardId,
-        mode,
+        mode: studioConfig ? (studioConfig.id === "posters" || studioConfig.id === "assets" ? "image" : "video") : mode,
         vt,
         caption: capText,
         fullPrompt: p,
@@ -727,7 +774,7 @@ export default function StudioPage() {
         hues: hue,
         orgIndex: orgIdx,
         waveforms: waveformsList,
-        params: { ...vals },
+        params: generationParams,
         createdAt: Date.now(),
       });
 
@@ -740,26 +787,34 @@ export default function StudioPage() {
             .insert({
               user_id: user.id,
               task_id: cardId,
-              tool: mode,
+              tool: studioConfig ? (studioConfig.id === "posters" || studioConfig.id === "assets" ? "image" : "video") : mode,
               model_name: chosenModelName,
               prompt: p,
               status: "generating",
               credits_cost: Math.round(currentCost / count),
-              parameters: vals,
+              parameters: generationParams,
             })
             .then(() => {});
         } catch {}
       }
+
+      const generatedModelId = studioConfig
+        ? studioConfig.supportedModels[qualityTier].id
+        : mode === "image"
+        ? vals.model || "nano"
+        : mode === "video"
+        ? vals.vmodel || "seedance"
+        : "standard";
 
       // Appel réel backend /api/generate
       fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          tool: mode,
-          modelId: mode === "image" ? vals.model || "nano" : mode === "video" ? vals.vmodel || "seedance" : "standard",
+          tool: studioConfig ? (studioConfig.id === "posters" || studioConfig.id === "assets" ? "image" : "video") : mode,
+          modelId: generatedModelId,
           prompt: p,
-          params: vals,
+          params: generationParams,
           creditsCost: Math.round(currentCost / count),
         }),
       })
@@ -912,16 +967,45 @@ export default function StudioPage() {
       </div>
 
       {/* ── NAVIGATION CENTRALE HAUTE (4 OUTILS - DESKTOP) ── */}
+      {/* ── NAVIGATION CENTRALE HAUTE (STUDIOS + 4 OUTILS - DESKTOP) ── */}
       <div className="top hidden sm:flex">
         <div className="nav" id="nav">
+          {/* Bouton Switcher de Studio */}
+          <button
+            type="button"
+            className={cn(
+              "px-3 py-1.5 rounded-full flex items-center gap-1.5 border transition-all cursor-pointer",
+              activeStudio
+                ? "bg-[var(--ink)] text-[var(--bg)] border-transparent font-medium shadow-xs"
+                : "bg-transparent text-[var(--mute)] border-transparent hover:text-[var(--ink)] hover:bg-[var(--mn)]"
+            )}
+            onClick={() => setStudioSelectorOpen(true)}
+            title="Ouvrir les Studios de création LikyAI"
+          >
+            <CoolIcon
+              name="more-grid-big"
+              duotone
+              size={17}
+              secondaryColor="currentColor"
+              secondaryOpacity={activeStudio ? 0.8 : 0.3}
+            />
+            <span className="font-heading text-[12.5px] font-semibold tracking-tight">
+              {activeStudio ? getStudioBySlug(activeStudio)?.name : "Studios"}
+            </span>
+            <CoolIcon name="chevron-down" size={11} duotone={false} className="opacity-70" />
+          </button>
+
+          <div className="h-4 w-px bg-[var(--line)] my-auto mx-1" />
+
           {CATEGORIES.map((cat) => {
-            const active = mode === cat.id;
+            const active = !activeStudio && mode === cat.id;
             return (
               <button
                 key={cat.id}
                 type="button"
                 className={active ? "on" : ""}
                 onClick={() => {
+                  setActiveStudio(null);
                   setMode(cat.id);
                   setVt(null);
                 }}
@@ -941,8 +1025,19 @@ export default function StudioPage() {
         </div>
       </div>
 
-      {/* ── ACTIONS HAUT DROITE RESPONSIVES (BIBLIOTHÈQUE UNIQUE, THÈME & AVATAR) ── */}
+      {/* ── ACTIONS HAUT DROITE RESPONSIVES (BRAND KIT, BIBLIOTHÈQUE, THÈME & AVATAR) ── */}
       <div className="top-actions">
+        {/* Bouton Brand Kit */}
+        <button
+          type="button"
+          className="h-[36px] sm:h-[38px] px-2.5 sm:px-3 rounded-full bg-[var(--surf)] border border-[var(--line)] shadow-card flex items-center gap-1.5 text-[12px] sm:text-[12.5px] font-medium text-[var(--ink)] hover:border-[var(--ink)]/40 transition-all cursor-pointer"
+          onClick={() => setBrandKitOpen(true)}
+          title="Ouvrir le Brand Kit de la marque"
+        >
+          <CoolIcon name="image-01" duotone size={16} secondaryColor="currentColor" secondaryOpacity={0.4} />
+          <span className="hidden sm:inline">Brand Kit</span>
+        </button>
+
         {/* Bouton Bibliothèque unique (compact sur mobile, développé sur desktop) */}
         <button
           type="button"
@@ -1065,14 +1160,37 @@ export default function StudioPage() {
       <div className="dock" id="dock" ref={dockRef}>
         {/* Navigation des catégories sur Mobile (placée en bas pour libérer l'espace de travail) */}
         <div className="flex sm:hidden justify-center mb-2 pointer-events-auto">
-          <div className="flex items-center gap-1 p-1 bg-[var(--surf)] border border-[var(--line)] rounded-full shadow-card backdrop-blur-md">
+          <div className="flex items-center gap-1 p-1 bg-[var(--surf)] border border-[var(--line)] rounded-full shadow-card backdrop-blur-md overflow-x-auto max-w-[95vw]">
+            <button
+              type="button"
+              onClick={() => setStudioSelectorOpen(true)}
+              className={cn(
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11.5px] font-medium transition-all cursor-pointer whitespace-nowrap",
+                activeStudio
+                  ? "bg-[var(--ink)] text-[var(--bg)] shadow-xs font-semibold"
+                  : "text-[var(--mute)] hover:text-[var(--ink)] hover:bg-[var(--mn)]"
+              )}
+            >
+              <CoolIcon
+                name="more-grid-big"
+                duotone
+                size={13}
+                secondaryColor="currentColor"
+                secondaryOpacity={activeStudio ? 0.9 : 0.3}
+              />
+              <span>{activeStudio ? getStudioBySlug(activeStudio)?.name : "Studios"}</span>
+            </button>
+
+            <div className="h-3.5 w-px bg-[var(--line)] my-auto mx-0.5" />
+
             {CATEGORIES.map((cat) => {
-              const active = mode === cat.id;
+              const active = !activeStudio && mode === cat.id;
               return (
                 <button
                   key={cat.id}
                   type="button"
                   onClick={() => {
+                    setActiveStudio(null);
                     setMode(cat.id);
                     setVt(null);
                   }}
@@ -1096,6 +1214,28 @@ export default function StudioPage() {
             })}
           </div>
         </div>
+
+        {/* Chips de contexte du Studio (Qualité Draft/Final, Personnage @, Produit URL, Brand Kit, Format) */}
+        {activeStudio && (
+          <div className="w-full max-w-3xl mx-auto mb-2 pointer-events-auto animate-in fade-in slide-in-from-bottom-2 duration-200">
+            <ComposerChips
+              studio={getStudioBySlug(activeStudio)!}
+              onOpenStudioSelector={() => setStudioSelectorOpen(true)}
+              onOpenBrandKit={() => setBrandKitOpen(true)}
+              onOpenCharacterModal={() => setCharacterModalOpen(true)}
+              onOpenScraperModal={() => setScraperModalOpen(true)}
+              selectedCharacterName={selectedCharacter?.name}
+              selectedProductName={selectedProduct?.title}
+              qualityTier={qualityTier}
+              onChangeQualityTier={setQualityTier}
+              selectedFormat={studioFormat}
+              onChangeFormat={(fmt) => {
+                setStudioFormat(fmt);
+                setVals((prev) => ({ ...prev, format: fmt }));
+              }}
+            />
+          </div>
+        )}
 
         {/* Mode Vidéo sans type choisi -> Grille de cartes .types avec textures organiques */}
         {mode === "video" && !vt ? (
@@ -1284,6 +1424,56 @@ export default function StudioPage() {
         onClose={() => setResultBubbleOpen(false)}
         onRetry={handleRetryFromResult}
         onEdit={handleEditFromResult}
+      />
+
+      {/* ── MODALES STUDIOS V2 (HIGGSFIELD ARCHITECTURE) ── */}
+      <StudioSelectorModal
+        isOpen={studioSelectorOpen}
+        onClose={() => setStudioSelectorOpen(false)}
+        currentStudio={activeStudio}
+        onSelectStudio={(slug) => {
+          setActiveStudio(slug);
+          const s = getStudioBySlug(slug);
+          if (s) {
+            setMode(s.id === "posters" || s.id === "assets" ? "image" : "video");
+            showToast(`Studio activé : ${s.name}`);
+          }
+        }}
+      />
+
+      <BrandKitDrawer
+        isOpen={brandKitOpen}
+        onClose={() => setBrandKitOpen(false)}
+        onSelectProduct={(product) => {
+          setSelectedProduct(product);
+          showToast(`Produit sélectionné : ${product.title}`);
+        }}
+      />
+
+      <CharacterModal
+        isOpen={characterModalOpen}
+        onClose={() => setCharacterModalOpen(false)}
+        onSaveCharacter={(character) => {
+          setSelectedCharacter(character);
+          showToast(`Personnage « ${character.name} » prêt pour la création.`);
+        }}
+      />
+
+      <ProductScraperModal
+        isOpen={scraperModalOpen}
+        onClose={() => setScraperModalOpen(false)}
+        onApplyProduct={(product, format) => {
+          setSelectedProduct({
+            title: product.title,
+            price: product.price,
+            currency: product.currency,
+          });
+          const uspText = product.keyBenefits?.length ? ` Points forts : ${product.keyBenefits.join(", ")}.` : "";
+          const priceText = product.price ? ` (${product.price} ${product.currency})` : "";
+          const autoPrompt = `Spot publicitaire format ${format.toUpperCase()} pour ${product.title}${priceText}.${uspText}`;
+          setVals((prev) => ({ ...prev, prompt: autoPrompt }));
+          showToast(`Produit extrait ! Prompt suggéré injecté.`);
+        }}
       />
     </>
   );
