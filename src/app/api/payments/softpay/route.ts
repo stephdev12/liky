@@ -44,15 +44,29 @@ export async function POST(req: NextRequest) {
     const countryIso = (rawCountry || netInfo.country.iso).toUpperCase();
     const countryConfig = getCountryByIso(countryIso) || netInfo.country;
 
+    const isCard = netInfo.network.code === "card";
+
     // 3. Validation et normalisation du numéro de téléphone
-    if (!phone && network !== "card") {
+    if (!phone && !isCard) {
       return NextResponse.json(
         { error: "Numéro de téléphone requis pour le paiement Mobile Money." },
         { status: 400 }
       );
     }
 
-    const normalizedPhone = normalizePhoneNumber(phone || "+22900000000", countryIso);
+    // Pour carte bancaire : format E.164 valide
+    let normalizedPhone = "";
+    if (isCard) {
+      const cleanDigits = (phone || "").replace(/\D/g, "");
+      if (cleanDigits.length >= 8) {
+        normalizedPhone = (phone || "").trim().startsWith("+") ? (phone || "").trim() : `+${cleanDigits}`;
+      } else {
+        // Numéro de contact par défaut valide
+        normalizedPhone = "+22997505050";
+      }
+    } else {
+      normalizedPhone = normalizePhoneNumber(phone || "", countryIso);
+    }
 
     // 4. Validation OTP préalable si exigé par l'opérateur (Orange CI, Orange BF)
     if (netInfo.network.type === "prepayment_otp" && (!otp || otp.trim().length < 3)) {
@@ -71,15 +85,29 @@ export async function POST(req: NextRequest) {
     const lastName = customerNameParts.slice(1).join(" ") || "LikyAI";
 
     // 6. Initiation de la transaction via Softpay
+    // Pour Carte Bancaire : Stripe exige une URL HTTPS valide
     const appOrigin = req.nextUrl.origin || "https://liky.ai";
-    const resolvedReturnUrl = returnUrl || `${appOrigin}/studio?payment_return=1`;
+    let resolvedReturnUrl = returnUrl || `${appOrigin}/studio?payment_return=1`;
+    if (!resolvedReturnUrl.startsWith("https://")) {
+      resolvedReturnUrl = "https://liky.ai/studio?payment_return=1";
+    }
+
+    // Montant et devise :
+    // Pour la carte bancaire, la passerelle fonctionne en USD : conversion propre du montant FCFA
+    const sendCurrency = isCard ? "USD" : countryConfig.currency;
+    const sendAmount = isCard
+      ? Number((selectedPack.priceFcfa / 620).toFixed(2))
+      : selectedPack.priceFcfa;
+
+    // Code pays ISO : toujours un code ISO à 2 lettres valide (ex: CI)
+    const sendCountry = countryIso === "INT" ? "CI" : countryIso;
 
     const softpayResult = await initiateSoftpay({
-      amount: selectedPack.priceFcfa,
-      currency: countryConfig.currency,
-      country: countryIso === "INT" ? "XX" : countryIso,
+      amount: sendAmount,
+      currency: sendCurrency,
+      country: sendCountry,
       network: netInfo.network.code,
-      description: `Recharge ${selectedPack.credits} crédits LikyAI`,
+      description: `Recharge ${selectedPack.credits} credits LikyAI`,
       customer: {
         email: user.email || "client@liky.ai",
         first_name: firstName,
@@ -97,9 +125,16 @@ export async function POST(req: NextRequest) {
     });
 
     if (softpayResult.status === "FAILED") {
+      let friendlyError = softpayResult.message || "Échec de l'initialisation du paiement.";
+      if (softpayResult.code === "invalid_method") {
+        friendlyError = isCard
+          ? "Le paiement par carte bancaire est temporairement indisponible ou non activé. Veuillez privilégier un règlement par Mobile Money (Wave, Orange, MTN, Moov) ou vérifier l'activation du module carte dans votre tableau de bord."
+          : "Ce moyen de paiement est temporairement indisponible. Veuillez en choisir un autre.";
+      }
+
       return NextResponse.json(
         {
-          error: softpayResult.message || "Échec de l'initialisation du paiement.",
+          error: friendlyError,
           code: softpayResult.code,
         },
         { status: 422 }

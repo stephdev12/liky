@@ -409,7 +409,7 @@ export function TopupModal({
               </div>
 
               {/* Champ Numéro de téléphone */}
-              {currentNetwork.code !== "card" && (
+              {currentNetwork.code !== "card" ? (
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-muted-foreground">
                     Numéro {currentNetwork.name} ({currentCountry.dialCode})
@@ -427,6 +427,26 @@ export function TopupModal({
                       className="font-mono text-sm"
                     />
                   </div>
+                </div>
+              ) : (
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-semibold text-muted-foreground">
+                      Numéro de mobile (contact & reçu)
+                    </label>
+                    <span className="text-[11px] text-muted-foreground">Optionnel</span>
+                  </div>
+                  <Input
+                    type="tel"
+                    inputMode="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="+33 6 12 34 56 78 ou +225 07..."
+                    className="font-mono text-sm"
+                  />
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    Vous serez redirigé vers l&apos;interface de paiement sécurisée Visa / Mastercard.
+                  </p>
                 </div>
               )}
 
@@ -605,9 +625,18 @@ export function TopupModal({
           <div className="border-t border-[var(--line)] px-6 py-4 bg-[var(--surface)] flex items-center justify-between">
             <div className="text-xs text-muted-foreground">
               Total à payer :{" "}
-              <strong className="text-foreground font-mono text-sm">
-                {selectedPack.priceFcfa.toLocaleString("fr-FR")} FCFA
-              </strong>
+              {currentNetwork.code === "card" ? (
+                <span className="font-mono text-sm text-foreground font-semibold">
+                  ~{(selectedPack.priceFcfa / 620).toFixed(2)} USD{" "}
+                  <span className="text-xs font-normal text-muted-foreground">
+                    ({selectedPack.priceFcfa.toLocaleString("fr-FR")} F)
+                  </span>
+                </span>
+              ) : (
+                <strong className="text-foreground font-mono text-sm">
+                  {selectedPack.priceFcfa.toLocaleString("fr-FR")} FCFA
+                </strong>
+              )}
             </div>
             <div className="flex items-center gap-2">
               <Button
@@ -630,6 +659,8 @@ export function TopupModal({
                     <Loader2 className="size-3.5 animate-spin mr-1.5" />
                     Traitement…
                   </>
+                ) : currentNetwork.code === "card" ? (
+                  `Payer ~${(selectedPack.priceFcfa / 620).toFixed(2)} $ USD`
                 ) : (
                   `Payer ${selectedPack.priceFcfa.toLocaleString("fr-FR")} F`
                 )}

@@ -95,11 +95,39 @@ export async function initiateSoftpay(
     const data = await res.json();
 
     if (!res.ok) {
-      const errorMsg = data.message || `Erreur de traitement (HTTP ${res.status})`;
+      console.error("[Payment API Error Raw]", JSON.stringify(data), "Payload:", JSON.stringify(payload));
+
+      let errorMsg = "";
+      let errorCode = "";
+
+      if (data.error) {
+        if (typeof data.error === "string") {
+          errorMsg = data.error;
+        } else if (typeof data.error === "object") {
+          if (data.error.message) {
+            errorMsg = data.error.message;
+            errorCode = data.error.code || "";
+          } else {
+            // Détail des erreurs par champ (ex: { "return_url": ["..."], "customer": { "phone": ["..."] } })
+            const details = Object.entries(data.error)
+              .map(([key, val]) => `${key}: ${Array.isArray(val) ? val.join(", ") : typeof val === "object" ? JSON.stringify(val) : val}`)
+              .join(" ; ");
+            errorMsg = details || "Données de paiement non conformes.";
+          }
+        }
+      } else if (data.message) {
+        errorMsg = data.message;
+        errorCode = data.code || "";
+      }
+
+      if (!errorMsg) {
+        errorMsg = `Erreur de traitement (HTTP ${res.status})`;
+      }
+
       return {
         id: "",
         status: "FAILED",
-        code: data.code || `HTTP_${res.status}`,
+        code: errorCode || data.code || `HTTP_${res.status}`,
         message: errorMsg,
       };
     }
