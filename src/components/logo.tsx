@@ -11,7 +11,7 @@ export const LogoIcon = ({ className, ...props }: React.ComponentProps<"div">) =
     {...props}
   >
     {/* Version sur fond blanc / thème clair (Logo noir avec feuille lime) */}
-    <div className="relative size-full flex items-center justify-center dark:hidden [html[data-theme='dark']_&]:hidden">
+    <div className="logo-theme-light relative size-full items-center justify-center">
       <Image
         src="/assets/logo-black.png"
         alt="likyAI"
@@ -23,7 +23,7 @@ export const LogoIcon = ({ className, ...props }: React.ComponentProps<"div">) =
     </div>
 
     {/* Version sur fond noir / thème sombre (Logo blanc avec feuille lime) */}
-    <div className="relative size-full hidden items-center justify-center dark:flex [html[data-theme='dark']_&]:flex">
+    <div className="logo-theme-dark relative size-full items-center justify-center">
       <Image
         src="/assets/logo-white.png"
         alt="likyAI"

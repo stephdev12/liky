@@ -335,10 +335,12 @@ export default function StudioPage() {
       if (savedTheme) {
         setThemeMode(savedTheme);
         document.documentElement.dataset.theme = savedTheme;
+        document.documentElement.classList.toggle("dark", savedTheme === "dark");
         setIsDark(savedTheme === "dark");
       } else {
         const mq = window.matchMedia("(prefers-color-scheme: dark)");
         setIsDark(mq.matches);
+        document.documentElement.classList.toggle("dark", mq.matches);
       }
     } catch {}
 
@@ -387,6 +389,7 @@ export default function StudioPage() {
     setThemeMode(next);
     setIsDark(next === "dark");
     document.documentElement.dataset.theme = next;
+    document.documentElement.classList.toggle("dark", next === "dark");
     try {
       localStorage.setItem("studio_theme", next);
     } catch {
@@ -398,14 +401,17 @@ export default function StudioPage() {
     setThemeMode(t);
     if (t === "auto") {
       delete document.documentElement.dataset.theme;
+      const sysDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      document.documentElement.classList.toggle("dark", sysDark);
       try {
         localStorage.removeItem("studio_theme");
       } catch {
         // ignore
       }
-      setIsDark(window.matchMedia("(prefers-color-scheme: dark)").matches);
+      setIsDark(sysDark);
     } else {
       document.documentElement.dataset.theme = t;
+      document.documentElement.classList.toggle("dark", t === "dark");
       try {
         localStorage.setItem("studio_theme", t);
       } catch {

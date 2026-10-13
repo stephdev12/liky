@@ -1,5 +1,27 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *, .dark, .dark *));
+
+/* Alternance logo officiel likyAI selon le thème actif */
+.logo-theme-light {
+  display: flex !important;
+}
+.logo-theme-dark {
+  display: none !important;
+}
+
+[data-theme="dark"] .logo-theme-light,
+:root.dark .logo-theme-light,
+.dark .logo-theme-light {
+  display: none !important;
+}
+
+[data-theme="dark"] .logo-theme-dark,
+:root.dark .logo-theme-dark,
+.dark .logo-theme-dark {
+  display: flex !important;
+}
+
 @theme {
   --color-background: var(--bg);
   --color-foreground: var(--ink);
