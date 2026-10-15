@@ -40,7 +40,14 @@ export default function CinemaStudioPage() {
   const [isGenerating, setIsGenerating] = useState(false);
 
   // Coût calculé
-  const cost = settings.model === "veo-3-1" ? 24 : settings.model === "seedance-2-5" ? 18 : 16;
+  const cost =
+    settings.model === "veo-3-1"
+      ? 24
+      : settings.model === "cinema_studio_4"
+      ? 22
+      : settings.model === "seedance-2-5"
+      ? 18
+      : 16;
 
   // Chargement profil
   const refreshCredits = async () => {

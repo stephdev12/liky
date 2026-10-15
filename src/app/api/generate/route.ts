@@ -1,15 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { createKieTask, getKieApiKey, resolveKieModel, buildKieInputPayload } from "@/lib/kie/client";
+import { providerRouter } from "@/lib/providers/router";
 import { calculateToolCost } from "@/lib/billing/pricing-calculator";
 import { saveSimulatedTask } from "../tasks/[taskId]/route";
 
 const GenerateSchema = z.object({
-  tool: z.enum(["image", "video", "music", "voice"]),
-  modelId: z.string(),
+  tool: z.enum(["image", "video", "music", "voice"]).default("video"),
+  model: z.string().optional(),
+  modelId: z.string().optional(),
   prompt: z.string().min(1),
+  aspectRatio: z.string().optional(),
+  duration: z.number().optional(),
+  resolution: z.string().optional(),
+  referenceImageUrls: z.array(z.string()).optional(),
+  referenceVideoUrl: z.string().optional(),
   params: z.record(z.string(), z.any()).optional(),
-  creditsCost: z.number().int().positive().default(5),
+  creditsCost: z.number().int().positive().optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -24,15 +30,46 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { tool, modelId, prompt, params, creditsCost } = parsed.data;
+    const {
+      tool,
+      model,
+      modelId,
+      prompt,
+      aspectRatio,
+      duration,
+      resolution,
+      referenceImageUrls,
+      referenceVideoUrl,
+      params,
+      creditsCost,
+    } = parsed.data;
+
+    const targetModel = modelId || model || (tool === "video" ? "seedance-2-5" : "nano-banana-2-1");
+
+    // Calcul du coût théorique en crédits
     const computedCost = calculateToolCost(tool, params || {}).cost;
     const finalCreditsCost = creditsCost && creditsCost > 0 ? creditsCost : computedCost;
-    const apiKey = getKieApiKey();
 
-    if (!apiKey) {
-      // Mode simulation réaliste (local/démo) UNIQUEMENT quand la clé API KIE n'est pas renseignée
-      console.warn("[KIE] KIE_API_KEY non configurée - basculement en mode démo");
-      const simTaskId = `sim-${Date.now()}`;
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || "https://likyai.com";
+    const webhookSecret = process.env.HF_WEBHOOK_SECRET || "likyai-hf-secret";
+    const higgsfieldWebhookUrl = `${appUrl}/api/webhooks/higgsfield?t=${webhookSecret}`;
+
+    // Soumission via le routeur unifié (Priorité sur KIE, failover automatique, ou Higgsfield exclusif)
+    const result = await providerRouter.submitWithFailover(targetModel, prompt, {
+      aspectRatio,
+      duration,
+      resolution,
+      referenceImageUrls,
+      referenceVideoUrl,
+      params: {
+        tool,
+        ...params,
+      },
+      webhookUrl: higgsfieldWebhookUrl,
+    });
+
+    if (result.mode === "demo") {
+      // Sauvegarde de la tâche simulée réaliste pour la prévisualisation immédiate
       const randomIdx = Math.floor(Math.random() * 4) + 1;
       const mediaUrl =
         tool === "music"
@@ -42,60 +79,47 @@ export async function POST(req: NextRequest) {
           : `/assets/organic/organic-${randomIdx}.webp`;
 
       saveSimulatedTask({
-        taskId: simTaskId,
+        taskId: result.requestId,
         tool,
         prompt,
         createdAt: Date.now(),
         creditsCost: finalCreditsCost,
         resultUrl: mediaUrl,
-        metadata: params,
+        metadata: {
+          provider: result.provider,
+          model: targetModel,
+          aspectRatio,
+          duration,
+        },
       });
 
       return NextResponse.json({
         success: true,
         mode: "demo",
-        taskId: simTaskId,
+        provider: result.provider,
+        taskId: result.requestId,
         status: "waiting",
         tool,
-        modelId,
+        modelId: targetModel,
         creditsCost: finalCreditsCost,
       });
     }
 
-    // Résolution du vrai slug de modèle KIE officiel
-    const officialKieModel = resolveKieModel(tool, modelId);
-
-    // Formatage des entrées selon la spécification OpenAPI du modèle KIE
-    const inputPayload = buildKieInputPayload(tool, officialKieModel, prompt, params);
-
-    console.log(`[KIE] Création de tâche en direct pour ${officialKieModel}:`, JSON.stringify(inputPayload));
-
-    // Appel officiel à l'API KIE
-    const result = await createKieTask(officialKieModel, inputPayload);
-
-    if ("error" in result) {
-      console.error(`[KIE] Échec création de tâche (${officialKieModel}):`, result.error);
-      return NextResponse.json(
-        { error: result.error, code: result.code, officialKieModel },
-        { status: result.code === 402 ? 402 : 502 }
-      );
-    }
-
-    console.log(`[KIE] Tâche en direct créée avec succès (taskId: ${result.taskId})`);
-
     return NextResponse.json({
       success: true,
       mode: "live",
-      taskId: result.taskId,
+      provider: result.provider,
+      taskId: result.requestId,
       status: "waiting",
       tool,
-      modelId: officialKieModel,
+      modelId: targetModel,
       creditsCost: finalCreditsCost,
+      fallbackOf: result.fallbackOf,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("API /api/generate error:", error);
     return NextResponse.json(
-      { error: "Erreur interne du serveur lors de la génération" },
+      { error: error.message || "Erreur lors de la génération avec le fournisseur" },
       { status: 500 }
     );
   }

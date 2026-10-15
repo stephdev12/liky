@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { pollKieTask } from "@/lib/kie/client";
+import { providerRouter } from "@/lib/providers/router";
 
 // Simulation in-memory pour le mode démo/local
 interface SimulatedTask {
@@ -82,31 +82,52 @@ export async function GET(
       });
     }
 
-    // Appel KIE réel
-    const record = await pollKieTask(taskId);
+    // Récupération de l'état réel auprès du routeur unifié
+    const { provider, result } = await providerRouter.getStatus(taskId);
 
-    if ("error" in record) {
+    if (result.state === "fail") {
       return NextResponse.json(
-        { error: record.error, code: record.code },
-        { status: record.code === 401 ? 401 : 502 }
+        {
+          taskId,
+          provider,
+          state: "fail",
+          failMsg: result.error || "Échec de génération du prestataire",
+          failCode: result.failCode,
+        },
+        { status: 502 }
       );
     }
 
-    // Réponse KIE officielle
+    if (result.state === "nsfw") {
+      return NextResponse.json(
+        {
+          taskId,
+          provider,
+          state: "fail",
+          failMsg: "Contenu rejeté par la modération (NSFW). Les crédits sont automatiquement remboursés.",
+          failCode: "MODERATION_NSFW",
+        },
+        { status: 422 }
+      );
+    }
+
+    // Format standardisé unifié pour le client
+    const resultUrls = (result.outputs || []).map((o) => o.url);
+
     return NextResponse.json({
-      taskId: record.taskId,
-      model: record.model,
-      state: record.state,
-      successFlag: record.successFlag,
-      costTime: record.costTime,
-      creditsConsumed: record.creditsConsumed,
-      failMsg: record.failMsg,
-      response: record.response,
+      taskId,
+      provider,
+      state: result.state,
+      successFlag: result.state === "success" ? 1 : 0,
+      creditsConsumed: result.creditsConsumed,
+      response: {
+        resultUrls,
+      },
     });
-  } catch (err) {
+  } catch (err: any) {
     console.error("API /api/tasks/[taskId] error:", err);
     return NextResponse.json(
-      { error: "Erreur lors de la vérification de la tâche" },
+      { error: err.message || "Erreur lors de la vérification de la tâche" },
       { status: 500 }
     );
   }

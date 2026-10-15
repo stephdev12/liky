@@ -309,6 +309,7 @@ export function StudioPromptBubble({
                   </SelectTrigger>
                   <SelectPopup>
                     <SelectItem value="veo-3-1">Google Veo 3.1 (Cinéma Master)</SelectItem>
+                    <SelectItem value="cinema_studio_4">Cinema Studio 4.0 (Higgsfield 35mm)</SelectItem>
                     <SelectItem value="seedance-2-5">Seedance 2.5 (Audio natif)</SelectItem>
                     <SelectItem value="kling-3-0">Kling 3.0 Pro</SelectItem>
                     <SelectItem value="minimax-h3">MiniMax Hailuo 3</SelectItem>
