@@ -1,263 +1,122 @@
 "use client";
 
-import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createShader, playSweep, accentChain, ACCENTS } from "glimm";
-import { PromptBubble } from "@/components/prompt-bubble";
+import {
+  Menu,
+  Sparkles,
+  FolderOpen,
+  User,
+  Film,
+  ShoppingBag,
+  Loader2,
+  Layers,
+} from "lucide-react";
 import { CoolIcon, type CoolIconKey } from "@/components/icons/coolicon";
+import { LogoIcon } from "@/components/logo";
 import { ResultBubble, type GenerationResultData } from "@/components/result-bubble";
 import { SectionShowcase } from "@/components/section-showcase";
 import { LibraryModal, type LibraryCardItem } from "@/components/library-modal";
-import { createClient } from "@/lib/supabase/client";
-import type { User } from "@supabase/supabase-js";
-import { Loader2 } from "lucide-react";
-import { Logo, LogoIcon } from "@/components/logo";
 import { TopupModal } from "@/components/topup-modal";
-import { calculateToolCost } from "@/lib/billing/pricing-calculator";
-import { VTYPE_RECOMMENDED_MODELS } from "@/components/prompt-bubble";
+import { UnifiedPromptBubble } from "@/components/studio/unified-prompt-bubble";
+import { SidebarDrawer } from "@/components/studio/sidebar-drawer";
+import { ModelSelectorModal, ALL_MODELS, type ModelOption } from "@/components/studio/model-selector-modal";
+import { AssetsModal, type AssetItem } from "@/components/studio/assets-modal";
+import { InfluencerBuilderDrawer } from "@/components/studio/influencer-builder-drawer";
+import { GenjutsuDrawer } from "@/components/studio/genjutsu-drawer";
+import { createClient } from "@/lib/supabase/client";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { cn } from "@/lib/utils";
 
 /* ─────────────────────────────────────────────────────────
- * CONFIGURATION DU STUDIO LIKYAI (Ground Truth Prototype)
+ * CATÉGORIES PRINCIPALES (Image · Vidéo · Musique · Voix off)
  * ───────────────────────────────────────────────────────── */
-
 const CATEGORIES: { id: "image" | "video" | "music" | "voice"; label: string; icon: CoolIconKey }[] = [
-  { id: "image", label: "Image", icon: "image-01" },
   { id: "video", label: "Vidéo", icon: "camera" },
+  { id: "image", label: "Image", icon: "image-01" },
   { id: "music", label: "Musique", icon: "headphones" },
   { id: "voice", label: "Voix off", icon: "user-voice" },
 ];
 
-const MODELS_CONFIG = {
-  image: [
-    { id: "nano", n: "Nano Banana 2", base: 6, q: ["1K", "2K", "4K"], qm: [1, 1.5, 2.5] },
-    { id: "soul", n: "Z-Image Turbo", base: 2, q: ["1K", "2K"], qm: [1, 1.5] },
-    { id: "seed", n: "Seedream 5", base: 5, q: ["2K", "4K"], qm: [1, 1.8] },
-  ],
-  video: [
-    { id: "seedance", n: "Seedance 2.0 Mini", base: 4 },
-    { id: "kling", n: "Kling 3.0 Turbo", base: 18 },
-    { id: "wan", n: "Wan 2.7", base: 12 },
-  ],
-};
-
-const FORMATS: Record<string, string> = {
-  "1:1 · Carré": "1:1",
-  "9:16 · Vertical": "9:16",
-  "16:9 · Paysage": "16:9",
-  "4:5 · Portrait": "4:5",
-};
-
-const PLATFORMS: Record<string, string> = {
-  TikTok: "9:16",
-  "Reels Instagram": "9:16",
-  "YouTube Shorts": "9:16",
-  Facebook: "4:5",
-  YouTube: "16:9",
-  LinkedIn: "1:1",
-};
-
-type VideoField = {
-  k: string;
-  o?: string[];
-  t?: string;
-  file?: number;
-};
-
-type VideoTypeConfig = {
-  n: string;
-  d: string;
-  ph: string;
-  f: VideoField[];
-};
-
-const VTYPES: Record<string, VideoTypeConfig> = {
-  ugc: {
-    n: "UGC",
-    d: "Avis client filmé",
-    ph: "Ex. Une cliente présente ma crème de karité et explique pourquoi elle l'adore…",
-    f: [
-      { k: "Plateforme", o: Object.keys(PLATFORMS) },
-      { k: "Avatar", o: ["Femme", "Homme", "Jeune", "Senior"] },
-      { k: "Langue", o: ["Français", "Anglais"] },
-      { k: "Durée", o: ["10 s", "15 s", "30 s"] },
-    ],
-  },
-  marketing: {
-    n: "Marketing",
-    d: "Pub produit ou service",
-    ph: "Ex. Pub pour mon restaurant à Douala, ambiance chaleureuse, offre du weekend…",
-    f: [
-      { k: "Plateforme", o: Object.keys(PLATFORMS) },
-      { k: "Ton", o: ["Dynamique", "Luxe", "Humoristique", "Sobre"] },
-      { k: "Durée", o: ["5 s", "10 s", "15 s"] },
-      { k: "Appel à l'action", t: "Ex. Commander maintenant" },
-    ],
-  },
-  animation: {
-    n: "Animer une image",
-    d: "Donne vie à ta photo",
-    ph: "Ex. Le tissu bouge doucement, la lumière change…",
-    f: [
-      { k: "Image", file: 1 },
-      { k: "Mouvement", o: ["Naturel", "Zoom avant", "Zoom arrière", "Rotation", "Travelling"] },
-      { k: "Format", o: Object.keys(PLATFORMS) },
-      { k: "Durée", o: ["5 s", "10 s"] },
-    ],
-  },
-  saas: {
-    n: "Présentation SaaS",
-    d: "Démo d'un logiciel",
-    ph: "Ex. Présenter mon application de gestion de stock en 3 temps forts…",
-    f: [
-      { k: "Site du produit", t: "https://…" },
-      { k: "Format", o: Object.keys(PLATFORMS) },
-      { k: "Style", o: ["Minimal", "Dynamique", "Corporate"] },
-      { k: "Durée", o: ["10 s", "15 s", "30 s"] },
-    ],
-  },
-  libre: {
-    n: "Libre",
-    d: "Tu décides de tout",
-    ph: "Décris la scène que tu imagines…",
-    f: [
-      { k: "Format", o: Object.keys(PLATFORMS) },
-      { k: "Style", o: ["Réaliste", "Cinéma", "Animation 3D", "Illustration"] },
-      { k: "Audio", o: ["Avec son", "Sans son"] },
-      { k: "Durée", o: ["5 s", "10 s", "15 s"] },
-    ],
-  },
-};
-
-const PACKS = [
-  { f: 1000, c: 50 },
-  { f: 2500, c: 140 },
-  { f: 5000, c: 300 },
-];
-
-const HUES = [
-  [250, 320],
-  [20, 340],
-  [160, 220],
-  [40, 10],
-  [200, 270],
-  [300, 30],
-];
-
-/* Monochromatic Lime & Emerald shader palette for likyAI (No rainbow) */
-const LIME_SWEEP = accentChain([
-  ACCENTS.green,
-  ACCENTS.cyan,
-  ACCENTS.green,
-]);
-
-/* Glyphes & Brands pour l'autocomplétion @ et / */
-const SOURCES = [
-  { key: "attach", name: "Ajouter photos & fichiers", desc: "Importer depuis votre appareil" },
-  { key: "scoop", name: "Données de vente", desc: "Métriques et churn" },
-  { key: "flavors", name: "Catalogue produits", desc: "26 fiches et références" },
-  { key: "web", name: "Recherche web", desc: "Informations en temps réel" },
-  { key: "figma", name: "Figma", desc: "Maquettes & design system" },
-  { key: "slack", name: "Slack", desc: "Discussions d'équipe" },
-  { key: "gmail", name: "Gmail", desc: "Emails et fournisseurs" },
-];
-
-const COMMANDS = [
-  { key: "compare", name: "/comparer", desc: "Comparer avec l'année dernière" },
-  { key: "churn-plan", name: "/plan-fidelite", desc: "Créer un plan de rétention" },
-  { key: "restock", name: "/reassort", desc: "Générer un bon de commande" },
-  { key: "draft-email", name: "/email-client", desc: "Rédiger un email commercial" },
-  { key: "summarize", name: "/resumer", desc: "Synthétiser le fil actuel" },
-];
-
-function parseToken(text: string): { kind: "at" | "slash"; query: string; start: number } | null {
-  const match = /(^|\s)([@/])([\w-]*)$/.exec(text);
-  if (!match) return null;
-  return {
-    kind: match[2] === "@" ? "at" : "slash",
-    query: match[3].toLowerCase(),
-    start: match.index + match[1].length,
-  };
-}
-
-/* Card type on canvas / library */
-type CanvasCard = LibraryCardItem & {
+/* Type de carte pour le canvas et la bibliothèque */
+export type CanvasCard = LibraryCardItem & {
   vt?: string | null;
   thinkingStage?: number;
   expandedThinking?: boolean;
-  x?: number;
-  y?: number;
-  width?: number;
-  height?: number;
-  zIndex?: number;
-  px?: number;
-  py?: number;
 };
-// Espace de travail vierge et isolé : chaque utilisateur dispose de ses propres créations depuis Supabase.
 
 export default function StudioPage() {
   const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
   const [authLoading, setAuthLoading] = useState<boolean>(true);
 
-  const [mode, setMode] = useState<"image" | "video" | "music" | "voice">("image");
-  const [vt, setVt] = useState<string | null>(null);
+  // État de création & paramètres de génération
+  const [mode, setMode] = useState<"image" | "video" | "music" | "voice">("video");
+  const [selectedModelId, setSelectedModelId] = useState<string>("auto");
+  const [selectedModelName, setSelectedModelName] = useState<string>("Auto");
+  const [aspectRatio, setAspectRatio] = useState<string>("9:16");
+  const [prompt, setPrompt] = useState<string>("");
   const [credits, setCredits] = useState<number>(60);
+  const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [cards, setCards] = useState<CanvasCard[]>([]);
-  const [log, setLog] = useState<{ t: string; d: string; v: number }[]>([]);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
-  /* Bulle d'affichage du résultat */
+  // Assets sélectionnés pour les références et mentions @
+  const [selectedAssets, setSelectedAssets] = useState<AssetItem[]>([]);
+  const [customAssets, setCustomAssets] = useState<AssetItem[]>([]);
+
+  // Modales & Tiroirs
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [modelSelectorOpen, setModelSelectorOpen] = useState(false);
+  const [assetsModalOpen, setAssetsModalOpen] = useState(false);
+  const [influencerOpen, setInfluencerOpen] = useState(false);
+  const [genjutsuOpen, setGenjutsuOpen] = useState(false);
+  const [topupOpen, setTopupOpen] = useState(false);
+  const [libraryOpen, setLibraryOpen] = useState(false);
+
+  // Bulle d'affichage du résultat
   const [activeResult, setActiveResult] = useState<GenerationResultData | null>(null);
   const [resultBubbleOpen, setResultBubbleOpen] = useState(false);
 
-  /* Bibliothèque de créations */
-  const [libraryOpen, setLibraryOpen] = useState(false);
+  // Thème clair / sombre
+  const [isDark, setIsDark] = useState(true);
 
-  /* Menus & Modales */
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [scrim1Open, setScrim1Open] = useState(false); // Recharge
-  const [scrim2Open, setScrim2Open] = useState(false); // Historique
-  const [scrim3Open, setScrim3Open] = useState(false); // Paramètres
-  const [themeMode, setThemeMode] = useState<"light" | "dark" | "auto">("auto");
-  const [isDark, setIsDark] = useState(false);
+  /* Calcul du coût en crédits dynamique selon le modèle choisi */
+  const calculateCurrentCost = (): number => {
+    if (selectedModelId !== "auto") {
+      const found = ALL_MODELS.find((m) => m.id === selectedModelId);
+      if (found) return found.creditsCost;
+    }
+    // Modèle Auto selon la catégorie
+    switch (mode) {
+      case "video":
+        return 16;
+      case "image":
+        return 5;
+      case "music":
+        return 10;
+      case "voice":
+        return 2;
+      default:
+        return 16;
+    }
+  };
 
-  /* Valeurs des inputs & chips du dock */
-  const [vals, setVals] = useState<Record<string, string>>({
-    model: "nano",
-    qual: "2K",
-    count: "1",
-    format: "1:1 · Carré",
-    style: "Photo réaliste",
-    vmodel: "seedance",
-    Durée: "5 s",
-    MDurée: "30 s",
-    Genre: "Afrobeat",
-    Vocal: "Instrumental",
-    Voix: "Femme chaleureuse",
-    Langue: "Français",
-    Vitesse: "Normale",
-    Plateforme: "TikTok",
-    Avatar: "Femme",
-    prompt: "",
-    fileName: "",
-  });
+  const currentCost = calculateCurrentCost();
 
-  /* Token @ et / */
-  const [activeTokenRow, setActiveTokenRow] = useState(0);
-  const promptInputRef = useRef<HTMLTextAreaElement>(null);
-  const dockRef = useRef<HTMLDivElement>(null);
-  const glimmRef = useRef<HTMLCanvasElement>(null);
-  const shaderRef = useRef<ReturnType<typeof createShader> | null>(null);
-  const zCounter = useRef<number>(10);
-  const dragJustEndedRef = useRef<boolean>(false);
-  const [isPromptShrunk, setIsPromptShrunk] = useState<boolean>(false);
+  /* Toast notification */
+  const showToast = (msg: string) => {
+    setToastMsg(msg);
+    setTimeout(() => {
+      setToastMsg((cur) => (cur === msg ? null : cur));
+    }, 2800);
+  };
 
-  /* Chargement des données réelles de l'utilisateur (isolation stricte par user_id) */
+  /* Chargement des données réelles de l'utilisateur (Supabase) */
   const loadUserData = async (userId: string) => {
     const supabase = createClient();
     try {
-      // 1. Profil & solde réel de crédits
+      // 1. Profil & crédits réels
       const { data: profile } = await supabase
         .from("profiles")
         .select("credits")
@@ -291,17 +150,13 @@ export default function StudioPage() {
           createdAt: new Date(g.created_at).getTime(),
         }));
         setCards(formattedCards);
-      } else {
-        // Plan de travail totalement vierge et isolé
-        setCards([]);
       }
     } catch (err) {
-      console.warn("Erreur chargement Supabase:", err);
-      setCards([]);
+      console.warn("Erreur chargement Supabase studio:", err);
     }
   };
 
-  /* Vérification obligatoire de l'authentification & écoute de session */
+  /* Vérification authentification & Session Supabase */
   useEffect(() => {
     const supabase = createClient();
     let isMounted = true;
@@ -309,7 +164,6 @@ export default function StudioPage() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!isMounted) return;
       if (!session?.user) {
-        // Redirection obligatoire si non authentifié
         router.replace("/auth");
       } else {
         setUser(session.user);
@@ -329,11 +183,10 @@ export default function StudioPage() {
       }
     });
 
-    // Initialisation du thème
+    // Initialisation Thème
     try {
       const savedTheme = localStorage.getItem("studio_theme") as "light" | "dark" | null;
       if (savedTheme) {
-        setThemeMode(savedTheme);
         document.documentElement.dataset.theme = savedTheme;
         document.documentElement.classList.toggle("dark", savedTheme === "dark");
         setIsDark(savedTheme === "dark");
@@ -344,36 +197,13 @@ export default function StudioPage() {
       }
     } catch {}
 
-    // Sur mobile, réduire la bulle par défaut pour dégager complètement l'espace de travail
-    if (typeof window !== "undefined" && window.innerWidth < 640) {
-      setIsPromptShrunk(true);
-    }
-
     return () => {
       isMounted = false;
       subscription.unsubscribe();
     };
   }, [router]);
 
-  const handleSignOut = async () => {
-    try {
-      const supabase = createClient();
-      await supabase.auth.signOut();
-    } catch (err) {
-      console.error("Erreur déconnexion:", err);
-    }
-    setUser(null);
-    setCards([]);
-    router.replace("/auth");
-  };
-
-  const showToast = (msg: string) => {
-    setToastMsg(msg);
-    setTimeout(() => {
-      setToastMsg((cur) => (cur === msg ? null : cur));
-    }, 2800);
-  };
-
+  /* Sauvegarde solde crédits */
   const saveCredits = async (newCredits: number) => {
     setCredits(newCredits);
     if (user) {
@@ -384,221 +214,84 @@ export default function StudioPage() {
     }
   };
 
+  /* Bascule de thème */
   const toggleTheme = () => {
     const next = isDark ? "light" : "dark";
-    setThemeMode(next);
     setIsDark(next === "dark");
     document.documentElement.dataset.theme = next;
     document.documentElement.classList.toggle("dark", next === "dark");
     try {
       localStorage.setItem("studio_theme", next);
-    } catch {
-      // ignore
-    }
+    } catch {}
   };
 
-  const applyThemeSetting = (t: "light" | "dark" | "auto") => {
-    setThemeMode(t);
-    if (t === "auto") {
-      delete document.documentElement.dataset.theme;
-      const sysDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      document.documentElement.classList.toggle("dark", sysDark);
-      try {
-        localStorage.removeItem("studio_theme");
-      } catch {
-        // ignore
-      }
-      setIsDark(sysDark);
-    } else {
-      document.documentElement.dataset.theme = t;
-      document.documentElement.classList.toggle("dark", t === "dark");
-      try {
-        localStorage.setItem("studio_theme", t);
-      } catch {
-        // ignore
-      }
-      setIsDark(t === "dark");
-    }
-  };
-
-  /* Initialisation du shader glimm */
-  useEffect(() => {
-    const canvas = glimmRef.current;
-    if (!canvas) return;
+  /* Déconnexion */
+  const handleSignOut = async () => {
     try {
-      shaderRef.current = createShader({
-        canvas,
-        palette: LIME_SWEEP,
-        direction: "ltr",
-        bandTight: 10,
-        swellAmount: 0.85,
-      });
-    } catch {
-      // glimm init fallback
+      const supabase = createClient();
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.error("Erreur déconnexion:", err);
     }
-    return () => {
-      shaderRef.current?.destroy();
-      shaderRef.current = null;
-    };
-  }, []);
-
-  const triggerGlimmSweep = () => {
-    const canvas = glimmRef.current;
-    if (!canvas) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    try {
-      shaderRef.current?.destroy();
-      const shader = createShader({
-        canvas,
-        palette: LIME_SWEEP,
-        direction: "ltr",
-        bandTight: 10,
-        swellAmount: 0.85,
-      });
-      shaderRef.current = shader;
-      if (shader) {
-        playSweep(shader, {
-          palette: LIME_SWEEP,
-          direction: "ltr",
-          sweepMs: 650,
-          outroMs: 90,
-          peakAlpha: 1.3,
-          bandTight: 10,
-          brightness: 1.4,
-          swellAmount: 1,
-          waveSpeed: 1.8,
-          easing: "easeOutExpo",
-        });
-      }
-    } catch {
-      // sweep fallback
-    }
+    setUser(null);
+    router.replace("/auth");
   };
 
-  /* Calcul du coût en crédits fidèle au moteur de facturation */
-  const calculateCost = (): number => {
-    return calculateToolCost(mode, vals).cost;
-  };
-
-  const currentCost = calculateCost();
-
-  /* Ouvre la bulle d'affichage du résultat */
-  const openResultForCard = (c: CanvasCard) => {
-    if (c.status !== "ready") return;
-    setActiveResult({
-      id: c.id,
-      tool: c.mode,
-      modelName: c.modelName,
-      prompt: c.fullPrompt,
-      mediaUrl: c.mediaUrl || `/assets/organic/organic-${((c.orgIndex ?? 0) % 4) + 1}.webp`,
-      creditsCost: c.creditsCost,
-      elapsedTime: c.elapsed,
-      params: c.params,
-      createdAt: Date.now(),
-    });
-    setResultBubbleOpen(true);
-  };
-
-  /* Action ANIMER UNE IMAGE EN VIDÉO (Image-to-Video Kling Motion / Wan I2V) */
-  const handleAnimateImage = (item: { mediaUrl?: string; fullPrompt?: string; prompt?: string }) => {
-    setResultBubbleOpen(false);
-    setMode("video");
-    setVt("animation");
-    const animModel = VTYPE_RECOMMENDED_MODELS.animation[0].id;
-    const promptText = item.fullPrompt || item.prompt || "";
-    setVals((prev) => ({
-      ...prev,
-      vmodel: animModel,
-      sourceImageUrl: item.mediaUrl || "",
-      fileName: "Photo source",
-      Mouvement: prev.Mouvement || "Zoom avant",
-      prompt: promptText
-        ? `Animation cinématographique de cette photo : ${promptText}`
-        : "Animation cinématographique fluide, mouvement de caméra subtil",
-    }));
-    setIsPromptShrunk(false);
-    setTimeout(() => {
-      promptInputRef.current?.focus();
-    }, 120);
-    showToast("Photo source chargée ! Choisis le mouvement et lance l'animation vidéo.");
-  };
-
-  /* Action MODIFIER : Ouvre la bulle de prompt avec le texte et réglages */
-  const handleEditFromResult = (res: GenerationResultData) => {
-    setResultBubbleOpen(false);
-    setIsPromptShrunk(false);
-    setMode(res.tool);
-    setVals((prev) => ({
-      ...prev,
-      prompt: res.prompt,
-      ...(res.params || {}),
-    }));
-    setTimeout(() => {
-      promptInputRef.current?.focus();
-    }, 150);
-    showToast("Création chargée dans la bulle de prompt pour modification.");
-  };
-
-  /* Action RÉESSAYER : Relance la génération avec les mêmes paramètres */
-  const handleRetryFromResult = (res: GenerationResultData) => {
-    setResultBubbleOpen(false);
-    setMode(res.tool);
-    setVals((prev) => ({
-      ...prev,
-      prompt: res.prompt,
-      ...(res.params || {}),
-    }));
-    setTimeout(() => {
-      handleGenerate();
-    }, 50);
-  };
-
-  /* Polling de l'état d'une tâche de génération */
+  /* Polling de la tâche de génération jusqu'à complétion */
   const pollTaskUntilDone = (
     taskId: string,
     cardId: string,
     modelName: string,
-    promptText: string,
-    costAmount: number
+    fullPromptText: string,
+    cost: number
   ) => {
     const startTime = Date.now();
+    let attempts = 0;
+    const maxAttempts = 120; // 3 minutes max
+
     const interval = setInterval(async () => {
+      attempts++;
+      if (attempts > maxAttempts) {
+        clearInterval(interval);
+        setIsGenerating(false);
+        setCards((cur) =>
+          cur.map((c) =>
+            c.id === cardId
+              ? { ...c, status: "ready", caption: "Délai de traitement dépassé" }
+              : c
+          )
+        );
+        showToast("Le traitement a pris plus de temps que prévu.");
+        return;
+      }
+
       try {
         const res = await fetch(`/api/tasks/${encodeURIComponent(taskId)}`);
         if (!res.ok) return;
         const data = await res.json();
 
-        if (data.state === "waiting") {
+        if (data.state === "generating" || data.status === "generating") {
           setCards((cur) =>
             cur.map((c) =>
               c.id === cardId
                 ? {
                     ...c,
                     status: "thinking",
-                    thinkingStage: 0,
                     elapsed: Math.round((Date.now() - startTime) / 1000),
                   }
                 : c
             )
           );
-        } else if (data.state === "generating") {
-          setCards((cur) =>
-            cur.map((c) =>
-              c.id === cardId
-                ? {
-                    ...c,
-                    status: "generating",
-                    thinkingStage: 1,
-                    elapsed: Math.round((Date.now() - startTime) / 1000),
-                  }
-                : c
-            )
-          );
-        } else if (data.state === "success") {
+        } else if (data.state === "success" || data.status === "success") {
           clearInterval(interval);
+          setIsGenerating(false);
+
           const finalUrl =
             data.response?.resultUrls?.[0] ||
+            data.resultUrl ||
+            data.mediaUrl ||
             `/assets/organic/organic-${Math.floor(Math.random() * 4) + 1}.webp`;
+
           const finalElapsed = Math.max(1, Math.round((Date.now() - startTime) / 1000));
 
           setCards((cur) =>
@@ -614,7 +307,7 @@ export default function StudioPage() {
             )
           );
 
-          // Synchronisation Supabase de la création terminée
+          // Synchronisation Supabase
           if (user) {
             try {
               const supabase = createClient();
@@ -632,272 +325,316 @@ export default function StudioPage() {
             } catch {}
           }
 
-          showToast("Ta création est prête.");
+          showToast("Votre création est prête !");
 
-          // Ouvre automatiquement la bulle d'affichage du résultat
+          // Ouvre la bulle de résultat
           setActiveResult({
             id: cardId,
             tool: mode,
             modelName,
-            prompt: promptText,
+            prompt: fullPromptText,
             mediaUrl: finalUrl,
-            creditsCost: costAmount,
+            creditsCost: cost,
             elapsedTime: finalElapsed,
-            params: { ...vals },
+            params: {
+              aspectRatio,
+              modelId: selectedModelId,
+            },
             createdAt: Date.now(),
           });
           setResultBubbleOpen(true);
-        } else if (data.state === "fail") {
+        } else if (data.state === "fail" || data.status === "fail") {
           clearInterval(interval);
+          setIsGenerating(false);
+          const errorMsg = data.failMsg || data.error || "La génération a échoué";
           setCards((cur) =>
             cur.map((c) =>
               c.id === cardId
                 ? {
                     ...c,
                     status: "ready",
-                    caption: `Échec : ${data.failMsg || "Erreur de génération"}`,
+                    caption: `Échec : ${errorMsg}`,
                   }
                 : c
             )
           );
-          showToast(`Erreur : ${data.failMsg || "La génération a échoué"}`);
+          showToast(`Erreur : ${errorMsg}`);
         }
       } catch (err) {
-        console.error("Erreur polling:", err);
+        console.warn("Erreur polling studio:", err);
       }
     }, 1500);
   };
 
-  /* Génération d'une nouvelle carte sur le canvas */
-  const handleGenerate = () => {
-    const p = (vals.prompt || "").trim();
-    if (!p) {
-      showToast("Décris d'abord ce que tu veux créer");
-      promptInputRef.current?.focus();
-      return;
-    }
-    if (currentCost > credits) {
-      showToast("Tu n'as plus assez de crédits pour cette création.");
-      setScrim1Open(true);
+  /* Lancement de la génération depuis la UnifiedPromptBubble */
+  const handleGenerate = async () => {
+    const cleanPrompt = prompt.trim();
+    if (!cleanPrompt) {
+      showToast("Veuillez décrire votre création");
       return;
     }
 
-    triggerGlimmSweep();
+    if (currentCost > credits) {
+      showToast("Solde insuffisant pour cette création.");
+      setTopupOpen(true);
+      return;
+    }
+
+    setIsGenerating(true);
 
     // Déduction des crédits
-    const newCreds = credits - currentCost;
-    saveCredits(newCreds);
-    setLog((prev) => [
-      { t: "Création", d: p.slice(0, 28).replace(/[<>&]/g, ""), v: -currentCost },
-      ...prev,
-    ]);
+    const newCredits = credits - currentCost;
+    saveCredits(newCredits);
 
-    const isImg = mode === "image";
-    const count = (mode === "image" || mode === "video") ? parseInt(vals.count || "1") || 1 : 1;
-    const aud = mode === "music" || mode === "voice";
+    const cardId = `card-${Date.now()}`;
+    const chosenModelName =
+      selectedModelId === "auto"
+        ? `Auto (${mode === "video" ? "Seedance 2.5" : mode === "image" ? "Nano Banana 2.1" : mode === "music" ? "Suno v6" : "ElevenLabs"})`
+        : selectedModelName;
 
-    const fmt = aud
-      ? "16:9"
-      : isImg
-      ? FORMATS[vals.format || "1:1 · Carré"] || "1:1"
-      : PLATFORMS[vals["Plateforme"] || vals["Format"] || "TikTok"] || "9:16";
+    const newCard: CanvasCard = {
+      id: cardId,
+      mode,
+      caption: cleanPrompt.slice(0, 46) + (cleanPrompt.length > 46 ? "…" : ""),
+      fullPrompt: cleanPrompt,
+      modelName: chosenModelName,
+      creditsCost: currentCost,
+      status: "thinking",
+      elapsed: 0,
+      orgIndex: Math.floor(Math.random() * 4),
+      params: {
+        aspectRatio,
+        modelId: selectedModelId,
+        assetsCount: selectedAssets.length,
+      },
+      createdAt: Date.now(),
+    };
 
-    const parts = fmt.split(":");
-    const ar = (parseFloat(parts[0]) || 1) / (parseFloat(parts[1]) || 1);
+    setCards((cur) => [newCard, ...cur]);
+    setPrompt("");
 
-    const bw = typeof window !== "undefined" ? window.innerWidth : 1200;
-    const bh = typeof window !== "undefined" ? window.innerHeight : 800;
-
-    let H = Math.min(250, bh * 0.3);
-    let W = Math.round(H * ar);
-    const mw = Math.min(300, bw - 32);
-    if (W > mw) {
-      W = mw;
-      H = Math.round(W / ar);
+    // Enregistrement initial dans Supabase
+    if (user) {
+      try {
+        const supabase = createClient();
+        supabase
+          .from("generations")
+          .insert({
+            user_id: user.id,
+            task_id: cardId,
+            tool: mode,
+            model_name: chosenModelName,
+            prompt: cleanPrompt,
+            status: "generating",
+            credits_cost: currentCost,
+            parameters: {
+              aspectRatio,
+              modelId: selectedModelId,
+              selectedAssets: selectedAssets.map((a) => a.name),
+            },
+          })
+          .then(() => {});
+      } catch {}
     }
 
-    const chosenModelName =
-      mode === "image"
-        ? vals.model || "Nano Banana"
-        : mode === "video"
-        ? vals.vmodel || "Kling 3.0"
-        : mode === "music"
-        ? vals.Genre || "Suno V6"
-        : vals.Voix || "ElevenLabs";
+    // Détermination de l'ID du modèle à router
+    const targetModelId =
+      selectedModelId === "auto"
+        ? mode === "video"
+          ? "seedance-2-5"
+          : mode === "image"
+          ? "nano-banana-2-1"
+          : mode === "music"
+          ? "suno-v6"
+          : "elevenlabs"
+        : selectedModelId;
 
-    const newCardsBatch: CanvasCard[] = [];
-
-    for (let i = 0; i < count; i++) {
-      const cardId = `card-${Date.now()}-${i}`;
-      const hue = HUES[Math.floor(Math.random() * HUES.length)];
-      const orgIdx = Math.floor(Math.random() * 4);
-
-      const waveformsList = aud ? Array.from({ length: 28 }, () => Math.round(12 + Math.random() * 60)) : undefined;
-
-      const captionPrefix = aud
-        ? (mode === "music" ? "Musique · " : "Voix off · ")
-        : isImg
-        ? ""
-        : vt
-        ? `${VTYPES[vt]?.n || "Vidéo"} · `
-        : "";
-      const capText = `${captionPrefix}${p.slice(0, 46)}${p.length > 46 ? "…" : ""}`;
-
-      const generationParams = {
-        ...vals,
-      };
-
-      newCardsBatch.push({
-        id: cardId,
-        mode,
-        vt,
-        caption: capText,
-        fullPrompt: p,
-        modelName: chosenModelName,
-        creditsCost: Math.round(currentCost / count),
-        status: "thinking",
-        elapsed: 0,
-        thinkingStage: 0,
-        expandedThinking: false,
-        hues: hue,
-        orgIndex: orgIdx,
-        waveforms: waveformsList,
-        params: generationParams,
-        createdAt: Date.now(),
-      });
-
-      // Enregistrement initial dans Supabase pour ce compte
-      if (user) {
-        try {
-          const supabase = createClient();
-          supabase
-            .from("generations")
-            .insert({
-              user_id: user.id,
-              task_id: cardId,
-              tool: mode,
-              model_name: chosenModelName,
-              prompt: p,
-              status: "generating",
-              credits_cost: Math.round(currentCost / count),
-              parameters: generationParams,
-            })
-            .then(() => {});
-        } catch {}
-      }
-
-      const generatedModelId =
-        mode === "image"
-          ? vals.model || "nano"
-          : mode === "video"
-          ? vals.vmodel || "kling"
-          : "standard";
-
-      // Appel réel backend /api/generate
-      fetch("/api/generate", {
+    try {
+      const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           tool: mode,
-          modelId: generatedModelId,
-          prompt: p,
-          params: generationParams,
-          creditsCost: Math.round(currentCost / count),
+          modelId: targetModelId,
+          prompt: cleanPrompt,
+          aspectRatio,
+          referenceImageUrls: selectedAssets.map((a) => a.url),
+          creditsCost: currentCost,
+          params: {
+            aspectRatio,
+            assets: selectedAssets.map((a) => ({ id: a.id, name: a.name, url: a.url })),
+          },
         }),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.success && data.taskId) {
-            pollTaskUntilDone(data.taskId, cardId, chosenModelName, p, Math.round(currentCost / count));
-          } else {
-            const errorMsg = data.error || "Échec lors de la génération";
-            setCards((cur) =>
-              cur.map((c) =>
-                c.id === cardId
-                  ? {
-                      ...c,
-                      status: "ready",
-                      caption: `Erreur : ${errorMsg}`,
-                    }
-                  : c
-              )
-            );
-            showToast(`Erreur : ${errorMsg}`);
-          }
-        })
-        .catch((err) => {
-          console.error("Erreur appel /api/generate:", err);
-          setCards((cur) =>
-            cur.map((c) =>
-              c.id === cardId
-                ? {
-                    ...c,
-                    status: "ready",
-                    caption: "Erreur de connexion au serveur",
-                  }
-                : c
-            )
-          );
-          showToast("Erreur de connexion lors du lancement de la création.");
-        });
-    }
+      });
 
-    // Ajoute en première position (les 4 plus récentes apparaissent toujours en tête)
-    setCards((cur) => [...newCardsBatch, ...cur]);
-    setVals((prev) => ({ ...prev, prompt: "" }));
-  };
+      const data = await res.json();
 
-  /* Timer de chargement actif pour les cartes en cours */
-  useEffect(() => {
-    const hasLoading = cards.some((c) => c.status !== "ready");
-    if (!hasLoading) return;
-    const interval = setInterval(() => {
+      if (data.success && data.taskId) {
+        pollTaskUntilDone(data.taskId, cardId, chosenModelName, cleanPrompt, currentCost);
+      } else {
+        const errorMsg = data.error || "Échec lors du lancement de la tâche";
+        setIsGenerating(false);
+        setCards((cur) =>
+          cur.map((c) =>
+            c.id === cardId
+              ? {
+                  ...c,
+                  status: "ready",
+                  caption: `Erreur : ${errorMsg}`,
+                }
+              : c
+          )
+        );
+        showToast(`Erreur : ${errorMsg}`);
+      }
+    } catch (err) {
+      console.error("Erreur appel /api/generate:", err);
+      setIsGenerating(false);
       setCards((cur) =>
-        cur.map((c) => (c.status !== "ready" ? { ...c, elapsed: c.elapsed + 1 } : c))
+        cur.map((c) =>
+          c.id === cardId
+            ? {
+                ...c,
+                status: "ready",
+                caption: "Erreur de connexion au serveur",
+              }
+            : c
+        )
       );
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [cards]);
-
-  /* Token @ et / */
-  const token = parseToken(vals.prompt || "");
-  const tokenRows =
-    token?.kind === "at"
-      ? SOURCES.filter((s) => s.name.toLowerCase().includes(token.query))
-      : token?.kind === "slash"
-      ? COMMANDS.filter((c) => c.name.slice(1).startsWith(token.query))
-      : [];
-
-  const handleSelectToken = (item: { name: string }) => {
-    if (!token) return;
-    const before = (vals.prompt || "").slice(0, token.start);
-    const after = (vals.prompt || "").slice(token.start + token.query.length + 1);
-    const insert = `${item.name} `;
-    setVals((prev) => ({ ...prev, prompt: `${before}${insert}${after}` }));
-    promptInputRef.current?.focus();
+      showToast("Erreur de connexion lors du lancement.");
+    }
   };
 
-  /* Auto-redimensionnement du textarea */
-  const handlePromptChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const v = e.target.value;
-    setVals((prev) => ({ ...prev, prompt: v }));
-    e.target.style.height = "auto";
-    e.target.style.height = `${Math.min(e.target.scrollHeight, 140)}px`;
+  /* Ouvre la bulle de résultat */
+  const openResultForCard = (c: CanvasCard) => {
+    if (c.status !== "ready") return;
+    setActiveResult({
+      id: c.id,
+      tool: c.mode,
+      modelName: c.modelName,
+      prompt: c.fullPrompt,
+      mediaUrl: c.mediaUrl || `/assets/organic/organic-${((c.orgIndex ?? 0) % 4) + 1}.webp`,
+      creditsCost: c.creditsCost,
+      elapsedTime: c.elapsed,
+      params: c.params,
+      createdAt: c.createdAt || Date.now(),
+    });
+    setResultBubbleOpen(true);
   };
 
+  /* Animer une image en vidéo */
+  const handleAnimateImage = (item: { mediaUrl?: string; fullPrompt?: string; prompt?: string }) => {
+    setResultBubbleOpen(false);
+    setMode("video");
+    setSelectedModelId("seedance-2-5");
+    setSelectedModelName("Seedance 2.5");
+    if (item.mediaUrl) {
+      const assetRef: AssetItem = {
+        id: `anim-${Date.now()}`,
+        name: "Image source",
+        url: item.mediaUrl,
+        type: "upload",
+      };
+      setSelectedAssets([assetRef]);
+    }
+    setPrompt(
+      item.fullPrompt
+        ? `Animation cinématographique dynamique : ${item.fullPrompt}`
+        : "Animation vidéo cinématographique fluide, lumière vivante"
+    );
+    showToast("Image ajoutée en référence ! Cliquez sur générer pour animer.");
+  };
 
+  /* Modifier depuis un résultat */
+  const handleEditFromResult = (res: GenerationResultData) => {
+    setResultBubbleOpen(false);
+    setMode(res.tool);
+    setPrompt(res.prompt);
+    showToast("Paramètres chargés dans la zone de texte");
+  };
+
+  /* Réessayer depuis un résultat */
+  const handleRetryFromResult = (res: GenerationResultData) => {
+    setResultBubbleOpen(false);
+    setMode(res.tool);
+    setPrompt(res.prompt);
+    setTimeout(() => {
+      handleGenerate();
+    }, 100);
+  };
+
+  /* Gestion de la création d'un influenceur IA */
+  const handleCharacterCreated = (char: { id: string; name: string; avatarUrl: string; summary: string }) => {
+    const newAsset: AssetItem = {
+      id: char.id,
+      name: char.name,
+      url: char.avatarUrl,
+      type: "influencer",
+    };
+    setCustomAssets((prev) => [newAsset, ...prev]);
+    setSelectedAssets((prev) => [...prev, newAsset]);
+    setPrompt((prev) => `${prev} @${char.name} `.trimStart());
+    showToast(`Personnage ${char.name} créé et ajouté en référence (@) !`);
+  };
+
+  /* Gestion du transfert de mouvement Genjutsu */
+  const handleGenjutsuLaunch = (data: {
+    mode: "motion" | "swap";
+    videoUrl?: string;
+    imageUrls: string[];
+    prompt?: string;
+    quality: string;
+  }) => {
+    setGenjutsuOpen(false);
+    setMode("video");
+    setSelectedModelId("genjutsu-motion");
+    setSelectedModelName("Genjutsu Motion Transfer");
+    if (data.imageUrls.length > 0) {
+      const imgAssets: AssetItem[] = data.imageUrls.map((url, i) => ({
+        id: `genjutsu-img-${i}`,
+        name: `Référence ${i + 1}`,
+        url,
+        type: "upload",
+      }));
+      setSelectedAssets(imgAssets);
+    }
+    setPrompt(data.prompt || "Transfert de mouvement fluide haute fidélité");
+    showToast("Paramètres Genjutsu appliqués ! Lancez la création.");
+  };
+
+  /* Gestion du téléversement de fichiers */
+  const handleUploadFiles = (files: FileList) => {
+    Array.from(files).forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const url = e.target?.result as string;
+        if (url) {
+          const newAsset: AssetItem = {
+            id: `up-${Date.now()}-${Math.random()}`,
+            name: file.name.replace(/\.[^/.]+$/, ""),
+            url,
+            type: "upload",
+          };
+          setCustomAssets((prev) => [newAsset, ...prev]);
+          setSelectedAssets((prev) => [...prev, newAsset]);
+          showToast(`Fichier "${file.name}" ajouté aux références !`);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  /* Loader initial pendant la vérification Supabase */
   if (authLoading || !user) {
     return (
-      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[var(--bg)] text-[var(--ink)] select-none">
+      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#121211] text-[#F8F8F5] select-none">
         <div className="flex flex-col items-center gap-4 animate-in fade-in duration-300">
-          <div className="w-12 h-12 rounded-[14px] bg-[var(--lime)] flex items-center justify-center shadow-raised text-[#171717]">
-            <svg viewBox="0 0 24 24" className="w-6 h-6 fill-current">
-              <path d="M12 2c.6 5.4 4.6 9.4 10 10-5.4.6-9.4 4.6-10 10-.6-5.4-4.6-9.4-10-10 5.4-.6 9.4-4.6 10-10z" />
-            </svg>
+          <div className="w-12 h-12 rounded-[16px] bg-[#D8FF64] flex items-center justify-center shadow-lg text-black">
+            <Sparkles className="size-6 text-black" />
           </div>
           <div className="flex items-center gap-2">
-            <Loader2 className="size-4 animate-spin text-emerald-600 dark:text-emerald-400" />
-            <span className="text-[13px] font-medium text-[var(--mute)]">
+            <Loader2 className="size-4 animate-spin text-[#D8FF64]" />
+            <span className="text-[13px] font-medium text-white/60">
               Accès sécurisé au Studio likyAI…
             </span>
           </div>
@@ -907,420 +644,368 @@ export default function StudioPage() {
   }
 
   return (
-    <>
-      {/* ── TOP BAR GAUCHE : RETOUR AUX STUDIOS + LOGO LIKYAI ── */}
-      <header className="fixed top-[calc(14px+env(safe-area-inset-top,0px))] left-3 sm:left-4 z-30 flex items-center gap-2 sm:gap-2.5 pointer-events-auto">
-        <button
-          type="button"
-          onClick={() => router.push("/studios")}
-          className="flex items-center justify-center gap-1.5 h-[34px] sm:h-[36px] px-2.5 sm:px-3 rounded-full bg-[var(--surf)] border border-[var(--line)] shadow-card text-[12px] font-medium text-[var(--ink)] hover:border-[var(--ink)]/40 hover:bg-[var(--hover)] transition-all cursor-pointer shrink-0"
-          title="Retourner au Hub des studios"
-          aria-label="Retourner au Hub des studios"
-        >
-          <CoolIcon name="arrow-left-sm" size={14} duotone={false} className="shrink-0 text-[var(--ink)]" />
-          <span className="hidden sm:inline font-sans text-[12px] font-medium text-[var(--ink)] tracking-normal">
-            Retour aux studios
-          </span>
-        </button>
+    <div className="relative min-h-screen bg-[#121211] text-[#F8F8F5] flex flex-col selection:bg-[#D8FF64] selection:text-black">
+      {/* ── TOP BAR ÉPURÉE : MENU HAMBURGER + LOGO + CRÉDITS + BIBLIOTHÈQUE + AVATAR ── */}
+      <header className="fixed top-0 inset-x-0 h-14 sm:h-16 px-3 sm:px-6 z-30 flex items-center justify-between border-b border-white/5 bg-[#121211]/80 backdrop-blur-md">
+        {/* Côté Gauche : Hamburger + Hub link + Logo */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          <button
+            type="button"
+            onClick={() => setSidebarOpen(true)}
+            className="w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-white/80 hover:text-white transition-all cursor-pointer"
+            title="Menu de navigation"
+            aria-label="Ouvrir le menu"
+          >
+            <Menu className="size-4" />
+          </button>
 
-        <div
-          className="cursor-pointer flex items-center gap-2 select-none hover:opacity-85 transition-opacity"
-          onClick={() => router.push("/")}
-          title="Accueil LikyAI"
-        >
-          <LogoIcon />
-          <span className="hidden min-[420px]:inline font-heading text-[18px] sm:text-[20px] font-normal tracking-tight text-[var(--ink)]">
-            likyAI
-          </span>
+          <button
+            type="button"
+            onClick={() => router.push("/studios")}
+            className="hidden sm:flex items-center gap-1.5 h-9 px-3 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-[12px] font-medium text-white/80 hover:text-white transition-all cursor-pointer"
+            title="Retour au Hub des studios"
+          >
+            <CoolIcon name="arrow-left-sm" size={14} duotone={false} className="shrink-0 text-white" />
+            <span>Studios</span>
+          </button>
+
+          <div
+            className="cursor-pointer flex items-center gap-2 select-none hover:opacity-85 transition-opacity pl-1"
+            onClick={() => router.push("/")}
+            title="Accueil LikyAI"
+          >
+            <LogoIcon />
+            <span className="hidden min-[480px]:inline font-heading text-[18px] sm:text-[19px] font-semibold tracking-tight text-white">
+              liky<span className="text-[#D8FF64]">AI</span>
+            </span>
+          </div>
+        </div>
+
+        {/* Côté Droit : Solde crédits + Bibliothèque + Thème + Profil */}
+        <div className="flex items-center gap-2 sm:gap-2.5">
+          {/* Badge crédits interactif */}
+          <button
+            type="button"
+            onClick={() => setTopupOpen(true)}
+            className="h-8 sm:h-9 px-2.5 sm:px-3 rounded-full bg-[#D8FF64]/10 hover:bg-[#D8FF64]/20 border border-[#D8FF64]/30 flex items-center gap-1.5 text-[11.5px] sm:text-[12px] font-semibold text-[#D8FF64] transition-all cursor-pointer"
+            title="Cliquer pour recharger vos crédits"
+          >
+            <Sparkles className="size-3.5 text-[#D8FF64]" />
+            <span className="font-mono">{credits} cr</span>
+          </button>
+
+          {/* Bibliothèque */}
+          <button
+            type="button"
+            onClick={() => setLibraryOpen(true)}
+            className="h-8 sm:h-9 px-2.5 sm:px-3 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center gap-1.5 text-[11.5px] sm:text-[12px] font-medium text-white/80 hover:text-white transition-all cursor-pointer"
+            title="Bibliothèque de vos créations"
+          >
+            <FolderOpen className="size-3.5 text-white/60" />
+            <span className="hidden sm:inline">Bibliothèque</span>
+            <span className="px-1.5 py-0.2 rounded-full bg-white/10 text-[10px] font-mono text-white/70">
+              {cards.length}
+            </span>
+          </button>
+
+          {/* Avatar / Profil (ouvre le sidebar drawer) */}
+          <button
+            type="button"
+            onClick={() => setSidebarOpen(true)}
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#D8FF64] text-black font-semibold text-[12px] sm:text-[13px] flex items-center justify-center shadow-xs cursor-pointer hover:opacity-90 transition-opacity"
+            title={user?.email || "Mon compte"}
+            aria-label="Mon profil"
+          >
+            {user?.email ? user.email.charAt(0).toUpperCase() : "A"}
+          </button>
         </div>
       </header>
 
-      {/* ── WORKSPACE : LES 4 DERNIÈRES GÉNÉRATIONS DU CANVAS LIBRE ── */}
-      <main id="board" className="relative w-full min-h-screen overflow-y-auto">
-        <SectionShowcase
-          mode={mode}
-          cards={cards.filter((c) => c.mode === mode)}
-          allModeCardsCount={cards.filter((c) => c.mode === mode).length}
-          onOpenCard={(c) => openResultForCard(c as CanvasCard)}
-          onAnimateCard={handleAnimateImage}
-          onRetryCard={(c) =>
-            handleRetryFromResult({
-              id: c.id,
-              tool: c.mode,
-              modelName: c.modelName,
-              prompt: c.fullPrompt,
-              mediaUrl: c.mediaUrl || `/assets/organic/organic-${((c.orgIndex || 0) % 4) + 1}.webp`,
-              creditsCost: c.creditsCost,
-              params: c.params,
-              createdAt: Date.now(),
-            })
-          }
-          onEditCard={(c) =>
-            handleEditFromResult({
-              id: c.id,
-              tool: c.mode,
-              modelName: c.modelName,
-              prompt: c.fullPrompt,
-              mediaUrl: c.mediaUrl || `/assets/organic/organic-${((c.orgIndex || 0) % 4) + 1}.webp`,
-              creditsCost: c.creditsCost,
-              params: c.params,
-              createdAt: Date.now(),
-            })
-          }
-          onOpenLibrary={() => setLibraryOpen(true)}
-          onSelectSamplePrompt={(sample) => {
-            setVals((prev) => ({ ...prev, prompt: sample }));
-            setIsPromptShrunk(false);
-            setTimeout(() => promptInputRef.current?.focus(), 120);
-          }}
-        />
+      {/* ── WORKSPACE CENTRAL : HERO MINIMALISTE OU CARTES EN COURS ── */}
+      <main id="board" className="flex-1 w-full flex flex-col pt-16 pb-44 overflow-y-auto">
+        {cards.length === 0 ? (
+          /* Écran d'accueil vierge & minimaliste */
+          <div className="flex-1 flex flex-col items-center justify-center max-w-3xl mx-auto px-4 py-12 sm:py-16 text-center animate-in fade-in duration-300">
+            {/* Emblème subtil LikyAI */}
+            <div className="relative mb-5">
+              <div className="w-16 h-16 rounded-[22px] bg-gradient-to-br from-[#D8FF64]/20 via-[#D8FF64]/5 to-transparent border border-[#D8FF64]/30 flex items-center justify-center text-[#D8FF64] shadow-[0_0_35px_rgba(216,255,100,0.15)]">
+                <Sparkles className="size-8 text-[#D8FF64]" />
+              </div>
+            </div>
+
+            <h1 className="font-heading text-2xl sm:text-3xl font-semibold tracking-tight text-white mb-2">
+              Que souhaitez-vous imaginer aujourd&apos;hui ?
+            </h1>
+            <p className="text-[13px] sm:text-[14px] text-white/50 max-w-md mx-auto mb-8">
+              Générez des vidéos 4K, visuels et musiques avec nos meilleurs modèles unifiés.
+            </p>
+
+            {/* Cartes d'actions rapides et outils spécialisés */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 w-full">
+              {/* AI Influencer */}
+              <button
+                type="button"
+                onClick={() => setInfluencerOpen(true)}
+                className="p-3.5 rounded-2xl bg-[#1A1A19] border border-white/10 hover:border-[#D8FF64]/40 hover:bg-white/5 text-left transition-all group cursor-pointer"
+              >
+                <div className="w-8 h-8 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform">
+                  <User className="size-4" />
+                </div>
+                <div className="text-[12.5px] font-semibold text-white mb-0.5">AI Influencer</div>
+                <div className="text-[11px] text-white/50 leading-tight">Clone et visage cohérent</div>
+              </button>
+
+              {/* Genjutsu Motion */}
+              <button
+                type="button"
+                onClick={() => setGenjutsuOpen(true)}
+                className="p-3.5 rounded-2xl bg-[#1A1A19] border border-white/10 hover:border-[#D8FF64]/40 hover:bg-white/5 text-left transition-all group cursor-pointer"
+              >
+                <div className="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform">
+                  <Sparkles className="size-4" />
+                </div>
+                <div className="text-[12.5px] font-semibold text-white mb-0.5">Genjutsu Motion</div>
+                <div className="text-[11px] text-white/50 leading-tight">Transfert de mouvement</div>
+              </button>
+
+              {/* Cinéma Studio 4.0 */}
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedModelId("cinema_studio_4");
+                  setSelectedModelName("Cinema Studio 4.0");
+                  setMode("video");
+                  setAspectRatio("16:9");
+                  showToast("Modèle Cinéma Studio 4.0 sélectionné (16:9)");
+                }}
+                className="p-3.5 rounded-2xl bg-[#1A1A19] border border-white/10 hover:border-[#D8FF64]/40 hover:bg-white/5 text-left transition-all group cursor-pointer"
+              >
+                <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform">
+                  <Film className="size-4" />
+                </div>
+                <div className="text-[12.5px] font-semibold text-white mb-0.5">Cinéma 4.0</div>
+                <div className="text-[11px] text-white/50 leading-tight">Plans 35mm Hollywood</div>
+              </button>
+
+              {/* Ad Builder & UGC */}
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedModelId("seedance-2-5");
+                  setSelectedModelName("Seedance 2.5");
+                  setMode("video");
+                  setAspectRatio("9:16");
+                  showToast("Modèle Seedance 2.5 configuré pour les pubs et UGC");
+                }}
+                className="p-3.5 rounded-2xl bg-[#1A1A19] border border-white/10 hover:border-[#D8FF64]/40 hover:bg-white/5 text-left transition-all group cursor-pointer"
+              >
+                <div className="w-8 h-8 rounded-xl bg-sky-500/10 border border-sky-500/20 text-sky-400 flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform">
+                  <ShoppingBag className="size-4" />
+                </div>
+                <div className="text-[12.5px] font-semibold text-white mb-0.5">Ad & UGC</div>
+                <div className="text-[11px] text-white/50 leading-tight">Pubs virales TikTok & Reels</div>
+              </button>
+            </div>
+          </div>
+        ) : (
+          /* Grille des générations existantes */
+          <div className="w-full max-w-5xl mx-auto px-4 pt-4">
+            <SectionShowcase
+              mode={mode}
+              cards={cards.filter((c) => c.mode === mode)}
+              allModeCardsCount={cards.filter((c) => c.mode === mode).length}
+              onOpenCard={(c) => openResultForCard(c as CanvasCard)}
+              onAnimateCard={handleAnimateImage}
+              onRetryCard={(c) =>
+                handleRetryFromResult({
+                  id: c.id,
+                  tool: c.mode,
+                  modelName: c.modelName,
+                  prompt: c.fullPrompt,
+                  mediaUrl: c.mediaUrl || `/assets/organic/organic-${((c.orgIndex || 0) % 4) + 1}.webp`,
+                  creditsCost: c.creditsCost,
+                  params: c.params,
+                  createdAt: Date.now(),
+                })
+              }
+              onEditCard={(c) =>
+                handleEditFromResult({
+                  id: c.id,
+                  tool: c.mode,
+                  modelName: c.modelName,
+                  prompt: c.fullPrompt,
+                  mediaUrl: c.mediaUrl || `/assets/organic/organic-${((c.orgIndex || 0) % 4) + 1}.webp`,
+                  creditsCost: c.creditsCost,
+                  params: c.params,
+                  createdAt: Date.now(),
+                })
+              }
+              onOpenLibrary={() => setLibraryOpen(true)}
+              onSelectSamplePrompt={(sample) => {
+                setPrompt(sample);
+              }}
+            />
+          </div>
+        )}
       </main>
 
-      {/* ── NAVIGATION CENTRALE HAUTE (4 OUTILS PURS : IMAGE · VIDÉO · MUSIQUE · VOIX OFF) ── */}
-      <div className="top hidden sm:flex items-center">
-        <div className="nav" id="nav">
-          {CATEGORIES.map((cat) => {
-            const active = mode === cat.id;
-            return (
-              <button
-                key={cat.id}
-                type="button"
-                className={active ? "on" : ""}
-                onClick={() => {
-                  setMode(cat.id);
-                  setVt(null);
-                }}
-              >
-                <CoolIcon
-                  name={cat.icon}
-                  duotone
-                  size={24}
-                  secondaryColor="currentColor"
-                  secondaryOpacity={active ? 0.45 : 0.2}
-                  className={active ? "text-[var(--ink)]" : "text-[var(--mute)]"}
-                />
-                <span>{cat.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* ── ACTIONS HAUT DROITE RESPONSIVES (BIBLIOTHÈQUE, THÈME & AVATAR) ── */}
-      <div className="top-actions">
-
-            {/* Bouton Bibliothèque unique */}
-            <button
-              type="button"
-              className="h-[36px] sm:h-[38px] px-2.5 sm:px-3.5 rounded-full bg-[var(--surf)] border border-[var(--line)] shadow-card flex items-center gap-1.5 sm:gap-2 text-[12px] sm:text-[12.5px] font-medium text-[var(--ink)] hover:border-[var(--ink)]/40 transition-all cursor-pointer"
-              onClick={() => setLibraryOpen(true)}
-              title="Ouvrir la bibliothèque de créations"
-            >
-              <CoolIcon name="folders" duotone size={16} secondaryColor="currentColor" secondaryOpacity={0.4} />
-              <span className="hidden sm:inline">Bibliothèque</span>
-              <span className="px-1.5 py-0.2 rounded-full bg-[var(--mn)] text-[10px] sm:text-[10.5px] font-mono text-[var(--mute)]">
-                {cards.length}
-              </span>
-            </button>
-
-            {/* Bouton Thème */}
-            <button
-              type="button"
-              className="theme"
-              id="theme"
-              onClick={toggleTheme}
-              title={isDark ? "Passer en clair" : "Passer en sombre"}
-              aria-label="Changer de thème"
-            >
-              {isDark ? (
-                <CoolIcon name="sun" duotone size={19} secondaryColor="currentColor" secondaryOpacity={0.45} />
-              ) : (
-                <CoolIcon name="moon" duotone size={19} secondaryColor="var(--ink)" secondaryOpacity={0.25} />
-              )}
-            </button>
-
-            {/* Menu Profil / Avatar */}
-            <div className="avatar">
-              <button
-                type="button"
-                className="av"
-                id="av"
-                aria-label="Profil"
-                onClick={() => setMenuOpen((o) => !o)}
-              >
-                <i>{user?.email ? user.email.charAt(0).toUpperCase() : "A"}</i>
-              </button>
-
-              <div className={`menu ${menuOpen ? "open" : ""}`} id="menu">
-                <div className="px-3 py-2 border-b border-[var(--line)]">
-                  <small className="block text-[10.5px] text-[var(--mute)] truncate">Connecté en tant que</small>
-                  <strong className="block text-[12px] font-semibold text-[var(--ink)] truncate max-w-[200px]">
-                    {user?.email || "Compte studio"}
-                  </strong>
-                </div>
-
-                <div className="cred">
-                  <div className="w-10 h-10 rounded-[12px] bg-[var(--mn)] border border-[var(--line)] flex items-center justify-center shrink-0 text-[var(--ink)]">
-                    <CoolIcon name="credit-card-01" duotone size={22} secondaryColor="currentColor" secondaryOpacity={0.45} />
-                  </div>
-                  <div>
-                    <small>Crédits</small>
-                    <strong id="credits">{credits}</strong>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  className="mi pri"
-                  id="topup"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    setScrim1Open(true);
-                  }}
-                >
-                  Recharger
-                </button>
-                <button
-                  type="button"
-                  className="mi"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    router.push("/studios");
-                  }}
-                >
-                  <div className="w-6 h-6 rounded-[7px] bg-[var(--mn)] border border-[var(--line)] flex items-center justify-center shrink-0 text-[var(--ink)]">
-                    <CoolIcon name="more-grid-big" duotone size={15} />
-                  </div>
-                  Hub des studios
-                </button>
-                <button
-                  type="button"
-                  className="mi"
-                  id="hs"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    setScrim2Open(true);
-                  }}
-                >
-                  <div className="w-6 h-6 rounded-[7px] bg-[var(--mn)] border border-[var(--line)] flex items-center justify-center shrink-0 text-[var(--ink)]">
-                    <CoolIcon name="folder" duotone size={15} />
-                  </div>
-                  Historique
-                </button>
-                <button
-                  type="button"
-                  className="mi"
-                  id="st"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    setScrim3Open(true);
-                  }}
-                >
-                  <div className="w-6 h-6 rounded-[7px] bg-[var(--mn)] border border-[var(--line)] flex items-center justify-center shrink-0 text-[var(--ink)]">
-                    <CoolIcon name="settings" duotone size={15} />
-                  </div>
-                  Paramètres
-                </button>
-                <div className="hr" />
-                <button
-                  type="button"
-                  className="mi text-red-400 hover:text-red-300"
-                  id="out"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    handleSignOut();
-                  }}
-                >
-                  <div className="w-6 h-6 rounded-[7px] bg-red-500/10 border border-red-500/20 flex items-center justify-center shrink-0 text-red-400">
-                    <CoolIcon name="log-out" duotone size={15} />
-                  </div>
-                  Se déconnecter
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* ── DOCK INFÉRIEUR (CANVAS SEULEMENT - PROPRE ET SANS CLUTTER) ── */}
-          <div className="dock" id="dock" ref={dockRef}>
-            {/* Navigation des catégories sur Mobile */}
-            <div className="flex sm:hidden justify-center mb-2 pointer-events-auto">
-              <div className="flex items-center gap-1 p-1 bg-[var(--surf)] border border-[var(--line)] rounded-full shadow-card backdrop-blur-md overflow-x-auto max-w-[95vw]">
-                {CATEGORIES.map((cat) => {
-                  const active = mode === cat.id;
-                  return (
-                    <button
-                      key={cat.id}
-                      type="button"
-                      onClick={() => {
-                        setMode(cat.id);
-                        setVt(null);
-                      }}
-                      className={cn(
-                        "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11.5px] font-medium transition-all cursor-pointer whitespace-nowrap",
-                        active
-                          ? "bg-[var(--ink)] text-[var(--bg)] shadow-xs font-semibold"
-                          : "text-[var(--mute)] hover:text-[var(--ink)] hover:bg-[var(--mn)]"
-                      )}
-                    >
-                      <CoolIcon
-                        name={cat.icon}
-                        duotone
-                        size={13}
-                        secondaryColor="currentColor"
-                        secondaryOpacity={active ? 0.9 : 0.3}
-                      />
-                      <span>{cat.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Mode Vidéo sans type choisi -> Grille de cartes .types avec textures organiques */}
-            {mode === "video" && !vt ? (
-              <div className="types">
-                {Object.entries(VTYPES).map(([k, cfg], i) => (
+      {/* ── BARRE FLOTTANTE INFÉRIEURE : CATÉGORIES + UNIFIED PROMPT BUBBLE ── */}
+      <footer className="fixed bottom-4 sm:bottom-6 inset-x-0 z-40 px-3 sm:px-4 pointer-events-none">
+        <div className="max-w-2xl mx-auto w-full pointer-events-auto">
+          {/* Sélecteur de catégorie (Image · Vidéo · Musique · Voix off) */}
+          <div className="flex items-center justify-center mb-2">
+            <div className="flex items-center gap-1 p-1 bg-[#1A1A19]/90 backdrop-blur-md border border-white/10 rounded-full shadow-lg">
+              {CATEGORIES.map((cat) => {
+                const active = mode === cat.id;
+                return (
                   <button
-                    key={k}
+                    key={cat.id}
                     type="button"
-                    className={`o${i % 4}`}
-                    onClick={() => setVt(k)}
+                    onClick={() => {
+                      setMode(cat.id);
+                      if (selectedModelId === "auto") {
+                        // keep auto
+                      }
+                    }}
+                    className={cn(
+                      "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11.5px] font-medium transition-all cursor-pointer select-none",
+                      active
+                        ? "bg-[#D8FF64] text-black font-semibold shadow-xs"
+                        : "text-white/60 hover:text-white hover:bg-white/5"
+                    )}
                   >
-                    <b>{cfg.n}</b>
-                    <span>{cfg.d}</span>
+                    <CoolIcon
+                      name={cat.icon}
+                      duotone
+                      size={13}
+                      secondaryColor="currentColor"
+                      secondaryOpacity={active ? 0.9 : 0.4}
+                    />
+                    <span>{cat.label}</span>
                   </button>
-                ))}
-              </div>
-            ) : (
-              <PromptBubble
-                mode={mode}
-                vt={vt}
-                setVt={setVt}
-                vals={vals}
-                setVals={setVals}
-                onGenerate={handleGenerate}
-                cost={currentCost}
-                glimmRef={glimmRef}
-                isShrunk={isPromptShrunk}
-                setIsShrunk={setIsPromptShrunk}
-              />
-            )}
+                );
+              })}
+            </div>
           </div>
 
-      {/* ── MODALE 1 : RECHARGE MOBILE MONEY & CARTE (COSS WHITE-LABEL) ── */}
+          {/* Bulle de prompt unifiée avec [+], [Modèle], [Ratio] et [↑] */}
+          <UnifiedPromptBubble
+            prompt={prompt}
+            setPrompt={setPrompt}
+            selectedModelName={selectedModelName}
+            onOpenModelSelector={() => setModelSelectorOpen(true)}
+            aspectRatio={aspectRatio}
+            setAspectRatio={setAspectRatio}
+            onOpenAssets={() => setAssetsModalOpen(true)}
+            selectedAssets={selectedAssets}
+            onRemoveAsset={(id) => setSelectedAssets((cur) => cur.filter((a) => a.id !== id))}
+            onOpenInfluencerBuilder={() => setInfluencerOpen(true)}
+            isGenerating={isGenerating}
+            onGenerate={handleGenerate}
+            creditsCost={currentCost}
+          />
+        </div>
+      </footer>
+
+      {/* ── TIROIRS & MODALES BRANCHÉS ── */}
+
+      {/* Menu latéral gauche */}
+      <SidebarDrawer
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        userEmail={user.email}
+        credits={credits}
+        onOpenTopup={() => {
+          setSidebarOpen(false);
+          setTopupOpen(true);
+        }}
+        onOpenInfluencerBuilder={() => {
+          setSidebarOpen(false);
+          setInfluencerOpen(true);
+        }}
+        onOpenGenjutsu={() => {
+          setSidebarOpen(false);
+          setGenjutsuOpen(true);
+        }}
+        onOpenAssets={() => {
+          setSidebarOpen(false);
+          setAssetsModalOpen(true);
+        }}
+      />
+
+      {/* Modale de sélection de modèle */}
+      <ModelSelectorModal
+        isOpen={modelSelectorOpen}
+        onClose={() => setModelSelectorOpen(false)}
+        selectedModel={selectedModelId}
+        onSelectModel={(modelId, modelName) => {
+          setSelectedModelId(modelId);
+          setSelectedModelName(modelName);
+          setModelSelectorOpen(false);
+          // Met à jour la catégorie associée si applicable
+          const target = ALL_MODELS.find((m) => m.id === modelId);
+          if (target) {
+            if (target.category === "image") setMode("image");
+            if (target.category === "video") setMode("video");
+            if (target.category === "audio") setMode("music");
+          }
+          showToast(`Modèle "${modelName}" sélectionné`);
+        }}
+      />
+
+      {/* Modale des Assets (+ et @) */}
+      <AssetsModal
+        isOpen={assetsModalOpen}
+        onClose={() => setAssetsModalOpen(false)}
+        selectedAssetIds={selectedAssets.map((a) => a.id)}
+        onToggleAsset={(asset) => {
+          setSelectedAssets((cur) => {
+            const exists = cur.some((a) => a.id === asset.id);
+            if (exists) {
+              return cur.filter((a) => a.id !== asset.id);
+            } else {
+              return [...cur, asset];
+            }
+          });
+        }}
+        onApply={() => setAssetsModalOpen(false)}
+        onOpenInfluencerBuilder={() => {
+          setAssetsModalOpen(false);
+          setInfluencerOpen(true);
+        }}
+        customAssets={customAssets}
+        onUploadFiles={handleUploadFiles}
+      />
+
+      {/* Constructeur modulaire AI Influencer */}
+      <InfluencerBuilderDrawer
+        isOpen={influencerOpen}
+        onClose={() => setInfluencerOpen(false)}
+        onCharacterCreated={handleCharacterCreated}
+      />
+
+      {/* Tiroir Genjutsu Motion Transfer & Swap */}
+      <GenjutsuDrawer
+        isOpen={genjutsuOpen}
+        onClose={() => setGenjutsuOpen(false)}
+        onGenerateMotion={handleGenjutsuLaunch}
+      />
+
+      {/* Modale de recharge Mobile Money */}
       <TopupModal
-        isOpen={scrim1Open}
-        onClose={() => setScrim1Open(false)}
+        isOpen={topupOpen}
+        onClose={() => setTopupOpen(false)}
         onSuccess={(addedCredits, newTotal) => {
           if (typeof newTotal === "number") {
             setCredits(newTotal);
           } else {
             setCredits((prev) => prev + addedCredits);
           }
-          setLog((prev) => [
-            {
-              t: "Recharge Mobile Money",
-              d: `+${addedCredits} crédits`,
-              v: addedCredits,
-            },
-            ...prev,
-          ]);
-          showToast(`+${addedCredits} crédits ajoutés à votre compte !`);
+          showToast(`+${addedCredits} crédits ajoutés à votre solde !`);
         }}
       />
 
-      {/* ── MODALE 2 : HISTORIQUE ── */}
-      <div
-        className={`scrim ${scrim2Open ? "open" : ""}`}
-        id="scrim2"
-        onClick={(e) => {
-          if (e.target === e.currentTarget) setScrim2Open(false);
-        }}
-      >
-        <div className="modal">
-          <h3>Historique</h3>
-          <p>Tes recharges et créations récentes.</p>
-          <div id="hist" className="max-h-60 overflow-y-auto pr-1">
-            {log.length ? (
-              log.map((item, idx) => (
-                <div key={idx} className="hr2">
-                  <div>
-                    {item.t}
-                    <br />
-                    <span>{item.d}</span>
-                  </div>
-                  <b>
-                    {item.v > 0 ? "+" : ""}
-                    {item.v} cr
-                  </b>
-                </div>
-              ))
-            ) : (
-              <p className="text-[13px] text-[var(--mute)]">Aucune transaction pour le moment.</p>
-            )}
-          </div>
-          <button
-            type="button"
-            className="x"
-            id="close2"
-            onClick={() => setScrim2Open(false)}
-          >
-            Fermer
-          </button>
-        </div>
-      </div>
-
-      {/* ── MODALE 3 : PARAMÈTRES D'APPARENCE ── */}
-      <div
-        className={`scrim ${scrim3Open ? "open" : ""}`}
-        id="scrim3"
-        onClick={(e) => {
-          if (e.target === e.currentTarget) setScrim3Open(false);
-        }}
-      >
-        <div className="modal">
-          <h3>Paramètres</h3>
-          <p>Choisis l'apparence de likyAI.</p>
-          <div className="ops" style={{ gridTemplateColumns: "repeat(3, 1fr)" }}>
-            <button
-              type="button"
-              className={themeMode === "light" ? "on" : ""}
-              onClick={() => applyThemeSetting("light")}
-            >
-              Clair
-            </button>
-            <button
-              type="button"
-              className={themeMode === "dark" ? "on" : ""}
-              onClick={() => applyThemeSetting("dark")}
-            >
-              Sombre
-            </button>
-            <button
-              type="button"
-              className={themeMode === "auto" ? "on" : ""}
-              onClick={() => applyThemeSetting("auto")}
-            >
-              Auto
-            </button>
-          </div>
-          <button
-            type="button"
-            className="x"
-            id="close3"
-            onClick={() => setScrim3Open(false)}
-          >
-            Fermer
-          </button>
-        </div>
-      </div>
-
-      {/* ── TOAST NOTIFICATION ── */}
-      <div className={`toast ${toastMsg ? "show" : ""}`} id="toast">
-        {toastMsg}
-      </div>
-
-      {/* ── MODALE BIBLIOTHÈQUE DE CRÉATIONS ── */}
+      {/* Modale Bibliothèque de créations */}
       <LibraryModal
         isOpen={libraryOpen}
         onClose={() => setLibraryOpen(false)}
@@ -1352,11 +1037,11 @@ export default function StudioPage() {
         }
         onDeleteItem={(id) => {
           setCards((cur) => cur.filter((c) => c.id !== id));
-          showToast("Création supprimée de la bibliothèque");
+          showToast("Création supprimée");
         }}
       />
 
-      {/* ── BULLE D'AFFICHAGE DU RÉSULTAT (ANIMER EN VIDÉO · RÉESSAYER · TÉLÉCHARGER · MODIFIER) ── */}
+      {/* Bulle d'affichage du résultat */}
       <ResultBubble
         result={activeResult}
         isOpen={resultBubbleOpen}
@@ -1365,6 +1050,11 @@ export default function StudioPage() {
         onEdit={handleEditFromResult}
         onAnimate={handleAnimateImage}
       />
-    </>
+
+      {/* Toast Notification */}
+      <div className={cn("toast", toastMsg ? "show" : "")} id="toast">
+        {toastMsg}
+      </div>
+    </div>
   );
 }
