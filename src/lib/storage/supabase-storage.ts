@@ -1,6 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 
-export const MEDIA_BUCKET = "likyai-media";
+export const MEDIA_BUCKET = "creations";
 
 /**
  * Télécharge un fichier multimédia depuis une URL distante (ex: CDN Higgsfield qui expire à J+7, ou kie.ai)

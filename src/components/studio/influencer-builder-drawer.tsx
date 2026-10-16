@@ -4,6 +4,9 @@ import React, { useState } from "react";
 import { CoolIcon } from "@/components/icons/coolicon";
 import { cn } from "@/lib/utils";
 
+import { pollTaskUntilComplete } from "@/lib/tasks/poll-task";
+import { createClient } from "@/lib/supabase/client";
+
 interface InfluencerBuilderDrawerProps {
   isOpen: boolean;
   onClose: () => void;
@@ -87,31 +90,78 @@ export function InfluencerBuilderDrawer({
         body: JSON.stringify({
           tool: "image",
           model: "ai_influencer",
-          prompt: `High-end multi-angle photorealistic influencer master portrait: ${promptCompiled}, 8k studio lighting, photoreal skin texture`,
+          prompt: `High-end photorealistic portrait of an influencer: ${promptCompiled}, 8k studio lighting, photoreal skin texture, ultra detailed facial features`,
           aspectRatio: "9:16",
           creditsCost: 8,
         }),
       });
 
       const data = await res.json();
-      const avatarUrl = data.resultUrl || "/assets/studios/studio-ugc.jpg";
+      if (!res.ok) throw new Error(data.error || "Erreur de génération");
+
+      let avatarUrl = data.resultUrl;
+      if (data.taskId) {
+        const pollResult = await pollTaskUntilComplete(data.taskId);
+        if (pollResult.resultUrl) {
+          avatarUrl = pollResult.resultUrl;
+        }
+      }
+
+      if (!avatarUrl) {
+        throw new Error("Impossible de générer l'influenceur.");
+      }
+
+      // Persist character to Supabase if authenticated
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      const characterId = `inf_${Date.now()}`;
+      const characterCleanName = characterName.toLowerCase().replace(/[^a-z0-9]/g, "_") || "influencer";
+
+      if (session?.user) {
+        try {
+          await supabase.from("characters").insert({
+            id: characterId,
+            user_id: session.user.id,
+            name: characterCleanName,
+            avatar_url: avatarUrl,
+            traits: {
+              summary,
+              gender,
+              ethnicity,
+              age,
+              build,
+              height,
+              proportions,
+              headShape,
+              neck,
+              hairstyle,
+              hairColor,
+              eyeShape,
+              eyeColor,
+              skinColor,
+              features,
+              facialHair,
+              distinctive,
+              accessories,
+              stylePreset,
+            },
+          });
+        } catch (dbErr) {
+          console.warn("Failed to insert character into DB:", dbErr);
+        }
+      }
 
       onCharacterCreated({
-        id: `inf_${Date.now()}`,
-        name: characterName.toLowerCase().replace(/[^a-z0-9]/g, "_") || "influencer",
+        id: characterId,
+        name: characterCleanName,
         avatarUrl,
         summary,
       });
 
       onClose();
-    } catch {
-      onCharacterCreated({
-        id: `inf_${Date.now()}`,
-        name: characterName.toLowerCase().replace(/[^a-z0-9]/g, "_") || "influencer",
-        avatarUrl: "/assets/studios/studio-ugc.jpg",
-        summary,
-      });
-      onClose();
+    } catch (err: any) {
+      console.error("Influencer creation failed:", err);
+      alert(err?.message || "Échec de création de l'influenceur. Veuillez vérifier vos crédits.");
     } finally {
       setIsGenerating(false);
     }
@@ -1036,7 +1086,7 @@ export function InfluencerBuilderDrawer({
                 <>
                   <span>Generate</span>
                   <CoolIcon name="star" size={14} duotone={false} className="text-black" />
-                  <span className="font-mono text-xs">1.125 cr</span>
+                  <span className="font-mono text-xs">8 cr</span>
                 </>
               )}
             </button>

@@ -112,12 +112,7 @@ export class HiggsfieldAdapter implements ProviderAdapter {
     const auth = this.getAuth();
 
     if (!auth) {
-      // Mode simulation / démo
-      const simTaskId = `sim-hf-${Date.now()}`;
-      return {
-        requestId: simTaskId,
-        mode: "demo",
-      };
+      throw new Error("Higgsfield API credentials non configurés.");
     }
 
     const endpointId = this.resolveEndpoint(modelId, opts);

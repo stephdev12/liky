@@ -1,30 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { providerRouter } from "@/lib/providers/router";
 
-// Simulation in-memory pour le mode démo/local
-interface SimulatedTask {
-  taskId: string;
-  tool: string;
-  prompt: string;
-  createdAt: number;
-  creditsCost: number;
-  resultUrl: string;
-  metadata?: Record<string, unknown>;
-}
-
-declare global {
-  // eslint-disable-next-line no-var
-  var __simulatedTasks: Map<string, SimulatedTask> | undefined;
-}
-
-if (!globalThis.__simulatedTasks) {
-  globalThis.__simulatedTasks = new Map();
-}
-
-export function saveSimulatedTask(task: SimulatedTask) {
-  globalThis.__simulatedTasks?.set(task.taskId, task);
-}
-
 export async function GET(
   req: NextRequest,
   context: { params: Promise<{ taskId: string }> }
@@ -36,56 +12,30 @@ export async function GET(
       return NextResponse.json({ error: "taskId requis" }, { status: 400 });
     }
 
-    // Gestion du mode simulation / démo
     if (taskId.startsWith("sim-") || taskId.startsWith("demo-")) {
-      const sim = globalThis.__simulatedTasks?.get(taskId);
-      const createdAt = sim?.createdAt || Date.now() - 3500;
-      const elapsed = (Date.now() - createdAt) / 1000;
-
-      if (elapsed < 1.0) {
-        return NextResponse.json({
-          taskId,
-          state: "waiting",
-          progress: 25,
-          elapsed: Math.round(elapsed),
-          message: "Analyse du prompt et allocation GPU…",
-        });
-      }
-
-      if (elapsed < 2.5) {
-        return NextResponse.json({
-          taskId,
-          state: "generating",
-          progress: 65,
-          elapsed: Math.round(elapsed),
-          message: "Génération des latents et synthèse…",
-        });
-      }
-
-      // Tâche terminée
-      const defaultUrl =
-        sim?.tool === "music"
-          ? "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
-          : sim?.tool === "voice"
-          ? "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3"
-          : `/assets/organic/organic-${Math.floor(Math.random() * 4) + 1}.webp`;
-
-      return NextResponse.json({
-        taskId,
-        state: "success",
-        progress: 100,
-        elapsed: Math.round(elapsed),
-        creditsConsumed: sim?.creditsCost || 5,
-        response: {
-          resultUrls: [sim?.resultUrl || defaultUrl],
-        },
-      });
+      return NextResponse.json(
+        { error: "Tâche de simulation obsolète. Toutes les créations sont désormais réelles." },
+        { status: 400 }
+      );
     }
 
     // Récupération de l'état réel auprès du routeur unifié
     const { provider, result } = await providerRouter.getStatus(taskId);
 
     if (result.state === "fail") {
+      try {
+        const { createAdminClient } = await import("@/lib/supabase/admin");
+        const adminClient = createAdminClient();
+        await adminClient
+          .from("generations")
+          .update({
+            status: "failed",
+            fail_reason: result.error || "Échec de génération",
+            updated_at: new Date().toISOString(),
+          })
+          .eq("task_id", taskId);
+      } catch {}
+
       return NextResponse.json(
         {
           taskId,
@@ -114,12 +64,53 @@ export async function GET(
     // Format standardisé unifié pour le client
     const resultUrls = (result.outputs || []).map((o) => o.url);
 
+    if (result.state === "success" && resultUrls.length > 0) {
+      try {
+        const { createAdminClient } = await import("@/lib/supabase/admin");
+        const adminClient = createAdminClient();
+
+        const { data: genRecord } = await adminClient
+          .from("generations")
+          .select("id, user_id, credits_cost")
+          .eq("task_id", taskId)
+          .maybeSingle();
+
+        await adminClient
+          .from("generations")
+          .update({
+            status: "success",
+            media_url: resultUrls[0],
+            updated_at: new Date().toISOString(),
+          })
+          .eq("task_id", taskId);
+
+        if (genRecord?.user_id && genRecord?.credits_cost) {
+          const { data: profile } = await adminClient
+            .from("profiles")
+            .select("credits")
+            .eq("id", genRecord.user_id)
+            .maybeSingle();
+
+          if (profile && typeof profile.credits === "number") {
+            const newBalance = Math.max(0, profile.credits - genRecord.credits_cost);
+            await adminClient
+              .from("profiles")
+              .update({ credits: newBalance })
+              .eq("id", genRecord.user_id);
+          }
+        }
+      } catch (dbErr) {
+        console.warn("[Tasks] Erreur mise à jour Supabase generation:", dbErr);
+      }
+    }
+
     return NextResponse.json({
       taskId,
       provider,
       state: result.state,
       successFlag: result.state === "success" ? 1 : 0,
       creditsConsumed: result.creditsConsumed,
+      resultUrl: resultUrls[0],
       response: {
         resultUrls,
       },

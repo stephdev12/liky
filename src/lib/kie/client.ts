@@ -122,23 +122,28 @@ export async function fetchKieModelSchema(model: string) {
 /**
  * Normalise les identifiants de modèles LikyAI vers les slugs officiels KIE.ai
  */
-export function resolveKieModel(tool: "image" | "video" | "music" | "voice", rawModelId?: string): string {
+export function resolveKieModel(
+  tool: "image" | "video" | "music" | "voice",
+  rawModelId?: string,
+  opts?: { hasReferenceImage?: boolean }
+): string {
   const m = (rawModelId || "").toLowerCase();
 
   if (tool === "image") {
-    if (m.includes("banana") || m.includes("nano")) return "nano-banana-2";
-    if (m.includes("z-image") || m.includes("soul") || m.includes("turbo")) return "z-image";
-    if (m.includes("seed") || m.includes("dream")) return "seedream/5-lite-text-to-image";
-    if (m.includes("gpt")) return "gpt-image-2-text-to-image";
-    return "nano-banana-2";
+    return "google/nano-banana";
   }
 
   if (tool === "video") {
-    if (m.includes("seedance") || m.includes("bytedance")) return "bytedance/seedance-2-mini";
-    if (m.includes("kling")) return "kling/v3-turbo-text-to-video";
-    if (m.includes("wan")) return "wan/2-7-image";
-    if (m.includes("veo") || m.includes("omni")) return "bytedance/seedance-2-mini";
-    return "bytedance/seedance-2-mini";
+    if (
+      opts?.hasReferenceImage ||
+      m.includes("i2v") ||
+      m.includes("image-to-video") ||
+      m.includes("genjutsu") ||
+      m.includes("motion")
+    ) {
+      return "bytedance/v1-lite-image-to-video";
+    }
+    return "bytedance/v1-lite-text-to-video";
   }
 
   if (tool === "music") {
@@ -149,11 +154,11 @@ export function resolveKieModel(tool: "image" | "video" | "music" | "voice", raw
     return "elevenlabs/text-to-speech-turbo-2-5";
   }
 
-  return rawModelId || "nano-banana-2";
+  return "google/nano-banana";
 }
 
 /**
- * Nettoie et prépare le payload 'input' selon le schéma du modèle KIE
+ * Nettoie et prépare le payload 'input' selon le schéma vérifié du modèle KIE
  */
 export function buildKieInputPayload(
   tool: "image" | "video" | "music" | "voice",
@@ -165,8 +170,14 @@ export function buildKieInputPayload(
 
   // Extraction propre du ratio d'aspect
   let aspectRatio = "1:1";
-  const rawFormat = (p.format || p.Format || p.Plateforme || p.plateforme || "") as string;
-  if (rawFormat.includes("9:16") || rawFormat.includes("TikTok") || rawFormat.includes("Reels") || rawFormat.includes("Shorts") || rawFormat.includes("Vertical")) {
+  const rawFormat = (p.format || p.Format || p.Plateforme || p.plateforme || p.aspectRatio || "") as string;
+  if (
+    rawFormat.includes("9:16") ||
+    rawFormat.includes("TikTok") ||
+    rawFormat.includes("Reels") ||
+    rawFormat.includes("Shorts") ||
+    rawFormat.includes("Vertical")
+  ) {
     aspectRatio = "9:16";
   } else if (rawFormat.includes("16:9") || rawFormat.includes("YouTube") || rawFormat.includes("Paysage")) {
     aspectRatio = "16:9";
@@ -178,81 +189,53 @@ export function buildKieInputPayload(
     aspectRatio = "4:3";
   }
 
-  // Modèles Image
+  // Modèles Image (google/nano-banana)
   if (tool === "image") {
-    if (kieModel === "nano-banana-2") {
-      const res = (p.qual || p.resolution || "1K") as string;
-      const validRes = ["1K", "2K", "4K"].includes(res) ? res : "1K";
-      return {
-        prompt,
-        aspect_ratio: aspectRatio,
-        resolution: validRes,
-        output_format: "jpg",
-      };
-    }
-
-    if (kieModel === "z-image") {
-      return {
-        prompt,
-        aspect_ratio: aspectRatio,
-      };
-    }
-
-    if (kieModel.includes("seedream")) {
-      const q = (p.qual || "basic") as string;
-      const quality = q.includes("4K") ? "ultra" : q.includes("2K") ? "high" : "basic";
-      return {
-        prompt,
-        aspect_ratio: aspectRatio,
-        quality,
-        output_format: "png",
-      };
-    }
-
+    const validRatios = ["1:1", "9:16", "16:9", "3:4", "4:3", "4:5"];
     return {
       prompt,
-      aspect_ratio: aspectRatio,
+      aspect_ratio: validRatios.includes(aspectRatio) ? aspectRatio : "1:1",
+      output_format: "png",
     };
   }
 
-  // Modèles Vidéo
+  // Modèles Vidéo (bytedance/v1-lite-*)
   if (tool === "video") {
     const rawDur = String(p["Durée"] || p.duration || "5");
     const durSec = parseInt(rawDur.replace(/\D/g, "")) || 5;
+    const durationStr = durSec > 7 ? "10" : "5";
+    const validVideoRatios = ["16:9", "4:3", "1:1", "3:4", "9:16", "9:21"];
+    const validRatio = validVideoRatios.includes(aspectRatio) ? aspectRatio : "16:9";
 
-    if (kieModel.includes("seedance")) {
-      return {
-        prompt,
-        aspect_ratio: aspectRatio,
-        duration: Math.min(15, Math.max(4, durSec)),
-        resolution: "480p",
-        generate_audio: false,
-      };
-    }
+    const refImage =
+      (p.image_url as string) ||
+      (Array.isArray(p.image_urls) ? (p.image_urls[0] as string) : undefined) ||
+      (Array.isArray(p.referenceImageUrls) ? (p.referenceImageUrls[0] as string) : undefined);
 
-    if (kieModel.includes("kling")) {
+    if (kieModel.includes("image-to-video") && refImage) {
       return {
-        prompt,
-        duration: String(Math.min(15, Math.max(3, durSec))),
-        aspect_ratio: ["1:1", "9:16", "16:9"].includes(aspectRatio) ? aspectRatio : "16:9",
+        prompt: prompt || "Cinematic fluid camera motion and realistic texture movement",
+        image_url: refImage,
         resolution: "720p",
+        duration: durationStr,
       };
     }
 
     return {
       prompt,
-      aspect_ratio: aspectRatio,
-      duration: durSec,
+      aspect_ratio: validRatio,
+      resolution: "720p",
+      duration: durationStr,
     };
   }
 
-  // Musique (Suno V6)
+  // Musique (Suno ai-music-api/generate)
   if (tool === "music") {
     return {
       prompt,
       custom_mode: false,
       instrumental: false,
-      model: "V6",
+      model: "V3_5",
     };
   }
 
@@ -260,9 +243,7 @@ export function buildKieInputPayload(
   if (tool === "voice") {
     return {
       text: prompt,
-      voice_id: "EkK5I93UQWFDigLMpZcX", // Bella - Voix douce et naturelle
-      stability: 0.5,
-      similarity_boost: 0.75,
+      voice_id: "EkK5I93UQWFDigLMpZcX", // Bella
     };
   }
 

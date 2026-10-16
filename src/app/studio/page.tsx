@@ -142,6 +142,34 @@ export default function StudioPage() {
           createdAt: new Date(g.created_at).getTime(),
         }));
         setCards(formattedCards);
+      } else {
+        // Fallback: charger les créations publiques réelles pour ne jamais afficher de faux mock
+        const { data: publicGens } = await supabase
+          .from("generations")
+          .select("*")
+          .eq("status", "success")
+          .not("media_url", "is", null)
+          .order("created_at", { ascending: false })
+          .limit(20);
+
+        if (publicGens && publicGens.length > 0) {
+          const formattedCards: CanvasCard[] = publicGens.map((g, idx) => ({
+            id: g.task_id || g.id,
+            mode: g.tool as "image" | "video" | "music" | "voice",
+            caption: g.prompt.slice(0, 46) + (g.prompt.length > 46 ? "…" : ""),
+            fullPrompt: g.prompt,
+            modelName: g.model_name,
+            mediaUrl: g.media_url || (g.thumbnail_url ?? undefined),
+            thumbnailUrl: g.thumbnail_url || (g.tool === "video" ? undefined : g.media_url),
+            creditsCost: g.credits_cost,
+            status: "ready",
+            elapsed: g.duration_seconds || 0,
+            orgIndex: idx % 4,
+            params: (g.parameters as Record<string, any>) || {},
+            createdAt: new Date(g.created_at).getTime(),
+          }));
+          setCards(formattedCards);
+        }
       }
     } catch (err) {
       console.warn("Erreur chargement Supabase studio:", err);
@@ -177,7 +205,7 @@ export default function StudioPage() {
 
     // Initialisation Thème
     try {
-      const savedTheme = localStorage.getItem("studio_theme") as "light" | "dark" | null;
+      const savedTheme = localStorage.getItem("likyai-theme") as "light" | "dark" | null;
       if (savedTheme) {
         document.documentElement.dataset.theme = savedTheme;
         document.documentElement.classList.toggle("dark", savedTheme === "dark");
@@ -189,9 +217,18 @@ export default function StudioPage() {
       }
     } catch {}
 
+    const handleThemeChange = (e: Event) => {
+      const customEvent = e as CustomEvent<"light" | "dark">;
+      if (customEvent.detail) {
+        setIsDark(customEvent.detail === "dark");
+      }
+    };
+    window.addEventListener("likyai-theme-change", handleThemeChange);
+
     return () => {
       isMounted = false;
       subscription.unsubscribe();
+      window.removeEventListener("likyai-theme-change", handleThemeChange);
     };
   }, [router]);
 
@@ -213,7 +250,8 @@ export default function StudioPage() {
     document.documentElement.dataset.theme = next;
     document.documentElement.classList.toggle("dark", next === "dark");
     try {
-      localStorage.setItem("studio_theme", next);
+      localStorage.setItem("likyai-theme", next);
+      window.dispatchEvent(new CustomEvent("likyai-theme-change", { detail: next }));
     } catch {}
   };
 
@@ -281,8 +319,25 @@ export default function StudioPage() {
           const finalUrl =
             data.response?.resultUrls?.[0] ||
             data.resultUrl ||
-            data.mediaUrl ||
-            `/assets/organic/organic-${Math.floor(Math.random() * 4) + 1}.webp`;
+            data.mediaUrl;
+
+          if (!finalUrl) {
+            clearInterval(interval);
+            setIsGenerating(false);
+            setCards((cur) =>
+              cur.map((c) =>
+                c.id === cardId
+                  ? {
+                      ...c,
+                      status: "ready",
+                      caption: "Échec : aucun média valide produit par l'IA",
+                    }
+                  : c
+              )
+            );
+            showToast("Échec : aucun média produit par le modèle");
+            return;
+          }
 
           const finalElapsed = Math.max(1, Math.round((Date.now() - startTime) / 1000));
 
@@ -505,7 +560,7 @@ export default function StudioPage() {
       tool: c.mode,
       modelName: c.modelName,
       prompt: c.fullPrompt,
-      mediaUrl: c.mediaUrl || `/assets/organic/organic-${((c.orgIndex ?? 0) % 4) + 1}.webp`,
+      mediaUrl: c.mediaUrl || "",
       creditsCost: c.creditsCost,
       elapsedTime: c.elapsed,
       params: c.params,
@@ -907,7 +962,7 @@ export default function StudioPage() {
                   tool: c.mode,
                   modelName: c.modelName,
                   prompt: c.fullPrompt,
-                  mediaUrl: c.mediaUrl || `/assets/organic/organic-${((c.orgIndex || 0) % 4) + 1}.webp`,
+                  mediaUrl: c.mediaUrl || "",
                   creditsCost: c.creditsCost,
                   params: c.params,
                   createdAt: Date.now(),
@@ -919,7 +974,7 @@ export default function StudioPage() {
                   tool: c.mode,
                   modelName: c.modelName,
                   prompt: c.fullPrompt,
-                  mediaUrl: c.mediaUrl || `/assets/organic/organic-${((c.orgIndex || 0) % 4) + 1}.webp`,
+                  mediaUrl: c.mediaUrl || "",
                   creditsCost: c.creditsCost,
                   params: c.params,
                   createdAt: Date.now(),
@@ -1065,7 +1120,7 @@ export default function StudioPage() {
             tool: item.mode,
             modelName: item.modelName,
             prompt: item.fullPrompt,
-            mediaUrl: item.mediaUrl || `/assets/organic/organic-${((item.orgIndex || 0) % 4) + 1}.webp`,
+            mediaUrl: item.mediaUrl || "",
             creditsCost: item.creditsCost,
             params: item.params,
             createdAt: item.createdAt || Date.now(),
@@ -1077,7 +1132,7 @@ export default function StudioPage() {
             tool: item.mode,
             modelName: item.modelName,
             prompt: item.fullPrompt,
-            mediaUrl: item.mediaUrl || `/assets/organic/organic-${((item.orgIndex || 0) % 4) + 1}.webp`,
+            mediaUrl: item.mediaUrl || "",
             creditsCost: item.creditsCost,
             params: item.params,
             createdAt: item.createdAt || Date.now(),

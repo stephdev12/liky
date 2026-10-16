@@ -37,6 +37,14 @@ export class ProviderRouter {
   private kieAdapter = new KieAdapter();
   private hfAdapter = new HiggsfieldAdapter();
 
+  private hasHfAuth(): boolean {
+    return !!(
+      process.env.HF_CREDENTIALS ||
+      process.env.HF_KEY ||
+      (process.env.HF_API_KEY && process.env.HF_API_SECRET)
+    );
+  }
+
   /**
    * Sélectionne le fournisseur cible en appliquant la consigne :
    * - Priorité par défaut sur KIE
@@ -44,21 +52,18 @@ export class ProviderRouter {
    */
   public selectProvider(modelId: string, opts?: ProviderSubmitOptions): ProviderAdapter {
     const lowerModel = (modelId || "").toLowerCase();
+    const hasAuth = this.hasHfAuth();
 
-    // 1. Si le modèle nécessite expressément les technologies exclusives Higgsfield
+    // 1. Si les identifiants Higgsfield sont configurés et que le modèle est exclusif HF
     if (
-      opts?.referenceVideoUrl ||
-      HIGGSFIELD_EXCLUSIVE_PATTERNS.some((pattern) => lowerModel.includes(pattern))
+      hasAuth &&
+      (opts?.referenceVideoUrl ||
+        HIGGSFIELD_EXCLUSIVE_PATTERNS.some((pattern) => lowerModel.includes(pattern)))
     ) {
       return this.hfAdapter;
     }
 
-    // 2. Si le modèle est exclusif KIE
-    if (KIE_EXCLUSIVE_PATTERNS.some((pattern) => lowerModel.includes(pattern))) {
-      return this.kieAdapter;
-    }
-
-    // 3. Règle : Priorité sur KIE par défaut pour tous les modèles communs (ex: Seedance 2.5)
+    // 2. Par défaut et en priorité absolue : KIE (100% opérationnel avec clé configurée)
     return this.kieAdapter;
   }
 
@@ -126,6 +131,10 @@ export class ProviderRouter {
       // Bascule vers le fournisseur secondaire
       const secondaryAdapter =
         primaryAdapter.id === "kie" ? this.hfAdapter : this.kieAdapter;
+
+      if (secondaryAdapter.id === "higgsfield" && !this.hasHfAuth()) {
+        throw primaryError;
+      }
 
       console.log(
         `[Router] BASCULE AUTOMATIQUE vers ${secondaryAdapter.id} sans frais supplémentaires pour l'utilisateur...`

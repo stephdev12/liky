@@ -20,7 +20,7 @@ export const ALL_MODELS: ModelOption[] = [
   // ── IMAGES ──
   {
     id: "soul-2",
-    name: "Higgsfield Soul 2.0",
+    name: "Soul 2.0",
     category: "image",
     provider: "higgsfield",
     tagline: "Next generation ultra-realistic fashion visuals",
@@ -458,20 +458,6 @@ function ModelItem({
             <span className="font-heading text-[13.5px] font-medium text-[var(--ink)] truncate">
               {model.name}
             </span>
-            {model.badge && (
-              <span
-                className={cn(
-                  "px-1.5 py-0.2 rounded-md text-[9px] font-extrabold tracking-wider",
-                  model.badge === "NEW"
-                    ? "bg-[#D8FF64] text-black"
-                    : model.badge === "TOP"
-                    ? "bg-sky-500 text-white"
-                    : "bg-purple-500 text-white"
-                )}
-              >
-                {model.badge}
-              </span>
-            )}
           </div>
           <span className="text-[11.5px] text-[var(--mute)] truncate block">
             {model.tagline}

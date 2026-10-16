@@ -251,41 +251,52 @@ export function UnifiedPromptBubble({
                 </button>
 
                 {ratioDropdownOpen && (
-                  <>
+                  <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
                     <div
-                      className="fixed inset-0 z-40"
+                      className="fixed inset-0"
                       onClick={() => setRatioDropdownOpen(false)}
                     />
-                    <div className="absolute left-0 bottom-full mb-2.5 w-60 sm:w-64 p-1.5 rounded-2xl bg-[var(--surface)] border border-[var(--line)] shadow-2xl z-50 space-y-1 animate-in fade-in zoom-in-95 duration-150 max-h-72 overflow-y-auto">
-                      <div className="px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-[var(--mute)] border-b border-[var(--line)]">
-                        Format d&apos;aspect
-                      </div>
-                      {RATIOS.map((r) => (
+                    <div className="relative z-10 w-full sm:w-80 rounded-t-3xl sm:rounded-3xl bg-[var(--surface)] border border-[var(--line)] shadow-2xl p-4 space-y-2 animate-in slide-in-from-bottom duration-200">
+                      <div className="flex items-center justify-between pb-2 border-b border-[var(--line)]">
+                        <span className="text-[12px] font-semibold uppercase tracking-wider text-[var(--ink)]">
+                          Format & Ratio
+                        </span>
                         <button
-                          key={r.id}
                           type="button"
-                          onClick={() => {
-                            setAspectRatio(r.id);
-                            setRatioDropdownOpen(false);
-                          }}
-                          className={cn(
-                            "w-full px-2.5 py-1.5 rounded-xl text-left transition-colors flex items-center justify-between cursor-pointer",
-                            aspectRatio === r.id
-                              ? "bg-[var(--hover)] text-[#D8FF64] font-semibold"
-                              : "text-[var(--ink)] hover:bg-[var(--hover)]"
-                          )}
+                          onClick={() => setRatioDropdownOpen(false)}
+                          className="w-7 h-7 rounded-full bg-[var(--field)] hover:bg-[var(--hover)] flex items-center justify-center text-[var(--ink-2)] cursor-pointer"
                         >
-                          <div>
-                            <span className="text-[12px] font-medium block">{r.label}</span>
-                            <span className="text-[10px] text-[var(--mute)] block">{r.desc}</span>
-                          </div>
-                          {aspectRatio === r.id && (
-                            <CoolIcon name="check" size={13} duotone={false} className="text-[#D8FF64] shrink-0" />
-                          )}
+                          <CoolIcon name="close-md" size={14} duotone={false} />
                         </button>
-                      ))}
+                      </div>
+                      <div className="space-y-1 max-h-80 overflow-y-auto">
+                        {RATIOS.map((r) => (
+                          <button
+                            key={r.id}
+                            type="button"
+                            onClick={() => {
+                              setAspectRatio(r.id);
+                              setRatioDropdownOpen(false);
+                            }}
+                            className={cn(
+                              "w-full px-3 py-2.5 rounded-xl text-left transition-colors flex items-center justify-between cursor-pointer",
+                              aspectRatio === r.id
+                                ? "bg-[var(--hover)] text-emerald-600 dark:text-[#D8FF64] font-semibold"
+                                : "text-[var(--ink)] hover:bg-[var(--hover)]"
+                            )}
+                          >
+                            <div>
+                              <span className="text-[13px] font-medium block">{r.label}</span>
+                              <span className="text-[11px] text-[var(--mute)] block">{r.desc}</span>
+                            </div>
+                            {aspectRatio === r.id && (
+                              <CoolIcon name="check" size={14} duotone={false} className="text-emerald-600 dark:text-[#D8FF64] shrink-0" />
+                            )}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </>
+                  </div>
                 )}
               </div>
             </div>

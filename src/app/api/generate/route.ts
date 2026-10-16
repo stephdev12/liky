@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { providerRouter } from "@/lib/providers/router";
 import { calculateToolCost } from "@/lib/billing/pricing-calculator";
-import { saveSimulatedTask } from "../tasks/[taskId]/route";
 
 const GenerateSchema = z.object({
   tool: z.enum(["image", "video", "music", "voice"]).default("video"),
@@ -68,46 +67,44 @@ export async function POST(req: NextRequest) {
       webhookUrl: higgsfieldWebhookUrl,
     });
 
-    if (result.mode === "demo") {
-      // Sauvegarde de la tâche simulée réaliste pour la prévisualisation immédiate
-      const randomIdx = Math.floor(Math.random() * 4) + 1;
-      const mediaUrl =
-        tool === "music"
-          ? "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
-          : tool === "voice"
-          ? "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3"
-          : `/assets/organic/organic-${randomIdx}.webp`;
+    // Enregistrement de la tâche dans Supabase
+    try {
+      const { createClient } = await import("@/lib/supabase/server");
+      const { createAdminClient } = await import("@/lib/supabase/admin");
+      
+      let userId: string | null = null;
+      try {
+        const userClient = await createClient();
+        const { data: { user } } = await userClient.auth.getUser();
+        if (user) userId = user.id;
+      } catch {}
 
-      saveSimulatedTask({
-        taskId: result.requestId,
+      const adminClient = createAdminClient();
+      await adminClient.from("generations").insert({
+        task_id: result.requestId,
+        user_id: userId,
         tool,
+        model_name: targetModel,
         prompt,
-        createdAt: Date.now(),
-        creditsCost: finalCreditsCost,
-        resultUrl: mediaUrl,
-        metadata: {
-          provider: result.provider,
-          model: targetModel,
+        status: "generating",
+        credits_cost: finalCreditsCost,
+        parameters: {
           aspectRatio,
           duration,
+          resolution,
+          provider: result.provider,
+          ...params,
         },
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       });
-
-      return NextResponse.json({
-        success: true,
-        mode: "demo",
-        provider: result.provider,
-        taskId: result.requestId,
-        status: "waiting",
-        tool,
-        modelId: targetModel,
-        creditsCost: finalCreditsCost,
-      });
+    } catch (dbErr) {
+      console.warn("[Generate] Impossible d'insérer dans Supabase generations:", dbErr);
     }
 
     return NextResponse.json({
       success: true,
-      mode: "live",
+      mode: result.mode,
       provider: result.provider,
       taskId: result.requestId,
       status: "waiting",

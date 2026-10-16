@@ -11,6 +11,7 @@ import { ResultBubble, type GenerationResultData } from "@/components/result-bub
 import { StudioPromptBubble, type StudioImageRef } from "@/components/studios/studio-prompt-bubble";
 import { AnimationStoryDrawer, type AnimationStoryData } from "@/components/studios/studio-drawers";
 import { createClient } from "@/lib/supabase/client";
+import { pollTaskUntilComplete } from "@/lib/tasks/poll-task";
 import type { User } from "@supabase/supabase-js";
 
 export default function AnimationStudioPage() {
@@ -146,28 +147,55 @@ export default function AnimationStudioPage() {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      if (!res.ok) throw new Error(data.error || "Erreur de génération");
 
-      setCards((prev) =>
-        prev.map((c) =>
-          c.id === cardId
-            ? {
-                ...c,
-                status: "ready",
-                mediaUrl: data.resultUrl || "/assets/studios/studio-animation.jpg",
-              }
-            : c
-        )
-      );
+      if (data.taskId) {
+        const pollResult = await pollTaskUntilComplete(data.taskId, (elapsed) => {
+          setCards((prev) =>
+            prev.map((c) =>
+              c.id === cardId
+                ? { ...c, status: "thinking", elapsed }
+                : c
+            )
+          );
+        });
+
+        if (pollResult.resultUrl) {
+          setCards((prev) =>
+            prev.map((c) =>
+              c.id === cardId
+                ? {
+                    ...c,
+                    status: "ready",
+                    mediaUrl: pollResult.resultUrl,
+                  }
+                : c
+            )
+          );
+        }
+      } else if (data.resultUrl) {
+        setCards((prev) =>
+          prev.map((c) =>
+            c.id === cardId
+              ? {
+                  ...c,
+                  status: "ready",
+                  mediaUrl: data.resultUrl,
+                }
+              : c
+          )
+        );
+      }
+
       refreshCredits();
-    } catch {
+    } catch (err: any) {
       setCards((prev) =>
         prev.map((c) =>
           c.id === cardId
             ? {
                 ...c,
                 status: "ready",
-                mediaUrl: "/assets/studios/studio-animation.jpg",
+                caption: err.message || "Erreur de traitement",
               }
             : c
         )
@@ -238,17 +266,18 @@ export default function AnimationStudioPage() {
           mode="video"
           cards={cards}
           allModeCardsCount={cards.length}
-          onOpenCard={(c) =>
+          onOpenCard={(c) => {
+            if (!c.mediaUrl) return;
             setActiveResultCard({
               id: c.id,
               tool: "video",
               modelName: c.modelName,
               prompt: c.fullPrompt,
-              mediaUrl: c.mediaUrl || "/assets/studios/studio-animation.jpg",
+              mediaUrl: c.mediaUrl,
               creditsCost: c.creditsCost,
               createdAt: Date.now(),
-            })
-          }
+            });
+          }}
           onRetryCard={(c) => {
             setPrompt(c.fullPrompt);
             handleGenerate();

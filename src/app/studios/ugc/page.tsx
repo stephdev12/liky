@@ -10,6 +10,7 @@ import { SectionShowcase } from "@/components/section-showcase";
 import { ResultBubble, type GenerationResultData } from "@/components/result-bubble";
 import { StudioPromptBubble, type StudioImageRef } from "@/components/studios/studio-prompt-bubble";
 import { UgcProductDrawer, type UgcProductData } from "@/components/studios/studio-drawers";
+import { pollTaskUntilComplete } from "@/lib/tasks/poll-task";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
 
@@ -137,28 +138,53 @@ export default function UgcStudioPage() {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      if (!res.ok) throw new Error(data.error || "Erreur de génération");
 
-      setCards((prev) =>
-        prev.map((c) =>
-          c.id === cardId
-            ? {
-                ...c,
-                status: "ready",
-                mediaUrl: data.resultUrl || "/assets/studios/studio-ugc.jpg",
-              }
-            : c
-        )
-      );
+      if (data.taskId) {
+        const pollResult = await pollTaskUntilComplete(data.taskId, (elapsed) => {
+          setCards((prev) =>
+            prev.map((c) =>
+              c.id === cardId ? { ...c, status: "thinking", elapsed } : c
+            )
+          );
+        });
+
+        if (pollResult.resultUrl) {
+          setCards((prev) =>
+            prev.map((c) =>
+              c.id === cardId
+                ? {
+                    ...c,
+                    status: "ready",
+                    mediaUrl: pollResult.resultUrl,
+                  }
+                : c
+            )
+          );
+        }
+      } else if (data.resultUrl) {
+        setCards((prev) =>
+          prev.map((c) =>
+            c.id === cardId
+              ? {
+                  ...c,
+                  status: "ready",
+                  mediaUrl: data.resultUrl,
+                }
+              : c
+          )
+        );
+      }
       refreshCredits();
-    } catch {
+    } catch (err: any) {
+      console.error("UGC generation failed:", err);
       setCards((prev) =>
         prev.map((c) =>
           c.id === cardId
             ? {
                 ...c,
-                status: "ready",
-                mediaUrl: "/assets/studios/studio-ugc.jpg",
+                status: "failed",
+                error: err?.message || "Échec de génération",
               }
             : c
         )
@@ -229,17 +255,18 @@ export default function UgcStudioPage() {
           mode="video"
           cards={cards}
           allModeCardsCount={cards.length}
-          onOpenCard={(c) =>
+          onOpenCard={(c) => {
+            if (!c.mediaUrl) return;
             setActiveResultCard({
               id: c.id,
               tool: "video",
               modelName: c.modelName,
               prompt: c.fullPrompt,
-              mediaUrl: c.mediaUrl || "/assets/studios/studio-ugc.jpg",
+              mediaUrl: c.mediaUrl,
               creditsCost: c.creditsCost,
               createdAt: Date.now(),
-            })
-          }
+            });
+          }}
           onRetryCard={(c) => {
             setPrompt(c.fullPrompt);
             handleGenerate();

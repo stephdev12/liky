@@ -97,6 +97,37 @@ export default function GenjutsuStudioPage() {
     );
   }
 
+  const handleGenerateMotion = async (data: {
+    mode: "motion" | "swap";
+    videoUrl?: string;
+    imageUrls: string[];
+    prompt?: string;
+    quality: string;
+  }) => {
+    try {
+      const res = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tool: "video",
+          model: "seedance-2-5",
+          prompt: `Genjutsu motion transfer: ${data.prompt || "fluid realistic motion retargeting"}, quality: ${data.quality}`,
+          aspectRatio: "9:16",
+          referenceImageUrls: data.imageUrls,
+          referenceVideoUrl: data.videoUrl,
+          creditsCost: 20,
+        }),
+      });
+
+      const resData = await res.json();
+      if (!res.ok) throw new Error(resData.error || "Erreur lors du lancement de Genjutsu");
+      router.push("/studio");
+    } catch (err: any) {
+      console.error("Genjutsu launch failed:", err);
+      alert(err?.message || "Échec du lancement du mouvement Genjutsu.");
+    }
+  };
+
   return (
     <div className="relative min-h-screen w-full bg-[var(--bg)] text-[var(--ink)] overflow-x-hidden selection:bg-[#D8FF64] selection:text-black transition-colors duration-200">
       {/* ── TOP BAR : RETOUR AUX STUDIOS + LOGO + THEMETOGGLE + CRÉDITS ── */}
@@ -263,9 +294,7 @@ export default function GenjutsuStudioPage() {
       <GenjutsuDrawer
         isOpen={drawerOpen}
         onClose={() => setDrawerOpen(false)}
-        onGenerateMotion={() => {
-          router.push("/studio");
-        }}
+        onGenerateMotion={handleGenerateMotion}
       />
 
       {/* ── TOPUP MODAL ── */}
