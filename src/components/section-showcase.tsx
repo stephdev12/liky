@@ -42,9 +42,9 @@ export function SectionShowcase({
                 if (c.status === "ready") onOpenCard(c);
               }}
               className={cn(
-                "group relative rounded-2xl overflow-hidden bg-[#181817] border border-white/5 transition-all duration-200 aspect-[9/14] flex flex-col justify-between",
+                "group relative rounded-2xl overflow-hidden bg-[var(--surface)] border border-[var(--line)] transition-all duration-200 aspect-[9/14] flex flex-col justify-between",
                 c.status === "ready"
-                  ? "hover:border-white/20 hover:scale-[1.01] cursor-pointer shadow-lg"
+                  ? "hover:border-[var(--line-strong)] hover:scale-[1.01] cursor-pointer shadow-lg"
                   : "cursor-default"
               )}
             >
@@ -67,16 +67,29 @@ export function SectionShowcase({
                       loading="lazy"
                     />
                   ) : isVideo ? (
-                    <div className="relative w-full h-full bg-black flex items-center justify-center">
-                      <img
-                        src={mediaUrl}
-                        alt={c.caption || "Vidéo"}
-                        className="w-full h-full object-cover opacity-90 group-hover:scale-103 transition-transform duration-300"
-                        loading="lazy"
-                      />
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                        <div className="w-9 h-9 rounded-full bg-black/60 backdrop-blur-md border border-white/20 flex items-center justify-center text-white shadow-md group-hover:scale-110 transition-transform">
-                          <CoolIcon name="play" duotone size={16} secondaryColor="currentColor" />
+                    <div className="relative w-full h-full bg-black flex items-center justify-center overflow-hidden">
+                      {mediaUrl.includes(".mp4") || mediaUrl.includes(".webm") || mediaUrl.includes("video") ? (
+                        <video
+                          src={`${mediaUrl}#t=0.001`}
+                          poster={c.thumbnailUrl}
+                          autoPlay
+                          loop
+                          muted
+                          playsInline
+                          preload="metadata"
+                          className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-300"
+                        />
+                      ) : (
+                        <img
+                          src={mediaUrl}
+                          alt={c.caption || "Vidéo"}
+                          className="w-full h-full object-cover opacity-90 group-hover:scale-103 transition-transform duration-300"
+                          loading="lazy"
+                        />
+                      )}
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/15 pointer-events-none group-hover:opacity-0 transition-opacity">
+                        <div className="w-8 h-8 rounded-full bg-black/60 backdrop-blur-md border border-white/20 flex items-center justify-center text-white shadow-md">
+                          <CoolIcon name="play" duotone size={14} secondaryColor="currentColor" />
                         </div>
                       </div>
                     </div>

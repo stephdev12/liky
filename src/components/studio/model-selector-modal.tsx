@@ -2,7 +2,6 @@
 
 import React, { useState, useMemo } from "react";
 import { CoolIcon } from "@/components/icons/coolicon";
-import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 export interface ModelOption {
@@ -14,6 +13,7 @@ export interface ModelOption {
   specs?: string;
   badge?: "TOP" | "NEW" | "PRO";
   creditsCost: number;
+  logo: "higgsfield" | "openai" | "google" | "bytedance" | "minimax" | "kling" | "suno" | "elevenlabs" | "wan";
 }
 
 export const ALL_MODELS: ModelOption[] = [
@@ -23,39 +23,51 @@ export const ALL_MODELS: ModelOption[] = [
     name: "Higgsfield Soul 2.0",
     category: "image",
     provider: "higgsfield",
-    tagline: "Génération photo et mode photoréaliste de niveau éditorial",
-    specs: "1080p-4K · Rendu humain sans défaut",
-    badge: "TOP",
+    tagline: "Next generation ultra-realistic fashion visuals",
+    specs: "1080p-4K",
     creditsCost: 4,
+    logo: "higgsfield",
   },
   {
     id: "gpt-image-2-5",
     name: "GPT Image 2.5 Sunburst",
     category: "image",
     provider: "kie",
-    tagline: "Qualité exceptionnelle, rendu précis des textes et typographie",
-    specs: "2K · Net pour affiches et packaging",
-    badge: "PRO",
+    tagline: "Exceptional quality, precise edits",
+    specs: "2K",
     creditsCost: 8,
+    logo: "openai",
   },
   {
     id: "nano-banana-2-1",
     name: "Nano Banana 2.1",
     category: "image",
     provider: "kie",
-    tagline: "Modèle image polyvalent, rapide et ultra-fidèle",
-    specs: "1K-4K · Rapide",
+    tagline: "Google's next-gen flagship image model",
+    specs: "1K-4K",
     badge: "NEW",
     creditsCost: 5,
+    logo: "google",
+  },
+  {
+    id: "nano-banana-pro",
+    name: "Nano Banana Pro",
+    category: "image",
+    provider: "kie",
+    tagline: "Google's flagship generation model",
+    specs: "4K",
+    creditsCost: 6,
+    logo: "google",
   },
   {
     id: "seedream-5",
     name: "Seedream 5.0 Pro",
     category: "image",
     provider: "kie",
-    tagline: "Images cohérentes et riches en détails fins",
-    specs: "2K-4K · Composition avancée",
+    tagline: "Logically consistent images with intelligence",
+    specs: "2K-4K",
     creditsCost: 5,
+    logo: "bytedance",
   },
 
   // ── VIDÉO ──
@@ -64,48 +76,67 @@ export const ALL_MODELS: ModelOption[] = [
     name: "Seedance 2.5",
     category: "video",
     provider: "hybrid",
-    tagline: "Marketing & pub, synchronisation et son natif",
-    specs: "1080p · 4s–30s · Audio natif",
+    tagline: "1080p · 4s-30s",
     badge: "TOP",
     creditsCost: 16,
+    logo: "bytedance",
+  },
+  {
+    id: "seedance-2-5-edit",
+    name: "Seedance 2.5 Edit",
+    category: "video",
+    provider: "hybrid",
+    tagline: "480p-720p · Edit Video · Audio",
+    badge: "TOP",
+    creditsCost: 14,
+    logo: "bytedance",
+  },
+  {
+    id: "seedance-2-0",
+    name: "Seedance 2.0",
+    category: "video",
+    provider: "hybrid",
+    tagline: "4K · 4s-15s",
+    creditsCost: 18,
+    logo: "bytedance",
+  },
+  {
+    id: "minimax-h3",
+    name: "MiniMax H3",
+    category: "video",
+    provider: "kie",
+    tagline: "2K · 5s-15s",
+    creditsCost: 16,
+    logo: "minimax",
   },
   {
     id: "veo-3-1",
     name: "Google Veo 3.1",
     category: "video",
     provider: "kie",
-    tagline: "Cinématographie d'exception et mouvements de caméra fluides",
-    specs: "4K Master · 5s–8s · Son spatial",
+    tagline: "4K Master · 5s-8s Cinematic",
     badge: "PRO",
     creditsCost: 28,
-  },
-  {
-    id: "cinema_studio_4",
-    name: "Cinema Studio 4.0",
-    category: "video",
-    provider: "higgsfield",
-    tagline: "Rendu pellicule 35mm et format anamorphique Hollywood",
-    specs: "1080p · Éclairage cinéma naturel",
-    badge: "NEW",
-    creditsCost: 22,
+    logo: "google",
   },
   {
     id: "kling-3-0",
     name: "Kling 3.0 Pro",
     category: "video",
     provider: "hybrid",
-    tagline: "Physique réaliste des corps et mouvements expressifs",
-    specs: "1080p · 5s–10s",
+    tagline: "1080p · 5s-10s Physical simulation",
     creditsCost: 20,
+    logo: "kling",
   },
   {
-    id: "minimax-h3",
-    name: "MiniMax Hailuo 3",
+    id: "wan-2-7",
+    name: "Wan 2.7 Video",
     category: "video",
     provider: "kie",
-    tagline: "Dynamisme d'action et plans complexes",
-    specs: "2K · 5s–15s",
-    creditsCost: 16,
+    tagline: "1080p · Natural character fluid motion",
+    badge: "NEW",
+    creditsCost: 18,
+    logo: "wan",
   },
 
   // ── AUDIO ──
@@ -114,27 +145,95 @@ export const ALL_MODELS: ModelOption[] = [
     name: "Suno V6",
     category: "audio",
     provider: "kie",
-    tagline: "Génération musicale complète avec voix et arrangement",
-    specs: "Stéréo 320kbps · 2 pistes générées",
-    badge: "TOP",
+    tagline: "Studio quality music with vocals & lyrics",
+    specs: "Stéréo 320kbps",
     creditsCost: 10,
+    logo: "suno",
   },
   {
-    id: "elevenlabs",
+    id: "elevenlabs-turbo-2-5",
     name: "ElevenLabs Turbo 2.5",
     category: "audio",
     provider: "kie",
-    tagline: "Voix off ultra-naturelle, expressive et multilingue",
-    specs: "Audio HD · Synchronisation labiale",
+    tagline: "Hyper-realistic voice cloning & narration",
+    specs: "Ultra-low latency",
     creditsCost: 2,
+    logo: "elevenlabs",
   },
 ];
+
+/* ── COMPOSANT LOGOS SVG OFFICIELS DES FOURNISSEURS ── */
+function ModelBrandLogo({ logo }: { logo: ModelOption["logo"] }) {
+  switch (logo) {
+    case "openai":
+      return (
+        <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a.071.071 0 0 1 .038.052v5.5826a4.504 4.504 0 0 1-4.4945 4.4944zm-9.6607-4.1254a4.4708 4.4708 0 0 1-.5346-3.0137l.142.0852 4.783 2.7582a.7712.7712 0 0 0 .7806 0l5.8428-3.3685v2.3324a.0804.0804 0 0 1-.0332.0615L9.74 19.9502a4.4992 4.4992 0 0 1-6.1408-1.6464zM2.3428 7.8956a4.485 4.485 0 0 1 2.3655-1.9728V11.6a.7664.7664 0 0 0 .3879.6765l5.8144 3.3543-2.0201 1.1685a.0757.0757 0 0 1-.071 0l-4.8303-2.7865A4.504 4.504 0 0 1 2.3428 7.8956zm16.0993 3.8558L12.5993 8.3829l2.02-1.1638a.0757.0757 0 0 1 .071 0l4.8303 2.7913a4.4944 4.4944 0 0 1-.6765 8.1042v-5.6725a.79.79 0 0 0-.4021-.6857zm2.0107-3.0231l-.142-.0852-4.7735-2.7818a.7759.7759 0 0 0-.7854 0L8.909 9.2298V6.8974a.0662.0662 0 0 1 .0284-.0615l4.8303-2.7866a4.4992 4.4992 0 0 1 6.6702 4.6534zm-9.74 4.9061l-2.46-1.4209 2.46-1.421 2.46 1.421-2.46 1.421z" />
+        </svg>
+      );
+    case "google":
+      return (
+        <span className="font-heading font-black text-[20px] text-white tracking-tighter">
+          G
+        </span>
+      );
+    case "bytedance":
+      return (
+        <div className="flex items-end gap-0.5 h-4 text-white">
+          <span className="w-1 h-3 rounded-xs bg-white" />
+          <span className="w-1 h-4 rounded-xs bg-white" />
+          <span className="w-1 h-2 rounded-xs bg-white" />
+          <span className="w-1 h-3.5 rounded-xs bg-white" />
+        </div>
+      );
+    case "minimax":
+      return (
+        <div className="flex items-center gap-0.5 h-3 text-white">
+          <span className="w-0.5 h-2 rounded-full bg-white" />
+          <span className="w-0.5 h-3 rounded-full bg-white" />
+          <span className="w-0.5 h-1.5 rounded-full bg-white" />
+          <span className="w-0.5 h-2.5 rounded-full bg-white" />
+          <span className="w-0.5 h-1 rounded-full bg-white" />
+        </div>
+      );
+    case "higgsfield":
+      return (
+        <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M4 12c0-3.3 2.7-6 6-6s6 6 6 6-2.7 6-6 6-6-2.7-6-6z" />
+          <path d="M14 12c0-3.3 2.7-6 6-6s6 6 6 6-2.7 6-6 6-6-2.7-6-6z" />
+        </svg>
+      );
+    case "kling":
+      return (
+        <span className="font-heading font-bold text-[16px] text-white tracking-wider">
+          K
+        </span>
+      );
+    case "wan":
+      return (
+        <span className="font-heading font-bold text-[15px] text-white tracking-tight">
+          W
+        </span>
+      );
+    case "suno":
+      return (
+        <CoolIcon name="headphones" size={17} duotone={false} className="text-white" />
+      );
+    case "elevenlabs":
+      return (
+        <div className="flex items-center gap-1 text-white">
+          <span className="w-1 h-4 rounded-full bg-white" />
+          <span className="w-1 h-4 rounded-full bg-white" />
+        </div>
+      );
+  }
+}
 
 interface ModelSelectorModalProps {
   isOpen: boolean;
   onClose: () => void;
-  selectedModel: string; // "auto" ou id du modèle
-  onSelectModel: (modelId: string, modelName: string) => void;
+  selectedModel: string;
+  onSelectModel: (id: string, name: string) => void;
 }
 
 export function ModelSelectorModal({
@@ -151,63 +250,74 @@ export function ModelSelectorModal({
     return ALL_MODELS.filter(
       (m) =>
         m.name.toLowerCase().includes(q) ||
-        m.tagline.toLowerCase().includes(q) ||
-        m.category.toLowerCase().includes(q)
+        m.tagline.toLowerCase().includes(q)
     );
   }, [search]);
-
-  if (!isOpen) return null;
 
   const imageModels = filteredModels.filter((m) => m.category === "image");
   const videoModels = filteredModels.filter((m) => m.category === "video");
   const audioModels = filteredModels.filter((m) => m.category === "audio");
 
+  if (!isOpen) return null;
+
   return (
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 animate-in fade-in duration-200"
+        className="fixed inset-0 bg-black/75 backdrop-blur-xs z-50 animate-in fade-in duration-200"
         onClick={onClose}
       />
 
-      {/* Bottom sheet / Modal */}
-      <div className="fixed inset-x-0 bottom-0 sm:inset-auto sm:top-1/2 sm:left-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 w-full sm:max-w-xl max-h-[88vh] bg-[#171717] text-[#F8F8F5] border border-white/10 sm:rounded-[24px] rounded-t-[24px] shadow-2xl z-50 flex flex-col overflow-hidden animate-in slide-in-from-bottom sm:zoom-in-95 duration-200">
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-white/10">
-          <div className="w-8" />
-          <h3 className="font-heading text-[17px] font-medium text-white tracking-tight">
-            Modèles d'IA
-          </h3>
+      {/* Drawer Container (exacte réplique Higgsfield) */}
+      <div className="fixed inset-x-0 bottom-0 sm:inset-y-0 sm:right-0 sm:left-auto w-full sm:w-[420px] max-h-[90vh] sm:max-h-screen bg-[var(--surface)] text-[var(--ink)] border-t sm:border-t-0 sm:border-l border-[var(--line)] shadow-2xl z-50 flex flex-col justify-between overflow-hidden rounded-t-[28px] sm:rounded-none animate-in slide-in-from-bottom sm:slide-in-from-right duration-200">
+        
+        {/* Poignée centrale mobile */}
+        <div className="w-full flex justify-center pt-2.5 pb-1 sm:hidden">
+          <div className="w-10 h-1 rounded-full bg-[var(--line-strong)]" />
+        </div>
+
+        {/* Header : Model + Fermer */}
+        <div className="flex items-center justify-between px-5 py-3 border-b border-[var(--line)] shrink-0">
+          <div className="w-7" />
+          <h2 className="font-heading text-[16px] font-semibold tracking-tight text-[var(--ink)]">
+            Model
+          </h2>
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-full bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-colors cursor-pointer"
+            className="w-7 h-7 rounded-full bg-[var(--field)] hover:bg-[var(--hover)] flex items-center justify-center text-[var(--mute)] hover:text-[var(--ink)] transition-colors cursor-pointer"
           >
-            <CoolIcon name="close-md" size={16} duotone={false} />
+            <CoolIcon name="close-md" size={15} duotone={false} />
           </button>
         </div>
 
-        {/* Barre de recherche */}
-        <div className="px-5 pt-3 pb-2">
-          <div className="relative">
-            <CoolIcon
-              name="search-magnifying-glass"
-              size={15}
-              duotone={false}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none"
-            />
-            <Input
+        {/* Barre de recherche Q Search */}
+        <div className="px-5 pt-3 pb-2 shrink-0">
+          <div className="relative flex items-center w-full h-10 rounded-full bg-[var(--field)] border border-[var(--line)] px-3.5">
+            <CoolIcon name="search-magnifying-glass" size={15} duotone={false} className="text-[var(--mute)] mr-2 shrink-0" />
+            <input
+              type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Rechercher un modèle..."
-              className="h-10 pl-9 pr-4 rounded-xl bg-white/5 border-white/10 text-[13px] text-white placeholder:text-white/40 focus-visible:ring-1 focus-visible:ring-[#D8FF64]"
+              placeholder="Search"
+              className="w-full bg-transparent text-[13px] text-[var(--ink)] placeholder:text-[var(--mute)] outline-none"
             />
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch("")}
+                className="p-1 text-[var(--mute)] hover:text-[var(--ink)]"
+              >
+                <CoolIcon name="close-md" size={12} duotone={false} />
+              </button>
+            )}
           </div>
         </div>
 
-        {/* Liste des modèles scrollable */}
-        <div className="flex-1 overflow-y-auto px-5 py-2 space-y-4">
-          {/* Option Mode Auto */}
+        {/* Liste scrollable des modèles */}
+        <div className="flex-1 overflow-y-auto px-5 py-2 space-y-4 scrollbar-thin">
+          
+          {/* Option : Auto mode (exacte réplique de la capture) */}
           {!search && (
             <button
               type="button"
@@ -218,44 +328,41 @@ export function ModelSelectorModal({
               className={cn(
                 "w-full flex items-center justify-between p-3 rounded-2xl border transition-all text-left cursor-pointer",
                 selectedModel === "auto"
-                  ? "bg-white/10 border-[#D8FF64]/60"
-                  : "bg-white/5 border-white/5 hover:bg-white/8 hover:border-white/10"
+                  ? "bg-[var(--field)] border-[#D8FF64]/50"
+                  : "bg-[var(--field)]/60 border-transparent hover:bg-[var(--field)]"
               )}
             >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#D8FF64]/10 border border-[#D8FF64]/20 flex items-center justify-center text-[#D8FF64]">
-                  <CoolIcon name="star" size={20} duotone secondaryColor="#D8FF64" className="text-[#D8FF64]" />
+                <div className="w-10 h-10 rounded-xl bg-black/60 border border-white/10 flex items-center justify-center text-white shrink-0">
+                  <CoolIcon name="star" size={18} duotone={false} className="text-white fill-current" />
                 </div>
                 <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-[14px] text-white">Mode Auto</span>
-                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[#D8FF64]/20 text-[#D8FF64]">
-                      Recommandé
-                    </span>
-                  </div>
-                  <p className="text-[11.5px] text-white/60">
-                    likyAI choisit automatiquement le moteur le plus adapté à votre prompt
+                  <span className="font-heading text-[14px] font-semibold text-[var(--ink)] block">
+                    Auto mode
+                  </span>
+                  <p className="text-[11.5px] text-[var(--mute)]">
+                    Auto picks a model for you
                   </p>
                 </div>
               </div>
 
               {selectedModel === "auto" && (
-                <div className="w-6 h-6 rounded-full bg-[#D8FF64] text-black flex items-center justify-center shrink-0">
-                  <CoolIcon name="check" size={14} duotone={false} className="text-black stroke-[3]" />
+                <div className="w-5 h-5 rounded-full bg-[#D8FF64] text-black flex items-center justify-center shrink-0">
+                  <CoolIcon name="check" size={12} duotone={false} className="text-black stroke-[3]" />
                 </div>
               )}
             </button>
           )}
 
-          {/* Section Vidéo */}
-          {videoModels.length > 0 && (
+          {/* Section Image */}
+          {imageModels.length > 0 && (
             <div>
-              <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-white/40 mb-2 px-1">
-                <CoolIcon name="monitor-play" size={14} duotone className="text-white/40" />
-                <span>Vidéo ({videoModels.length})</span>
+              <div className="flex items-center gap-1.5 text-[11px] font-semibold text-[var(--mute)] mb-2 px-1">
+                <CoolIcon name="image-01" size={13} duotone={false} />
+                <span>Image &gt;</span>
               </div>
-              <div className="space-y-1.5">
-                {videoModels.map((m) => (
+              <div className="space-y-1">
+                {imageModels.map((m) => (
                   <ModelItem
                     key={m.id}
                     model={m}
@@ -270,15 +377,15 @@ export function ModelSelectorModal({
             </div>
           )}
 
-          {/* Section Image */}
-          {imageModels.length > 0 && (
+          {/* Section Vidéo */}
+          {videoModels.length > 0 && (
             <div>
-              <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-white/40 mb-2 px-1">
-                <CoolIcon name="image-01" size={14} duotone className="text-white/40" />
-                <span>Image ({imageModels.length})</span>
+              <div className="flex items-center gap-1.5 text-[11px] font-semibold text-[var(--mute)] mb-2 px-1">
+                <CoolIcon name="camera" size={13} duotone={false} />
+                <span>Video &gt;</span>
               </div>
-              <div className="space-y-1.5">
-                {imageModels.map((m) => (
+              <div className="space-y-1">
+                {videoModels.map((m) => (
                   <ModelItem
                     key={m.id}
                     model={m}
@@ -296,11 +403,11 @@ export function ModelSelectorModal({
           {/* Section Audio */}
           {audioModels.length > 0 && (
             <div>
-              <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-white/40 mb-2 px-1">
-                <CoolIcon name="headphones" size={14} duotone className="text-white/40" />
-                <span>Audio & Voix ({audioModels.length})</span>
+              <div className="flex items-center gap-1.5 text-[11px] font-semibold text-[var(--mute)] mb-2 px-1">
+                <CoolIcon name="headphones" size={13} duotone={false} />
+                <span>Audio &gt;</span>
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 {audioModels.map((m) => (
                   <ModelItem
                     key={m.id}
@@ -335,61 +442,48 @@ function ModelItem({
       type="button"
       onClick={onSelect}
       className={cn(
-        "w-full flex items-center justify-between p-3 rounded-xl border text-left transition-all cursor-pointer group",
+        "w-full flex items-center justify-between p-2.5 rounded-2xl text-left transition-all cursor-pointer group",
         isSelected
-          ? "bg-white/10 border-[#D8FF64]/60"
-          : "bg-white/5 border-white/5 hover:bg-white/8 hover:border-white/10"
+          ? "bg-[var(--field)] border border-[#D8FF64]/40"
+          : "hover:bg-[var(--hover)] border border-transparent"
       )}
     >
       <div className="flex items-center gap-3 min-w-0 pr-2">
-        <div className="w-9 h-9 rounded-lg bg-black/40 border border-white/10 flex items-center justify-center shrink-0">
-          {model.category === "video" ? (
-            <CoolIcon name="monitor-play" size={16} duotone className="text-white/70 group-hover:text-white" />
-          ) : model.category === "image" ? (
-            <CoolIcon name="image-01" size={16} duotone className="text-white/70 group-hover:text-white" />
-          ) : (
-            <CoolIcon name="user-voice" size={16} duotone className="text-white/70 group-hover:text-white" />
-          )}
+        <div className="w-10 h-10 rounded-xl bg-black/60 border border-white/10 flex items-center justify-center shrink-0 shadow-inner">
+          <ModelBrandLogo logo={model.logo} />
         </div>
+
         <div className="min-w-0">
           <div className="flex items-center gap-1.5">
-            <span className="font-medium text-[13.5px] text-white truncate">
+            <span className="font-heading text-[13.5px] font-medium text-[var(--ink)] truncate">
               {model.name}
             </span>
             {model.badge && (
               <span
                 className={cn(
-                  "text-[9.5px] font-mono font-semibold px-1.5 py-0.2 rounded",
-                  model.badge === "TOP"
-                    ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
-                    : model.badge === "NEW"
-                    ? "bg-[#D8FF64]/20 text-[#D8FF64] border border-[#D8FF64]/30"
-                    : "bg-purple-500/20 text-purple-400 border border-purple-500/30"
+                  "px-1.5 py-0.2 rounded-md text-[9px] font-extrabold tracking-wider",
+                  model.badge === "NEW"
+                    ? "bg-[#D8FF64] text-black"
+                    : model.badge === "TOP"
+                    ? "bg-sky-500 text-white"
+                    : "bg-purple-500 text-white"
                 )}
               >
                 {model.badge}
               </span>
             )}
           </div>
-          <p className="text-[11px] text-white/60 truncate">{model.tagline}</p>
-          {model.specs && (
-            <span className="text-[10px] font-mono text-white/40 block mt-0.5">
-              {model.specs}
-            </span>
-          )}
+          <span className="text-[11.5px] text-[var(--mute)] truncate block">
+            {model.tagline}
+          </span>
         </div>
       </div>
 
-      <div className="flex items-center gap-2 shrink-0">
-        <span className="font-mono text-[11px] text-white/50">
-          {model.creditsCost} cr
-        </span>
-        {isSelected && (
-          <div className="w-5 h-5 rounded-full bg-[#D8FF64] text-black flex items-center justify-center">
-            <CoolIcon name="check" size={12} duotone={false} className="text-black stroke-[3]" />
-          </div>
-        )}
-      </div>
+      {isSelected && (
+        <div className="w-5 h-5 rounded-full bg-[#D8FF64] text-black flex items-center justify-center shrink-0">
+          <CoolIcon name="check" size={12} duotone={false} className="text-black stroke-[3]" />
+        </div>
+      )}
     </button>
   );
 }

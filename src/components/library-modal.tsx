@@ -11,6 +11,7 @@ export interface LibraryCardItem {
   fullPrompt: string;
   modelName: string;
   mediaUrl?: string;
+  thumbnailUrl?: string;
   creditsCost: number;
   status: "thinking" | "generating" | "ready";
   elapsed: number;

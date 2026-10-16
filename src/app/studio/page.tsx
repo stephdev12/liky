@@ -14,6 +14,7 @@ import { ModelSelectorModal, ALL_MODELS, type ModelOption } from "@/components/s
 import { AssetsModal, type AssetItem } from "@/components/studio/assets-modal";
 import { InfluencerBuilderDrawer } from "@/components/studio/influencer-builder-drawer";
 import { GenjutsuDrawer } from "@/components/studio/genjutsu-drawer";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { createClient } from "@/lib/supabase/client";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { cn } from "@/lib/utils";
@@ -132,6 +133,7 @@ export default function StudioPage() {
           fullPrompt: g.prompt,
           modelName: g.model_name,
           mediaUrl: g.media_url || (g.thumbnail_url ?? undefined),
+          thumbnailUrl: g.thumbnail_url || (g.tool === "video" ? undefined : g.media_url),
           creditsCost: g.credits_cost,
           status: g.status === "success" || g.status === "fail" ? "ready" : "thinking",
           elapsed: g.duration_seconds || 0,
@@ -617,14 +619,14 @@ export default function StudioPage() {
   /* Loader initial pendant la vérification Supabase */
   if (authLoading || !user) {
     return (
-      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#121211] text-[#F8F8F5] select-none">
+      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[var(--bg)] text-[var(--ink)] select-none">
         <div className="flex flex-col items-center gap-4 animate-in fade-in duration-300">
           <div className="w-12 h-12 rounded-[16px] bg-[#D8FF64] flex items-center justify-center shadow-lg text-black">
             <CoolIcon name="star" size={24} className="text-black" duotone={false} />
           </div>
           <div className="flex items-center gap-2">
             <CoolIcon name="loading" size={16} className="animate-spin text-[#D8FF64]" duotone={false} />
-            <span className="text-[13px] font-medium text-white/60">
+            <span className="text-[13px] font-medium text-[var(--mute)]">
               Accès sécurisé au Studio likyAI…
             </span>
           </div>
@@ -634,15 +636,15 @@ export default function StudioPage() {
   }
 
   return (
-    <div className="relative min-h-screen bg-[#121211] text-[#F8F8F5] flex flex-col selection:bg-[#D8FF64] selection:text-black">
-      {/* ── TOP BAR ÉPURÉE : TOGGLE SIDEBAR + UPGRADE CRÉDITS + AVATAR ── */}
-      <header className="fixed top-0 inset-x-0 h-14 sm:h-16 px-3 sm:px-6 z-30 flex items-center justify-between border-b border-white/5 bg-[#121211]/80 backdrop-blur-md">
+    <div className="relative min-h-screen bg-[var(--bg)] text-[var(--ink)] flex flex-col selection:bg-[#D8FF64] selection:text-black transition-colors duration-200">
+      {/* ── TOP BAR ÉPURÉE : TOGGLE SIDEBAR + UPGRADE CRÉDITS + THEMETOGGLE + AVATAR ── */}
+      <header className="fixed top-0 inset-x-0 h-14 sm:h-16 px-3 sm:px-6 z-30 flex items-center justify-between border-b border-[var(--line)] bg-[var(--bg)]/80 backdrop-blur-md">
         {/* Côté Gauche : Bouton Navbar Latérale */}
         <div className="flex items-center gap-2 sm:gap-3">
           <button
             type="button"
             onClick={() => setSidebarOpen(true)}
-            className="w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-white/80 hover:text-white transition-all cursor-pointer"
+            className="w-9 h-9 rounded-full bg-[var(--field)] hover:bg-[var(--hover)] border border-[var(--line)] flex items-center justify-center text-[var(--ink-2)] hover:text-[var(--ink)] transition-all cursor-pointer"
             title="Ouvrir le menu des studios"
             aria-label="Ouvrir le menu"
           >
@@ -655,13 +657,13 @@ export default function StudioPage() {
             title="Accueil LikyAI"
           >
             <LogoIcon />
-            <span className="font-heading text-[18px] sm:text-[19px] font-semibold tracking-tight text-white">
+            <span className="font-heading text-[18px] sm:text-[19px] font-semibold tracking-tight text-[var(--ink)]">
               liky<span className="text-[#D8FF64]">AI</span>
             </span>
           </div>
         </div>
 
-        {/* Côté Droit : Upgrade Crédits + Avatar */}
+        {/* Côté Droit : Upgrade Crédits + ThemeToggle + Bibliothèque + Avatar */}
         <div className="flex items-center gap-2 sm:gap-2.5">
           {/* Bouton Upgrade Lime avec Diamant / Étoile */}
           <button
@@ -675,21 +677,24 @@ export default function StudioPage() {
             <span className="font-mono text-[11px] opacity-75 font-normal">({credits} cr)</span>
           </button>
 
+          {/* Theme Toggle */}
+          <ThemeToggle />
+
           {/* Bibliothèque */}
           <button
             type="button"
             onClick={() => setLibraryOpen(true)}
-            className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-white/80 hover:text-white transition-all cursor-pointer"
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[var(--field)] hover:bg-[var(--hover)] border border-[var(--line)] flex items-center justify-center text-[var(--ink-2)] hover:text-[var(--ink)] transition-all cursor-pointer"
             title="Bibliothèque de créations"
           >
-            <CoolIcon name="folder-open" size={16} duotone className="text-white/70" />
+            <CoolIcon name="folder-open" size={16} duotone className="text-[var(--mute)]" />
           </button>
 
           {/* Avatar utilisateur */}
           <button
             type="button"
             onClick={() => setSidebarOpen(true)}
-            className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#1F1F1E] border border-white/15 text-white font-medium text-[12px] sm:text-[13px] flex items-center justify-center cursor-pointer hover:border-[#D8FF64]/50 transition-colors"
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[var(--field)] border border-[var(--line)] text-[var(--ink)] font-medium text-[12px] sm:text-[13px] flex items-center justify-center cursor-pointer hover:border-[#D8FF64]/50 transition-colors"
             title={user?.email || "Mon compte"}
           >
             {user?.email ? user.email.charAt(0).toUpperCase() : "U"}
@@ -705,10 +710,10 @@ export default function StudioPage() {
             
             {/* Logo Central LikyAI */}
             <div className="flex flex-col items-center gap-3 mb-6 select-none">
-              <div className="w-14 h-14 rounded-2xl bg-black/40 border border-white/10 flex items-center justify-center shadow-lg p-2.5">
+              <div className="w-14 h-14 rounded-2xl bg-[var(--surface)] border border-[var(--line)] flex items-center justify-center shadow-md p-2.5">
                 <LogoIcon />
               </div>
-              <h1 className="font-heading text-xl sm:text-2xl font-semibold tracking-tight text-white">
+              <h1 className="font-heading text-xl sm:text-2xl font-semibold tracking-tight text-[var(--ink)]">
                 What image or video would you like to create?
               </h1>
             </div>
@@ -736,154 +741,154 @@ export default function StudioPage() {
             <button
               type="button"
               onClick={() => router.push("/mcp/authorize")}
-              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#181817] hover:bg-[#20201F] border border-white/10 text-[12px] text-white/70 hover:text-white transition-all cursor-pointer mb-8 group"
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[var(--surface)] hover:bg-[var(--hover)] border border-[var(--line)] text-[12px] text-[var(--ink-2)] hover:text-[var(--ink)] transition-all cursor-pointer mb-8 group shadow-xs"
             >
-              <CoolIcon name="instance" size={14} duotone className="text-white/50 group-hover:text-[#D8FF64]" />
+              <CoolIcon name="instance" size={14} duotone className="text-[var(--mute)] group-hover:text-[#D8FF64]" />
               <span>Extension MCP & API connectée</span>
-              <span className="text-[#D8FF64] font-medium flex items-center gap-0.5">
+              <span className="text-[#8ca825] dark:text-[#D8FF64] font-medium flex items-center gap-0.5">
                 Connect <CoolIcon name="arrow-right-sm" size={11} duotone={false} />
               </span>
             </button>
 
-            {/* Carrousel horizontal de tous les studios (exactement comme dans la référence) */}
+            {/* Carrousel horizontal de tous les studios (adapté Thème Clair / Sombre) */}
             <div className="w-full">
               <div className="flex items-center gap-3 overflow-x-auto pb-4 pt-1 px-1 scrollbar-none snap-x snap-mandatory">
                 {/* 1. Genjutsu (FREE) */}
                 <button
                   type="button"
                   onClick={() => setGenjutsuOpen(true)}
-                  className="flex flex-col text-left w-[130px] sm:w-[140px] shrink-0 p-2 rounded-2xl bg-[#181817] hover:bg-[#20201F] border border-white/10 hover:border-[#D8FF64]/40 transition-all cursor-pointer group snap-start"
+                  className="flex flex-col text-left w-[130px] sm:w-[140px] shrink-0 p-2 rounded-2xl bg-[var(--surface)] hover:bg-[var(--hover)] border border-[var(--line)] hover:border-[#D8FF64]/40 transition-all cursor-pointer group snap-start shadow-card"
                 >
-                  <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-black/40 border border-white/5 mb-2">
+                  <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-black/10 dark:bg-black/40 border border-[var(--line)] mb-2">
                     <img
                       src="/assets/studios/studio-cinema.jpg"
                       alt="Genjutsu"
-                      className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-300"
+                      className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-300"
                     />
                     <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded-md bg-pink-500 text-white text-[9px] font-bold tracking-wider">
                       FREE
                     </span>
                   </div>
-                  <span className="text-[12px] font-semibold text-white group-hover:text-[#D8FF64] truncate">
+                  <span className="text-[12px] font-semibold text-[var(--ink)] group-hover:text-[#8ca825] dark:group-hover:text-[#D8FF64] truncate">
                     likyAI Genjutsu
                   </span>
-                  <span className="text-[10px] text-white/40 truncate">Motion & Swap</span>
+                  <span className="text-[10px] text-[var(--mute)] truncate">Motion & Swap</span>
                 </button>
 
                 {/* 2. AI Influencer (NEW) */}
                 <button
                   type="button"
                   onClick={() => setInfluencerOpen(true)}
-                  className="flex flex-col text-left w-[130px] sm:w-[140px] shrink-0 p-2 rounded-2xl bg-[#181817] hover:bg-[#20201F] border border-white/10 hover:border-[#D8FF64]/40 transition-all cursor-pointer group snap-start"
+                  className="flex flex-col text-left w-[130px] sm:w-[140px] shrink-0 p-2 rounded-2xl bg-[var(--surface)] hover:bg-[var(--hover)] border border-[var(--line)] hover:border-[#D8FF64]/40 transition-all cursor-pointer group snap-start shadow-card"
                 >
-                  <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-black/40 border border-white/5 mb-2">
+                  <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-black/10 dark:bg-black/40 border border-[var(--line)] mb-2">
                     <img
-                      src="/assets/studios/studio-ugc.jpg"
+                      src="/assets/influencer/gender_female.jpg"
                       alt="AI Influencer"
-                      className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-300"
+                      className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-300"
                     />
                     <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded-md bg-[#D8FF64] text-black text-[9px] font-bold tracking-wider">
                       NEW
                     </span>
                   </div>
-                  <span className="text-[12px] font-semibold text-white group-hover:text-[#D8FF64] truncate">
+                  <span className="text-[12px] font-semibold text-[var(--ink)] group-hover:text-[#8ca825] dark:group-hover:text-[#D8FF64] truncate">
                     AI Influencer
                   </span>
-                  <span className="text-[10px] text-white/40 truncate">Clone cohérent</span>
+                  <span className="text-[10px] text-[var(--mute)] truncate">Clone cohérent</span>
                 </button>
 
                 {/* 3. Cinema Studio (POPULAR) */}
                 <button
                   type="button"
                   onClick={() => router.push("/studios/cinema")}
-                  className="flex flex-col text-left w-[130px] sm:w-[140px] shrink-0 p-2 rounded-2xl bg-[#181817] hover:bg-[#20201F] border border-white/10 hover:border-[#D8FF64]/40 transition-all cursor-pointer group snap-start"
+                  className="flex flex-col text-left w-[130px] sm:w-[140px] shrink-0 p-2 rounded-2xl bg-[var(--surface)] hover:bg-[var(--hover)] border border-[var(--line)] hover:border-[#D8FF64]/40 transition-all cursor-pointer group snap-start shadow-card"
                 >
-                  <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-black/40 border border-white/5 mb-2">
+                  <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-black/10 dark:bg-black/40 border border-[var(--line)] mb-2">
                     <img
                       src="/assets/studios/studio-cinema.jpg"
                       alt="Cinema Studio"
-                      className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-300"
+                      className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-300"
                     />
                     <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded-md bg-purple-500 text-white text-[9px] font-bold tracking-wider">
                       POPULAR
                     </span>
                   </div>
-                  <span className="text-[12px] font-semibold text-white group-hover:text-[#D8FF64] truncate">
+                  <span className="text-[12px] font-semibold text-[var(--ink)] group-hover:text-[#8ca825] dark:group-hover:text-[#D8FF64] truncate">
                     Cinema Studio
                   </span>
-                  <span className="text-[10px] text-white/40 truncate">Master 35mm 4K</span>
+                  <span className="text-[10px] text-[var(--mute)] truncate">Master 35mm 4K</span>
                 </button>
 
                 {/* 4. Ads Studio */}
                 <button
                   type="button"
                   onClick={() => router.push("/studios/ad-builder")}
-                  className="flex flex-col text-left w-[130px] sm:w-[140px] shrink-0 p-2 rounded-2xl bg-[#181817] hover:bg-[#20201F] border border-white/10 hover:border-[#D8FF64]/40 transition-all cursor-pointer group snap-start"
+                  className="flex flex-col text-left w-[130px] sm:w-[140px] shrink-0 p-2 rounded-2xl bg-[var(--surface)] hover:bg-[var(--hover)] border border-[var(--line)] hover:border-[#D8FF64]/40 transition-all cursor-pointer group snap-start shadow-card"
                 >
-                  <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-black/40 border border-white/5 mb-2">
+                  <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-black/10 dark:bg-black/40 border border-[var(--line)] mb-2">
                     <img
-                      src="/assets/studios/studio-ad-builder.jpg"
+                      src="/assets/gallery/banner_ads.jpg"
                       alt="Ads Studio"
-                      className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-300"
+                      className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-300"
                     />
                   </div>
-                  <span className="text-[12px] font-semibold text-white group-hover:text-[#D8FF64] truncate">
+                  <span className="text-[12px] font-semibold text-[var(--ink)] group-hover:text-[#8ca825] dark:group-hover:text-[#D8FF64] truncate">
                     Ads Studio
                   </span>
-                  <span className="text-[10px] text-white/40 truncate">Scan de marque & pubs</span>
+                  <span className="text-[10px] text-[var(--mute)] truncate">Scan de marque & pubs</span>
                 </button>
 
                 {/* 5. UGC Studio */}
                 <button
                   type="button"
                   onClick={() => router.push("/studios/ugc")}
-                  className="flex flex-col text-left w-[130px] sm:w-[140px] shrink-0 p-2 rounded-2xl bg-[#181817] hover:bg-[#20201F] border border-white/10 hover:border-[#D8FF64]/40 transition-all cursor-pointer group snap-start"
+                  className="flex flex-col text-left w-[130px] sm:w-[140px] shrink-0 p-2 rounded-2xl bg-[var(--surface)] hover:bg-[var(--hover)] border border-[var(--line)] hover:border-[#D8FF64]/40 transition-all cursor-pointer group snap-start shadow-card"
                 >
-                  <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-black/40 border border-white/5 mb-2">
+                  <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-black/10 dark:bg-black/40 border border-[var(--line)] mb-2">
                     <img
                       src="/assets/studios/studio-ugc.jpg"
                       alt="UGC Studio"
-                      className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-300"
+                      className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-300"
                     />
                   </div>
-                  <span className="text-[12px] font-semibold text-white group-hover:text-[#D8FF64] truncate">
+                  <span className="text-[12px] font-semibold text-[var(--ink)] group-hover:text-[#8ca825] dark:group-hover:text-[#D8FF64] truncate">
                     UGC Studio
                   </span>
-                  <span className="text-[10px] text-white/40 truncate">Témoignages spontanés</span>
+                  <span className="text-[10px] text-[var(--mute)] truncate">Témoignages spontanés</span>
                 </button>
 
                 {/* 6. Animation Studio */}
                 <button
                   type="button"
                   onClick={() => router.push("/studios/animation")}
-                  className="flex flex-col text-left w-[130px] sm:w-[140px] shrink-0 p-2 rounded-2xl bg-[#181817] hover:bg-[#20201F] border border-white/10 hover:border-[#D8FF64]/40 transition-all cursor-pointer group snap-start"
+                  className="flex flex-col text-left w-[130px] sm:w-[140px] shrink-0 p-2 rounded-2xl bg-[var(--surface)] hover:bg-[var(--hover)] border border-[var(--line)] hover:border-[#D8FF64]/40 transition-all cursor-pointer group snap-start shadow-card"
                 >
-                  <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-black/40 border border-white/5 mb-2">
+                  <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-black/10 dark:bg-black/40 border border-[var(--line)] mb-2">
                     <img
                       src="/assets/studios/studio-animation.jpg"
                       alt="Animation Studio"
-                      className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-300"
+                      className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-300"
                     />
                   </div>
-                  <span className="text-[12px] font-semibold text-white group-hover:text-[#D8FF64] truncate">
+                  <span className="text-[12px] font-semibold text-[var(--ink)] group-hover:text-[#8ca825] dark:group-hover:text-[#D8FF64] truncate">
                     Animation Studio
                   </span>
-                  <span className="text-[10px] text-white/40 truncate">Dessins & Anime</span>
+                  <span className="text-[10px] text-[var(--mute)] truncate">Dessins & Anime</span>
                 </button>
 
                 {/* 7. Mes Assets */}
                 <button
                   type="button"
                   onClick={() => setAssetsModalOpen(true)}
-                  className="flex flex-col text-left w-[130px] sm:w-[140px] shrink-0 p-2 rounded-2xl bg-[#181817] hover:bg-[#20201F] border border-white/10 hover:border-[#D8FF64]/40 transition-all cursor-pointer group snap-start"
+                  className="flex flex-col text-left w-[130px] sm:w-[140px] shrink-0 p-2 rounded-2xl bg-[var(--surface)] hover:bg-[var(--hover)] border border-[var(--line)] hover:border-[#D8FF64]/40 transition-all cursor-pointer group snap-start shadow-card"
                 >
-                  <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-white/5 border border-white/5 mb-2 flex items-center justify-center">
-                    <CoolIcon name="folder-open" size={28} duotone className="text-white/60 group-hover:text-[#D8FF64]" />
+                  <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-[var(--field)] border border-[var(--line)] mb-2 flex items-center justify-center">
+                    <CoolIcon name="folder-open" size={28} duotone className="text-[var(--mute)] group-hover:text-[#8ca825] dark:group-hover:text-[#D8FF64]" />
                   </div>
-                  <span className="text-[12px] font-semibold text-white group-hover:text-[#D8FF64] truncate">
+                  <span className="text-[12px] font-semibold text-[var(--ink)] group-hover:text-[#8ca825] dark:group-hover:text-[#D8FF64] truncate">
                     All Assets
                   </span>
-                  <span className="text-[10px] text-white/40 truncate">Images & Éléments</span>
+                  <span className="text-[10px] text-[var(--mute)] truncate">Images & Éléments</span>
                 </button>
               </div>
             </div>

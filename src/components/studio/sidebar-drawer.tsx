@@ -4,6 +4,7 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { LogoIcon } from "@/components/logo";
 import { CoolIcon } from "@/components/icons/coolicon";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/utils";
 
 interface SidebarDrawerProps {
@@ -45,26 +46,30 @@ export function SidebarDrawer({
       />
 
       {/* Sidebar Sheet */}
-      <div className="fixed inset-y-0 left-0 w-[300px] sm:w-[320px] bg-[#121211] text-[#F8F8F5] border-r border-white/10 shadow-2xl z-50 flex flex-col justify-between p-4 overflow-y-auto animate-in slide-in-from-left duration-200">
+      <div className="fixed inset-y-0 left-0 w-[300px] sm:w-[320px] bg-[var(--surface)] text-[var(--ink)] border-r border-[var(--line)] shadow-2xl z-50 flex flex-col justify-between p-4 overflow-y-auto animate-in slide-in-from-left duration-200">
         <div className="space-y-4">
           {/* Header */}
-          <div className="flex items-center justify-between pb-3 border-b border-white/10">
+          <div className="flex items-center justify-between pb-3 border-b border-[var(--line)]">
             <div
               className="flex items-center gap-2 cursor-pointer select-none"
               onClick={() => navigateTo("/studio")}
             >
               <LogoIcon />
-              <span className="font-heading text-[18px] font-semibold text-white tracking-tight">
+              <span className="font-heading text-[18px] font-semibold text-[var(--ink)] tracking-tight">
                 liky<span className="text-[#D8FF64]">AI</span>
               </span>
             </div>
-            <button
-              type="button"
-              onClick={onClose}
-              className="p-1.5 rounded-full bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-colors cursor-pointer"
-            >
-              <CoolIcon name="close-md" size={16} duotone={false} />
-            </button>
+            <div className="flex items-center gap-1.5">
+              <ThemeToggle />
+              <button
+                type="button"
+                onClick={onClose}
+                className="p-1.5 rounded-full bg-[var(--field)] hover:bg-[var(--hover)] text-[var(--mute)] hover:text-[var(--ink)] transition-colors cursor-pointer border border-[var(--line)]"
+                title="Fermer le menu"
+              >
+                <CoolIcon name="close-md" size={15} duotone={false} />
+              </button>
+            </div>
           </div>
 
           {/* Bouton d'action principale + Créer */}
@@ -85,16 +90,16 @@ export function SidebarDrawer({
             <button
               type="button"
               onClick={() => navigateTo("/studios")}
-              className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-white/80 hover:text-white hover:bg-white/5 transition-colors text-left cursor-pointer"
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[var(--ink-2)] hover:text-[var(--ink)] hover:bg-[var(--hover)] transition-colors text-left cursor-pointer"
             >
-              <CoolIcon name="compass" size={16} duotone className="text-white/50" />
+              <CoolIcon name="compass" size={16} duotone className="text-[var(--mute)]" />
               <span>Hub des Studios</span>
             </button>
 
             {/* MCP Connecté */}
-            <div className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-white/80 hover:text-white hover:bg-white/5 transition-colors">
+            <div className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-[var(--ink-2)] hover:text-[var(--ink)] hover:bg-[var(--hover)] transition-colors">
               <div className="flex items-center gap-3">
-                <CoolIcon name="instance" size={16} duotone className="text-white/50" />
+                <CoolIcon name="instance" size={16} duotone className="text-[var(--mute)]" />
                 <span>MCP (Claude & GPT)</span>
               </div>
               <button
@@ -114,7 +119,7 @@ export function SidebarDrawer({
                 if (onOpenGenjutsu) onOpenGenjutsu();
                 else navigateTo("/studios/genjutsu");
               }}
-              className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-white/80 hover:text-white hover:bg-white/5 transition-colors text-left cursor-pointer"
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[var(--ink-2)] hover:text-[var(--ink)] hover:bg-[var(--hover)] transition-colors text-left cursor-pointer"
             >
               <CoolIcon name="star" size={16} duotone secondaryColor="#D8FF64" className="text-[#D8FF64]" />
               <span>Genjutsu Motion & Swap</span>
@@ -127,7 +132,7 @@ export function SidebarDrawer({
                 if (onOpenInfluencerBuilder) onOpenInfluencerBuilder();
                 else navigateTo("/studios/ai-influencer");
               }}
-              className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-white/80 hover:text-white hover:bg-white/5 transition-colors text-left cursor-pointer"
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[var(--ink-2)] hover:text-[var(--ink)] hover:bg-[var(--hover)] transition-colors text-left cursor-pointer"
             >
               <CoolIcon name="user-01" size={16} duotone className="text-[#D8FF64]" />
               <span>AI Influencer Builder</span>
@@ -137,36 +142,36 @@ export function SidebarDrawer({
             <button
               type="button"
               onClick={() => navigateTo("/studios/cinema")}
-              className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-white/80 hover:text-white hover:bg-white/5 transition-colors text-left cursor-pointer"
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[var(--ink-2)] hover:text-[var(--ink)] hover:bg-[var(--hover)] transition-colors text-left cursor-pointer"
             >
-              <CoolIcon name="monitor-play" size={16} duotone className="text-white/50" />
+              <CoolIcon name="monitor-play" size={16} duotone className="text-[var(--mute)]" />
               <span>Cinéma Studio</span>
             </button>
 
             <button
               type="button"
               onClick={() => navigateTo("/studios/ad-builder")}
-              className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-white/80 hover:text-white hover:bg-white/5 transition-colors text-left cursor-pointer"
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[var(--ink-2)] hover:text-[var(--ink)] hover:bg-[var(--hover)] transition-colors text-left cursor-pointer"
             >
-              <CoolIcon name="layers" size={16} duotone className="text-white/50" />
+              <CoolIcon name="layers" size={16} duotone className="text-[var(--mute)]" />
               <span>Ad Builder Studio</span>
             </button>
 
             <button
               type="button"
               onClick={() => navigateTo("/studios/ugc")}
-              className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-white/80 hover:text-white hover:bg-white/5 transition-colors text-left cursor-pointer"
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[var(--ink-2)] hover:text-[var(--ink)] hover:bg-[var(--hover)] transition-colors text-left cursor-pointer"
             >
-              <CoolIcon name="shopping-bag-01" size={16} duotone className="text-white/50" />
+              <CoolIcon name="shopping-bag-01" size={16} duotone className="text-[var(--mute)]" />
               <span>UGC Studio</span>
             </button>
 
             <button
               type="button"
               onClick={() => navigateTo("/studios/animation")}
-              className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-white/80 hover:text-white hover:bg-white/5 transition-colors text-left cursor-pointer"
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[var(--ink-2)] hover:text-[var(--ink)] hover:bg-[var(--hover)] transition-colors text-left cursor-pointer"
             >
-              <CoolIcon name="desktop" size={16} duotone className="text-white/50" />
+              <CoolIcon name="desktop" size={16} duotone className="text-[var(--mute)]" />
               <span>Animation Studio</span>
             </button>
 
@@ -177,33 +182,33 @@ export function SidebarDrawer({
                 if (onOpenAssets) onOpenAssets();
                 else navigateTo("/studio");
               }}
-              className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-white/80 hover:text-white hover:bg-white/5 transition-colors text-left cursor-pointer"
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[var(--ink-2)] hover:text-[var(--ink)] hover:bg-[var(--hover)] transition-colors text-left cursor-pointer"
             >
-              <CoolIcon name="folder-open" size={16} duotone className="text-white/50" />
+              <CoolIcon name="folder-open" size={16} duotone className="text-[var(--mute)]" />
               <span>Mes Assets</span>
             </button>
           </nav>
 
           {/* Section Récent */}
           <div className="pt-2">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-white/30 px-3">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--mute)] px-3">
               Historique récent
             </span>
-            <p className="text-[12px] text-white/40 px-3 py-1.5 italic">
+            <p className="text-[12px] text-[var(--mute)] px-3 py-1.5 italic">
               Vos créations apparaîtront ici
             </p>
           </div>
         </div>
 
         {/* Profil utilisateur en bas */}
-        <div className="pt-4 border-t border-white/10">
-          <div className="flex items-center justify-between p-2 rounded-2xl bg-white/5 border border-white/5">
+        <div className="pt-4 border-t border-[var(--line)]">
+          <div className="flex items-center justify-between p-2 rounded-2xl bg-[var(--field)] border border-[var(--line)]">
             <div className="flex items-center gap-2.5 min-w-0 pr-2">
               <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-emerald-500 to-[#D8FF64] flex items-center justify-center font-bold text-black text-xs shrink-0">
                 {(userEmail || "U")[0].toUpperCase()}
               </div>
               <div className="min-w-0">
-                <span className="text-[12px] font-medium text-white truncate block">
+                <span className="text-[12px] font-medium text-[var(--ink)] truncate block">
                   {userEmail?.split("@")[0] || "Créateur"}
                 </span>
                 <span className="font-mono text-[11px] text-[#D8FF64]">

@@ -4,18 +4,20 @@ import React, { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { CoolIcon } from "@/components/icons/coolicon";
 import { LogoIcon } from "@/components/logo";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { SidebarDrawer } from "@/components/studio/sidebar-drawer";
 import { TopupModal } from "@/components/topup-modal";
 import { createClient } from "@/lib/supabase/client";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { cn } from "@/lib/utils";
 
-/* ── PRESETS DATA (Identique aux références fournies) ── */
+/* ── PRESETS DATA (Haute Définition & Vidéos Réelles avec Posters) ── */
 interface PresetItem {
   id: string;
   type: "image" | "video";
   category: "image" | "video" | "assets" | "mcp";
   mediaUrl: string;
+  thumbnailUrl?: string;
   prompt: string;
   aspect?: string;
 }
@@ -26,6 +28,7 @@ const COMMUNITY_PRESETS: PresetItem[] = [
     type: "image",
     category: "image",
     mediaUrl: "/assets/gallery/preset_beach.jpg",
+    thumbnailUrl: "/assets/gallery/preset_beach.jpg",
     prompt: "Two friends smiling at a tropical luxury beach resort, warm sunset rim light, cinematic 35mm film",
     aspect: "4/5",
   },
@@ -34,7 +37,8 @@ const COMMUNITY_PRESETS: PresetItem[] = [
     type: "image",
     category: "image",
     mediaUrl: "/assets/gallery/preset_pink_girl.jpg",
-    prompt: "Cozy morning portrait, soft window illumination, pastel pink aesthetic, hyperdetailed skin texture",
+    thumbnailUrl: "/assets/gallery/preset_pink_girl.jpg",
+    prompt: "Cozy morning portrait, soft window illumination, pastel blush knitwear, hyperdetailed skin texture",
     aspect: "3/4",
   },
   {
@@ -42,6 +46,7 @@ const COMMUNITY_PRESETS: PresetItem[] = [
     type: "image",
     category: "image",
     mediaUrl: "/assets/gallery/preset_mountain.jpg",
+    thumbnailUrl: "/assets/gallery/preset_mountain.jpg",
     prompt: "Wide cinematic landscape, traveler in white standing in golden grass before majestic mountain peaks at dawn",
     aspect: "16/9",
   },
@@ -49,7 +54,8 @@ const COMMUNITY_PRESETS: PresetItem[] = [
     id: "preset-4",
     type: "video",
     category: "video",
-    mediaUrl: "/assets/gallery/preset_backstage.jpg",
+    mediaUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+    thumbnailUrl: "/assets/gallery/preset_backstage.jpg",
     prompt: "Backstage concert hallway, warm red neon lighting, dynamic camera tracking speaker through crew",
     aspect: "9/16",
   },
@@ -57,7 +63,8 @@ const COMMUNITY_PRESETS: PresetItem[] = [
     id: "preset-5",
     type: "video",
     category: "video",
-    mediaUrl: "/assets/gallery/preset_subway.jpg",
+    mediaUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+    thumbnailUrl: "/assets/gallery/preset_subway.jpg",
     prompt: "Subway station speed blur, stylish figure running parallel to arriving train, cinematic motion",
     aspect: "9/16",
   },
@@ -65,7 +72,8 @@ const COMMUNITY_PRESETS: PresetItem[] = [
     id: "preset-6",
     type: "video",
     category: "video",
-    mediaUrl: "/assets/gallery/preset_cyber_atrium.jpg",
+    mediaUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyBlazes.mp4",
+    thumbnailUrl: "/assets/gallery/preset_cyber_atrium.jpg",
     prompt: "Futuristic skyscraper atrium with reflective steel columns, dancer in silver metallic streetwear",
     aspect: "9/16",
   },
@@ -74,6 +82,7 @@ const COMMUNITY_PRESETS: PresetItem[] = [
     type: "image",
     category: "image",
     mediaUrl: "/assets/gallery/preset_night_park.jpg",
+    thumbnailUrl: "/assets/gallery/preset_night_park.jpg",
     prompt: "Atmospheric night scene in park, single vintage streetlamp glow, mysterious cinematic shadows",
     aspect: "3/4",
   },
@@ -81,23 +90,26 @@ const COMMUNITY_PRESETS: PresetItem[] = [
     id: "preset-8",
     type: "image",
     category: "assets",
-    mediaUrl: "/assets/organic/organic-1.webp",
-    prompt: "High fashion editorial studio portrait, dramatic chiaroscuro lighting, minimalist aesthetics",
+    mediaUrl: "/assets/studios/studio-ugc.jpg",
+    thumbnailUrl: "/assets/studios/studio-ugc.jpg",
+    prompt: "Authentic UGC creator smiling in natural studio setting, reviewing beauty product with soft light",
     aspect: "1/1",
   },
   {
     id: "preset-9",
     type: "image",
     category: "assets",
-    mediaUrl: "/assets/organic/organic-2.webp",
-    prompt: "Modern architectural interior with brutalist organic forms, warm sunlight beams across polished concrete",
+    mediaUrl: "/assets/studios/studio-libre.jpg",
+    thumbnailUrl: "/assets/studios/studio-libre.jpg",
+    prompt: "High fashion editorial studio portrait, dramatic chiaroscuro lighting, minimalist aesthetics",
     aspect: "4/3",
   },
   {
     id: "preset-10",
     type: "video",
     category: "video",
-    mediaUrl: "/assets/organic/organic-3.webp",
+    mediaUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
+    thumbnailUrl: "/assets/studios/studio-animation.jpg",
     prompt: "Fluid organic motion simulation, iridescent translucent liquid spheres colliding in zero gravity",
     aspect: "1/1",
   },
@@ -105,8 +117,9 @@ const COMMUNITY_PRESETS: PresetItem[] = [
     id: "preset-11",
     type: "image",
     category: "mcp",
-    mediaUrl: "/assets/organic/organic-4.webp",
-    prompt: "Cyberpunk urban alleyway at midnight, reflective rain puddles, neon green holograms",
+    mediaUrl: "/assets/gallery/banner_ads.jpg",
+    thumbnailUrl: "/assets/gallery/banner_ads.jpg",
+    prompt: "Winning modern brand static ad campaign, high conversion commercial visual layout",
     aspect: "16/9",
   },
 ];
@@ -146,7 +159,7 @@ const FEATURED_BANNERS: FeaturedBanner[] = [
     id: "influencer",
     title: "AI INFLUENCER",
     subtitle: "Consistent digital persona",
-    image: "/assets/influencer/type_bold.jpg",
+    image: "/assets/influencer/gender_female.jpg",
     route: "/studios/ai-influencer",
   },
   {
@@ -186,6 +199,10 @@ export default function StudiosExplorePage() {
   const [selectedPreset, setSelectedPreset] = useState<PresetItem | null>(null);
   const [userGenerations, setUserGenerations] = useState<PresetItem[]>([]);
 
+  // Lecture aléatoire (Shuffle Play)
+  const [isShufflePlaying, setIsShufflePlaying] = useState(false);
+  const videoRefs = useRef<Record<string, HTMLVideoElement | null>>({});
+
   // Chargement auth & Supabase
   useEffect(() => {
     const supabase = createClient();
@@ -217,6 +234,7 @@ export default function StudiosExplorePage() {
                   type: g.tool === "video" ? "video" : "image",
                   category: g.tool === "video" ? "video" : "image",
                   mediaUrl: g.media_url || g.thumbnail_url,
+                  thumbnailUrl: g.thumbnail_url || (g.tool === "video" ? undefined : g.media_url),
                   prompt: g.prompt,
                 }));
               setUserGenerations(formatted);
@@ -245,37 +263,55 @@ export default function StudiosExplorePage() {
     return matchCategory && matchSearch;
   });
 
+  // Gestion de la lecture aléatoire (Shuffle Play)
+  const toggleShufflePlay = () => {
+    const nextState = !isShufflePlaying;
+    setIsShufflePlaying(nextState);
+
+    Object.values(videoRefs.current).forEach((v) => {
+      if (!v) return;
+      if (nextState) {
+        v.play().catch(() => {});
+      } else {
+        v.pause();
+      }
+    });
+  };
+
   const handleRecreate = (promptText: string) => {
     setSelectedPreset(null);
     router.push(`/studio?prompt=${encodeURIComponent(promptText)}`);
   };
 
   return (
-    <div className="relative min-h-screen bg-[#111110] text-[#F8F8F5] pb-28 selection:bg-[#D8FF64] selection:text-black">
-      {/* ── TOP BAR ÉPURÉE ── */}
-      <header className="fixed top-0 inset-x-0 h-14 sm:h-16 px-4 sm:px-6 z-30 flex items-center justify-between border-b border-white/5 bg-[#111110]/85 backdrop-blur-md">
+    <div className="relative min-h-screen bg-[var(--bg)] text-[var(--ink)] pb-28 selection:bg-[#D8FF64] selection:text-black transition-colors duration-200">
+      {/* ── TOP BAR ÉPURÉE (Thème Clair / Sombre cohérent) ── */}
+      <header className="fixed top-0 inset-x-0 h-14 sm:h-16 px-4 sm:px-6 z-30 flex items-center justify-between border-b border-[var(--line)] bg-[var(--bg)]/85 backdrop-blur-md">
         <button
           type="button"
           onClick={() => setSidebarOpen(true)}
-          className="w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/80 hover:text-white transition-all cursor-pointer"
-          title="Menu"
+          className="w-9 h-9 rounded-full bg-[var(--field)] hover:bg-[var(--hover)] border border-[var(--line)] flex items-center justify-center text-[var(--ink-2)] hover:text-[var(--ink)] transition-all cursor-pointer"
+          title="Menu des studios"
           aria-label="Menu"
         >
           <CoolIcon name="hamburger-md" size={18} duotone={false} />
         </button>
 
-        <h1 className="font-heading text-[16px] sm:text-[17px] font-semibold text-white tracking-tight">
+        <h1 className="font-heading text-[16px] sm:text-[17px] font-semibold text-[var(--ink)] tracking-tight">
           Explore
         </h1>
 
-        <button
-          type="button"
-          onClick={() => setTopupOpen(true)}
-          className="h-8 sm:h-9 px-3.5 rounded-full bg-[#D8FF64] hover:bg-[#cbf54a] text-black font-semibold text-[12px] flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
-        >
-          <CoolIcon name="star" size={13} duotone={false} className="text-black fill-current" />
-          <span>Upgrade</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <button
+            type="button"
+            onClick={() => setTopupOpen(true)}
+            className="h-8 sm:h-9 px-3.5 rounded-full bg-[#D8FF64] hover:bg-[#cbf54a] text-black font-semibold text-[12px] flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+          >
+            <CoolIcon name="star" size={13} duotone={false} className="text-black fill-current" />
+            <span>Upgrade</span>
+          </button>
+        </div>
       </header>
 
       {/* ── CONTENU EXPLORE ── */}
@@ -292,7 +328,7 @@ export default function StudiosExplorePage() {
               <div
                 key={banner.id}
                 onClick={() => router.push(banner.route)}
-                className="relative w-full shrink-0 aspect-[16/9] sm:aspect-[2/1] rounded-2xl overflow-hidden cursor-pointer group snap-center border border-white/10"
+                className="relative w-full shrink-0 aspect-[16/9] sm:aspect-[2/1] rounded-2xl overflow-hidden cursor-pointer group snap-center border border-[var(--line)] shadow-sm"
               >
                 <img
                   src={banner.image}
@@ -319,8 +355,8 @@ export default function StudiosExplorePage() {
                 className={cn(
                   "rounded-full transition-all",
                   activeBannerIdx === idx
-                    ? "w-2.5 h-1.5 bg-white"
-                    : "w-1.5 h-1.5 bg-white/20"
+                    ? "w-2.5 h-1.5 bg-[#D8FF64]"
+                    : "w-1.5 h-1.5 bg-[var(--line-strong)]"
                 )}
               />
             ))}
@@ -350,7 +386,7 @@ export default function StudiosExplorePage() {
                     "w-full aspect-[4/3] rounded-2xl overflow-hidden border transition-all flex items-center justify-center",
                     active
                       ? "border-[#D8FF64] ring-2 ring-[#D8FF64]/40 bg-[#D8FF64]/10"
-                      : "border-white/10 bg-[#1A1A18] hover:border-white/25"
+                      : "border-[var(--line)] bg-[var(--surface)] hover:border-[var(--line-strong)]"
                   )}
                 >
                   {cat.img ? (
@@ -360,12 +396,12 @@ export default function StudiosExplorePage() {
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                   ) : (
-                    <div className="w-full h-full bg-black flex items-center justify-center">
+                    <div className="w-full h-full bg-[var(--field)] flex items-center justify-center">
                       <CoolIcon
                         name="instance"
                         size={22}
                         duotone
-                        className={active ? "text-[#D8FF64]" : "text-white/80"}
+                        className={active ? "text-[#D8FF64]" : "text-[var(--mute)]"}
                       />
                     </div>
                   )}
@@ -373,7 +409,7 @@ export default function StudiosExplorePage() {
                 <span
                   className={cn(
                     "text-[12px] font-medium transition-colors",
-                    active ? "text-[#D8FF64] font-semibold" : "text-white/80 group-hover:text-white"
+                    active ? "text-[#D8FF64] font-semibold" : "text-[var(--mute)] group-hover:text-[var(--ink)]"
                   )}
                 >
                   {cat.label}
@@ -383,19 +419,45 @@ export default function StudiosExplorePage() {
           })}
         </div>
 
-        {/* 3. SECTION HEADER : RECREATE WITH ONE TAP / COMMUNITY PRESETS */}
-        <div className="pt-2">
-          <span className="text-[11.5px] font-semibold text-[#D8FF64] tracking-wide block">
-            Recreate with one tap ✨
-          </span>
-          <div className="flex items-center justify-between mt-0.5">
-            <h2 className="font-heading text-lg sm:text-xl font-bold text-white tracking-tight">
-              Community presets
-            </h2>
+        {/* 3. SECTION HEADER : RECREATE WITH ONE TAP / COMMUNITY PRESETS + LECTURE ALÉATOIRE */}
+        <div className="pt-2 flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b border-[var(--line)] pb-3">
+          <div>
+            <span className="text-[11.5px] font-semibold text-[#8ca825] dark:text-[#D8FF64] tracking-wide block">
+              Recreate with one tap ✨
+            </span>
+            <div className="flex items-center gap-2 mt-0.5">
+              <h2 className="font-heading text-lg sm:text-xl font-bold text-[var(--ink)] tracking-tight">
+                Community presets
+              </h2>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 self-start sm:self-auto">
+            {/* Bouton de lecture aléatoire des vidéos */}
+            <button
+              type="button"
+              onClick={toggleShufflePlay}
+              className={cn(
+                "h-8 px-3 rounded-full text-[11.5px] font-semibold flex items-center gap-1.5 transition-all cursor-pointer border",
+                isShufflePlaying
+                  ? "bg-[#D8FF64] text-black border-[#D8FF64] shadow-sm animate-pulse"
+                  : "bg-[var(--surface)] hover:bg-[var(--hover)] text-[var(--ink-2)] hover:text-[var(--ink)] border-[var(--line)]"
+              )}
+              title="Activer ou désactiver la lecture aléatoire des vidéos"
+            >
+              <CoolIcon
+                name={isShufflePlaying ? "pause" : "play"}
+                size={11}
+                duotone={false}
+                className={isShufflePlaying ? "text-black fill-current" : "fill-current"}
+              />
+              <span>{isShufflePlaying ? "Pause aléatoire" : "Lecture aléatoire"}</span>
+            </button>
+
             <button
               type="button"
               onClick={() => setActiveCategory("all")}
-              className="text-[12px] text-white/50 hover:text-white transition-colors cursor-pointer flex items-center gap-0.5"
+              className="text-[12px] text-[var(--mute)] hover:text-[var(--ink)] transition-colors cursor-pointer flex items-center gap-0.5 px-2 py-1"
             >
               <span>View all</span>
               <CoolIcon name="arrow-right-sm" size={13} duotone={false} />
@@ -403,56 +465,88 @@ export default function StudiosExplorePage() {
           </div>
         </div>
 
-        {/* 4. GRILLE MASONRY ÉPURÉE EN 2 COLONNES (AUCUN TEXTE TECHNIQUE, 100% VISUEL) */}
+        {/* 4. GRILLE MASONRY ÉPURÉE EN 2 COLONNES (VIDÉOS FLUIDES & MINIATURES HAUTE DÉFINITION) */}
         <div className="columns-2 gap-2.5 sm:gap-3 space-y-2.5 sm:space-y-3 pt-1">
-          {filteredPresets.map((preset) => (
-            <div
-              key={preset.id}
-              onClick={() => setSelectedPreset(preset)}
-              className="relative w-full rounded-2xl overflow-hidden cursor-pointer group break-inside-avoid border border-white/5 bg-[#181817] transition-all hover:border-white/20 hover:scale-[1.01]"
-            >
-              <img
-                src={preset.mediaUrl}
-                alt={preset.prompt}
-                loading="lazy"
-                className="w-full h-auto object-cover block"
-              />
-              {/* Voile discret au survol avec bouton Recreate */}
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2.5">
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleRecreate(preset.prompt);
-                  }}
-                  className="w-full py-1.5 px-3 rounded-full bg-[#D8FF64] text-black font-semibold text-[11px] flex items-center justify-center gap-1 shadow-md hover:bg-[#cbf54a] transition-all cursor-pointer"
-                >
-                  <CoolIcon name="star" size={11} duotone={false} className="text-black fill-current" />
-                  <span>Recreate</span>
-                </button>
+          {filteredPresets.map((preset) => {
+            const isVideo = preset.type === "video" || preset.mediaUrl.endsWith(".mp4");
+
+            return (
+              <div
+                key={preset.id}
+                onClick={() => setSelectedPreset(preset)}
+                className="relative w-full rounded-2xl overflow-hidden cursor-pointer group break-inside-avoid border border-[var(--line)] bg-[var(--surface)] transition-all hover:border-[var(--line-strong)] hover:scale-[1.01] shadow-card"
+              >
+                {isVideo ? (
+                  <div className="relative w-full overflow-hidden bg-black">
+                    <video
+                      ref={(el) => {
+                        videoRefs.current[preset.id] = el;
+                      }}
+                      src={`${preset.mediaUrl}#t=0.001`}
+                      poster={preset.thumbnailUrl}
+                      loop
+                      muted
+                      playsInline
+                      preload="metadata"
+                      className="w-full h-auto object-cover block"
+                      onMouseEnter={(e) => {
+                        if (!isShufflePlaying) e.currentTarget.play().catch(() => {});
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isShufflePlaying) e.currentTarget.pause();
+                      }}
+                    />
+                    {/* Badge Play discret */}
+                    <div className="absolute top-2.5 right-2.5 w-6 h-6 rounded-full bg-black/60 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white pointer-events-none group-hover:scale-110 transition-transform">
+                      <CoolIcon name="play" size={10} duotone={false} className="fill-current text-white translate-x-[0.5px]" />
+                    </div>
+                  </div>
+                ) : (
+                  <img
+                    src={preset.mediaUrl}
+                    alt={preset.prompt}
+                    loading="lazy"
+                    className="w-full h-auto object-cover block group-hover:scale-102 transition-transform duration-300"
+                  />
+                )}
+
+                {/* Voile discret au survol avec bouton Recreate */}
+                <div className="absolute inset-0 bg-black/45 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2.5">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRecreate(preset.prompt);
+                    }}
+                    className="w-full py-1.5 px-3 rounded-full bg-[#D8FF64] text-black font-semibold text-[11px] flex items-center justify-center gap-1 shadow-md hover:bg-[#cbf54a] transition-all cursor-pointer"
+                  >
+                    <CoolIcon name="star" size={11} duotone={false} className="text-black fill-current" />
+                    <span>Recreate</span>
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </main>
 
-      {/* ── 5. BARRE DE RECHERCHE FLOTTANTE EN BAS (Exactement comme dans la capture) ── */}
+      {/* ── 5. BARRE DE RECHERCHE FLOTTANTE EN BAS (Design tokens) ── */}
       <div className="fixed bottom-5 inset-x-0 z-30 px-4 pointer-events-none flex justify-center">
         <div className="w-full max-w-md pointer-events-auto">
-          <div className="relative flex items-center w-full h-12 rounded-full bg-[#181817]/90 backdrop-blur-xl border border-white/10 px-4 shadow-2xl">
-            <CoolIcon name="search-magnifying-glass" size={16} duotone={false} className="text-white/40 shrink-0 mr-2.5" />
+          <div className="relative flex items-center w-full h-12 rounded-full bg-[var(--surface)]/90 backdrop-blur-xl border border-[var(--line)] px-4 shadow-2xl">
+            <CoolIcon name="search-magnifying-glass" size={16} duotone={false} className="text-[var(--mute)] shrink-0 mr-2.5" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search"
-              className="w-full bg-transparent text-[13px] text-white placeholder-white/40 outline-none"
+              placeholder="Search presets and creations…"
+              className="w-full bg-transparent text-[13px] text-[var(--ink)] placeholder-[var(--mute)] outline-none"
             />
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => setSearchQuery("")}
-                className="p-1 text-white/40 hover:text-white"
+                className="p-1 text-[var(--mute)] hover:text-[var(--ink)]"
               >
                 <CoolIcon name="close-md" size={14} duotone={false} />
               </button>
@@ -461,21 +555,33 @@ export default function StudiosExplorePage() {
         </div>
       </div>
 
-      {/* ── MODAL APERÇU & RECREATE DU PRESET ── */}
+      {/* ── MODAL APERÇU & RECREATE DU PRESET (Support Image & Vidéo avec contrôles) ── */}
       {selectedPreset && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200">
           <div
             className="fixed inset-0"
             onClick={() => setSelectedPreset(null)}
           />
-          <div className="relative w-full max-w-sm rounded-3xl bg-[#181817] border border-white/10 overflow-hidden shadow-2xl z-10 animate-in zoom-in-95 duration-200">
-            {/* Image principale */}
-            <div className="relative w-full max-h-[50vh] overflow-hidden bg-black">
-              <img
-                src={selectedPreset.mediaUrl}
-                alt={selectedPreset.prompt}
-                className="w-full h-full object-contain"
-              />
+          <div className="relative w-full max-w-sm rounded-3xl bg-[var(--surface)] border border-[var(--line)] overflow-hidden shadow-2xl z-10 animate-in zoom-in-95 duration-200">
+            {/* Média principal */}
+            <div className="relative w-full max-h-[50vh] overflow-hidden bg-black flex items-center justify-center">
+              {selectedPreset.type === "video" || selectedPreset.mediaUrl.endsWith(".mp4") ? (
+                <video
+                  src={selectedPreset.mediaUrl}
+                  poster={selectedPreset.thumbnailUrl}
+                  controls
+                  autoPlay
+                  loop
+                  playsInline
+                  className="w-full max-h-[50vh] object-contain"
+                />
+              ) : (
+                <img
+                  src={selectedPreset.mediaUrl}
+                  alt={selectedPreset.prompt}
+                  className="w-full h-full object-contain"
+                />
+              )}
               <button
                 type="button"
                 onClick={() => setSelectedPreset(null)}
@@ -487,7 +593,7 @@ export default function StudiosExplorePage() {
 
             {/* Prompt & Bouton Recreate */}
             <div className="p-4 space-y-3">
-              <p className="text-[12.5px] text-white/80 leading-relaxed max-h-24 overflow-y-auto">
+              <p className="text-[12.5px] text-[var(--ink-2)] leading-relaxed max-h-24 overflow-y-auto">
                 {selectedPreset.prompt}
               </p>
 
@@ -497,7 +603,7 @@ export default function StudiosExplorePage() {
                   onClick={() => {
                     navigator.clipboard.writeText(selectedPreset.prompt);
                   }}
-                  className="px-3.5 h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-white text-[12px] font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                  className="px-3.5 h-10 rounded-full bg-[var(--field)] hover:bg-[var(--hover)] border border-[var(--line)] text-[var(--ink)] text-[12px] font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                 >
                   <CoolIcon name="copy" size={13} duotone={false} />
                   <span>Copy</span>
