@@ -12,9 +12,9 @@ interface SidebarDrawerProps {
   userEmail?: string;
   credits: number;
   onOpenTopup: () => void;
-  onOpenInfluencerBuilder: () => void;
-  onOpenGenjutsu: () => void;
-  onOpenAssets: () => void;
+  onOpenInfluencerBuilder?: () => void;
+  onOpenGenjutsu?: () => void;
+  onOpenAssets?: () => void;
 }
 
 export function SidebarDrawer({
@@ -111,7 +111,8 @@ export function SidebarDrawer({
               type="button"
               onClick={() => {
                 onClose();
-                onOpenGenjutsu();
+                if (onOpenGenjutsu) onOpenGenjutsu();
+                else navigateTo("/studios/genjutsu");
               }}
               className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-white/80 hover:text-white hover:bg-white/5 transition-colors text-left cursor-pointer"
             >
@@ -123,7 +124,8 @@ export function SidebarDrawer({
               type="button"
               onClick={() => {
                 onClose();
-                onOpenInfluencerBuilder();
+                if (onOpenInfluencerBuilder) onOpenInfluencerBuilder();
+                else navigateTo("/studios/ai-influencer");
               }}
               className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-white/80 hover:text-white hover:bg-white/5 transition-colors text-left cursor-pointer"
             >
@@ -172,7 +174,8 @@ export function SidebarDrawer({
               type="button"
               onClick={() => {
                 onClose();
-                onOpenAssets();
+                if (onOpenAssets) onOpenAssets();
+                else navigateTo("/studio");
               }}
               className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-white/80 hover:text-white hover:bg-white/5 transition-colors text-left cursor-pointer"
             >

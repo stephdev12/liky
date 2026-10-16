@@ -11,7 +11,7 @@ import type { User } from "@supabase/supabase-js";
 import { cn } from "@/lib/utils";
 
 interface StudioCardConfig {
-  id: "libre" | "ad" | "cinema" | "ugc" | "anim";
+  id: "libre" | "ad" | "cinema" | "ugc" | "anim" | "genjutsu" | "influencer";
   num: string;
   name: string;
   desc: string;
@@ -95,7 +95,36 @@ const STUDIOS_DATA: StudioCardConfig[] = [
     bullets: [
       "Écris ou génère une histoire en scènes cohérentes",
       "Personnages constants d'une scène à l'autre",
-      "Voix, musique et sous-titres animés inclus",
+    ],
+  },
+  {
+    id: "genjutsu",
+    num: "06",
+    name: "likyAI Genjutsu",
+    desc: "Transfert de mouvement cinématique et swap d'objets ou vêtements.",
+    chips: ["Motion transfer", "Object swap"],
+    image: "/assets/studios/studio-cinema.jpg",
+    route: "/studios/genjutsu",
+    themeStyle: "dark",
+    bullets: [
+      "Extrais le mouvement de n'importe quelle vidéo source (4 à 30s)",
+      "Applique la cinématique à tes avatars, vêtements ou produits",
+      "Rendu photoréaliste et conservation fidèle de l'identité",
+    ],
+  },
+  {
+    id: "influencer",
+    num: "07",
+    name: "AI Influencer",
+    desc: "Moteur de création d'ambassadeurs et avatars IA cohérents.",
+    chips: ["Consistent Face", "19 attributs"],
+    image: "/assets/studios/studio-ugc.jpg",
+    route: "/studios/ai-influencer",
+    themeStyle: "lime",
+    bullets: [
+      "Partez de zéro ou importez un selfie pour cloner votre visage",
+      "Morphologie, coiffure, carnation, yeux et look sur-mesure",
+      "Réutilisable dans tous vos studios avec la mention @",
     ],
   },
 ];

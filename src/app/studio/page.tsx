@@ -635,28 +635,18 @@ export default function StudioPage() {
 
   return (
     <div className="relative min-h-screen bg-[#121211] text-[#F8F8F5] flex flex-col selection:bg-[#D8FF64] selection:text-black">
-      {/* ── TOP BAR ÉPURÉE : MENU HAMBURGER + LOGO + CRÉDITS + BIBLIOTHÈQUE + AVATAR ── */}
+      {/* ── TOP BAR ÉPURÉE : TOGGLE SIDEBAR + UPGRADE CRÉDITS + AVATAR ── */}
       <header className="fixed top-0 inset-x-0 h-14 sm:h-16 px-3 sm:px-6 z-30 flex items-center justify-between border-b border-white/5 bg-[#121211]/80 backdrop-blur-md">
-        {/* Côté Gauche : Hamburger + Hub link + Logo */}
+        {/* Côté Gauche : Bouton Navbar Latérale */}
         <div className="flex items-center gap-2 sm:gap-3">
           <button
             type="button"
             onClick={() => setSidebarOpen(true)}
             className="w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-white/80 hover:text-white transition-all cursor-pointer"
-            title="Menu de navigation"
+            title="Ouvrir le menu des studios"
             aria-label="Ouvrir le menu"
           >
             <CoolIcon name="hamburger-md" size={18} duotone={false} />
-          </button>
-
-          <button
-            type="button"
-            onClick={() => router.push("/studios")}
-            className="hidden sm:flex items-center gap-1.5 h-9 px-3 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-[12px] font-medium text-white/80 hover:text-white transition-all cursor-pointer"
-            title="Retour au Hub des studios"
-          >
-            <CoolIcon name="arrow-left-sm" size={14} duotone={false} className="shrink-0 text-white" />
-            <span>Studios</span>
           </button>
 
           <div
@@ -665,141 +655,242 @@ export default function StudioPage() {
             title="Accueil LikyAI"
           >
             <LogoIcon />
-            <span className="hidden min-[480px]:inline font-heading text-[18px] sm:text-[19px] font-semibold tracking-tight text-white">
+            <span className="font-heading text-[18px] sm:text-[19px] font-semibold tracking-tight text-white">
               liky<span className="text-[#D8FF64]">AI</span>
             </span>
           </div>
         </div>
 
-        {/* Côté Droit : Solde crédits + Bibliothèque + Thème + Profil */}
+        {/* Côté Droit : Upgrade Crédits + Avatar */}
         <div className="flex items-center gap-2 sm:gap-2.5">
-          {/* Badge crédits interactif */}
+          {/* Bouton Upgrade Lime avec Diamant / Étoile */}
           <button
             type="button"
             onClick={() => setTopupOpen(true)}
-            className="h-8 sm:h-9 px-2.5 sm:px-3 rounded-full bg-[#D8FF64]/10 hover:bg-[#D8FF64]/20 border border-[#D8FF64]/30 flex items-center gap-1.5 text-[11.5px] sm:text-[12px] font-semibold text-[#D8FF64] transition-all cursor-pointer"
-            title="Cliquer pour recharger vos crédits"
+            className="h-8 sm:h-9 px-3 sm:px-3.5 rounded-full bg-[#D8FF64] hover:bg-[#cbf54a] text-black font-semibold text-[12px] flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+            title="Recharger vos crédits"
           >
-            <CoolIcon name="star" size={14} duotone secondaryColor="#D8FF64" className="text-[#D8FF64]" />
-            <span className="font-mono">{credits} cr</span>
+            <CoolIcon name="star" size={13} duotone={false} className="text-black fill-current" />
+            <span>Upgrade</span>
+            <span className="font-mono text-[11px] opacity-75 font-normal">({credits} cr)</span>
           </button>
 
           {/* Bibliothèque */}
           <button
             type="button"
             onClick={() => setLibraryOpen(true)}
-            className="h-8 sm:h-9 px-2.5 sm:px-3 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center gap-1.5 text-[11.5px] sm:text-[12px] font-medium text-white/80 hover:text-white transition-all cursor-pointer"
-            title="Bibliothèque de vos créations"
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-white/80 hover:text-white transition-all cursor-pointer"
+            title="Bibliothèque de créations"
           >
-            <CoolIcon name="folder-open" size={16} duotone className="text-white/60" />
-            <span className="hidden sm:inline">Bibliothèque</span>
-            <span className="px-1.5 py-0.2 rounded-full bg-white/10 text-[10px] font-mono text-white/70">
-              {cards.length}
-            </span>
+            <CoolIcon name="folder-open" size={16} duotone className="text-white/70" />
           </button>
 
-          {/* Avatar / Profil (ouvre le sidebar drawer) */}
+          {/* Avatar utilisateur */}
           <button
             type="button"
             onClick={() => setSidebarOpen(true)}
-            className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#D8FF64] text-black font-semibold text-[12px] sm:text-[13px] flex items-center justify-center shadow-xs cursor-pointer hover:opacity-90 transition-opacity"
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#1F1F1E] border border-white/15 text-white font-medium text-[12px] sm:text-[13px] flex items-center justify-center cursor-pointer hover:border-[#D8FF64]/50 transition-colors"
             title={user?.email || "Mon compte"}
-            aria-label="Mon profil"
           >
-            {user?.email ? user.email.charAt(0).toUpperCase() : "A"}
+            {user?.email ? user.email.charAt(0).toUpperCase() : "U"}
           </button>
         </div>
       </header>
 
-      {/* ── WORKSPACE CENTRAL : HERO MINIMALISTE OU CARTES EN COURS ── */}
-      <main id="board" className="flex-1 w-full flex flex-col pt-16 pb-44 overflow-y-auto">
+      {/* ── WORKSPACE CENTRAL ÉPURÉ ── */}
+      <main id="board" className="flex-1 w-full flex flex-col pt-18 sm:pt-20 pb-16 overflow-y-auto">
         {cards.length === 0 ? (
-          /* Écran d'accueil vierge & minimaliste */
-          <div className="flex-1 flex flex-col items-center justify-center max-w-3xl mx-auto px-4 py-12 sm:py-16 text-center animate-in fade-in duration-300">
-            {/* Emblème subtil LikyAI */}
-            <div className="relative mb-5">
-              <div className="w-16 h-16 rounded-[22px] bg-gradient-to-br from-[#D8FF64]/20 via-[#D8FF64]/5 to-transparent border border-[#D8FF64]/30 flex items-center justify-center text-[#D8FF64] shadow-[0_0_35px_rgba(216,255,100,0.15)]">
-                <CoolIcon name="star" size={32} duotone secondaryColor="#D8FF64" className="text-[#D8FF64]" />
+          /* Écran d'accueil centralisé avec Unified Prompt Bubble & Carousel */
+          <div className="flex-1 flex flex-col items-center justify-center max-w-2xl mx-auto px-4 py-6 sm:py-10 text-center animate-in fade-in duration-300 w-full">
+            
+            {/* Logo Central LikyAI */}
+            <div className="flex flex-col items-center gap-3 mb-6 select-none">
+              <div className="w-14 h-14 rounded-2xl bg-black/40 border border-white/10 flex items-center justify-center shadow-lg p-2.5">
+                <LogoIcon />
               </div>
+              <h1 className="font-heading text-xl sm:text-2xl font-semibold tracking-tight text-white">
+                What image or video would you like to create?
+              </h1>
             </div>
 
-            <h1 className="font-heading text-2xl sm:text-3xl font-semibold tracking-tight text-white mb-2">
-              Que souhaitez-vous imaginer aujourd&apos;hui ?
-            </h1>
-            <p className="text-[13px] sm:text-[14px] text-white/50 max-w-md mx-auto mb-8">
-              Générez des vidéos 4K, visuels et musiques avec nos meilleurs modèles unifiés.
-            </p>
+            {/* Bulle de prompt unifiée centrale */}
+            <div className="w-full mb-3.5">
+              <UnifiedPromptBubble
+                prompt={prompt}
+                setPrompt={setPrompt}
+                selectedModelName={selectedModelName}
+                onOpenModelSelector={() => setModelSelectorOpen(true)}
+                aspectRatio={aspectRatio}
+                setAspectRatio={setAspectRatio}
+                onOpenAssets={() => setAssetsModalOpen(true)}
+                selectedAssets={selectedAssets}
+                onRemoveAsset={(id) => setSelectedAssets((cur) => cur.filter((a) => a.id !== id))}
+                onOpenInfluencerBuilder={() => setInfluencerOpen(true)}
+                isGenerating={isGenerating}
+                onGenerate={handleGenerate}
+                creditsCost={currentCost}
+              />
+            </div>
 
-            {/* Cartes d'actions rapides et outils spécialisés */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 w-full">
-              {/* AI Influencer */}
-              <button
-                type="button"
-                onClick={() => setInfluencerOpen(true)}
-                className="p-3.5 rounded-2xl bg-[#1A1A19] border border-white/10 hover:border-[#D8FF64]/40 hover:bg-white/5 text-left transition-all group cursor-pointer"
-              >
-                <div className="w-8 h-8 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform">
-                  <CoolIcon name="user-01" size={16} duotone className="text-purple-400" />
-                </div>
-                <div className="text-[12.5px] font-semibold text-white mb-0.5">AI Influencer</div>
-                <div className="text-[11px] text-white/50 leading-tight">Clone et visage cohérent</div>
-              </button>
+            {/* Pill de connexion MCP / Outils IA */}
+            <button
+              type="button"
+              onClick={() => router.push("/mcp/authorize")}
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#181817] hover:bg-[#20201F] border border-white/10 text-[12px] text-white/70 hover:text-white transition-all cursor-pointer mb-8 group"
+            >
+              <CoolIcon name="instance" size={14} duotone className="text-white/50 group-hover:text-[#D8FF64]" />
+              <span>Extension MCP & API connectée</span>
+              <span className="text-[#D8FF64] font-medium flex items-center gap-0.5">
+                Connect <CoolIcon name="arrow-right-sm" size={11} duotone={false} />
+              </span>
+            </button>
 
-              {/* Genjutsu Motion */}
-              <button
-                type="button"
-                onClick={() => setGenjutsuOpen(true)}
-                className="p-3.5 rounded-2xl bg-[#1A1A19] border border-white/10 hover:border-[#D8FF64]/40 hover:bg-white/5 text-left transition-all group cursor-pointer"
-              >
-                <div className="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform">
-                  <CoolIcon name="star" size={16} duotone secondaryColor="#34D399" className="text-emerald-400" />
-                </div>
-                <div className="text-[12.5px] font-semibold text-white mb-0.5">Genjutsu Motion</div>
-                <div className="text-[11px] text-white/50 leading-tight">Transfert de mouvement</div>
-              </button>
+            {/* Carrousel horizontal de tous les studios (exactement comme dans la référence) */}
+            <div className="w-full">
+              <div className="flex items-center gap-3 overflow-x-auto pb-4 pt-1 px-1 scrollbar-none snap-x snap-mandatory">
+                {/* 1. Genjutsu (FREE) */}
+                <button
+                  type="button"
+                  onClick={() => setGenjutsuOpen(true)}
+                  className="flex flex-col text-left w-[130px] sm:w-[140px] shrink-0 p-2 rounded-2xl bg-[#181817] hover:bg-[#20201F] border border-white/10 hover:border-[#D8FF64]/40 transition-all cursor-pointer group snap-start"
+                >
+                  <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-black/40 border border-white/5 mb-2">
+                    <img
+                      src="/assets/studios/studio-cinema.jpg"
+                      alt="Genjutsu"
+                      className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded-md bg-pink-500 text-white text-[9px] font-bold tracking-wider">
+                      FREE
+                    </span>
+                  </div>
+                  <span className="text-[12px] font-semibold text-white group-hover:text-[#D8FF64] truncate">
+                    likyAI Genjutsu
+                  </span>
+                  <span className="text-[10px] text-white/40 truncate">Motion & Swap</span>
+                </button>
 
-              {/* Cinéma Studio 4.0 */}
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedModelId("cinema_studio_4");
-                  setSelectedModelName("Cinema Studio 4.0");
-                  setMode("video");
-                  setAspectRatio("16:9");
-                  showToast("Modèle Cinéma Studio 4.0 sélectionné (16:9)");
-                }}
-                className="p-3.5 rounded-2xl bg-[#1A1A19] border border-white/10 hover:border-[#D8FF64]/40 hover:bg-white/5 text-left transition-all group cursor-pointer"
-              >
-                <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform">
-                  <CoolIcon name="monitor-play" size={16} duotone className="text-amber-400" />
-                </div>
-                <div className="text-[12.5px] font-semibold text-white mb-0.5">Cinéma 4.0</div>
-                <div className="text-[11px] text-white/50 leading-tight">Plans 35mm Hollywood</div>
-              </button>
+                {/* 2. AI Influencer (NEW) */}
+                <button
+                  type="button"
+                  onClick={() => setInfluencerOpen(true)}
+                  className="flex flex-col text-left w-[130px] sm:w-[140px] shrink-0 p-2 rounded-2xl bg-[#181817] hover:bg-[#20201F] border border-white/10 hover:border-[#D8FF64]/40 transition-all cursor-pointer group snap-start"
+                >
+                  <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-black/40 border border-white/5 mb-2">
+                    <img
+                      src="/assets/studios/studio-ugc.jpg"
+                      alt="AI Influencer"
+                      className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded-md bg-[#D8FF64] text-black text-[9px] font-bold tracking-wider">
+                      NEW
+                    </span>
+                  </div>
+                  <span className="text-[12px] font-semibold text-white group-hover:text-[#D8FF64] truncate">
+                    AI Influencer
+                  </span>
+                  <span className="text-[10px] text-white/40 truncate">Clone cohérent</span>
+                </button>
 
-              {/* Ad Builder & UGC */}
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedModelId("seedance-2-5");
-                  setSelectedModelName("Seedance 2.5");
-                  setMode("video");
-                  setAspectRatio("9:16");
-                  showToast("Modèle Seedance 2.5 configuré pour les pubs et UGC");
-                }}
-                className="p-3.5 rounded-2xl bg-[#1A1A19] border border-white/10 hover:border-[#D8FF64]/40 hover:bg-white/5 text-left transition-all group cursor-pointer"
-              >
-                <div className="w-8 h-8 rounded-xl bg-sky-500/10 border border-sky-500/20 text-sky-400 flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform">
-                  <CoolIcon name="shopping-bag-01" size={16} duotone className="text-sky-400" />
-                </div>
-                <div className="text-[12.5px] font-semibold text-white mb-0.5">Ad & UGC</div>
-                <div className="text-[11px] text-white/50 leading-tight">Pubs virales TikTok & Reels</div>
-              </button>
+                {/* 3. Cinema Studio (POPULAR) */}
+                <button
+                  type="button"
+                  onClick={() => router.push("/studios/cinema")}
+                  className="flex flex-col text-left w-[130px] sm:w-[140px] shrink-0 p-2 rounded-2xl bg-[#181817] hover:bg-[#20201F] border border-white/10 hover:border-[#D8FF64]/40 transition-all cursor-pointer group snap-start"
+                >
+                  <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-black/40 border border-white/5 mb-2">
+                    <img
+                      src="/assets/studios/studio-cinema.jpg"
+                      alt="Cinema Studio"
+                      className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded-md bg-purple-500 text-white text-[9px] font-bold tracking-wider">
+                      POPULAR
+                    </span>
+                  </div>
+                  <span className="text-[12px] font-semibold text-white group-hover:text-[#D8FF64] truncate">
+                    Cinema Studio
+                  </span>
+                  <span className="text-[10px] text-white/40 truncate">Master 35mm 4K</span>
+                </button>
+
+                {/* 4. Ads Studio */}
+                <button
+                  type="button"
+                  onClick={() => router.push("/studios/ad-builder")}
+                  className="flex flex-col text-left w-[130px] sm:w-[140px] shrink-0 p-2 rounded-2xl bg-[#181817] hover:bg-[#20201F] border border-white/10 hover:border-[#D8FF64]/40 transition-all cursor-pointer group snap-start"
+                >
+                  <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-black/40 border border-white/5 mb-2">
+                    <img
+                      src="/assets/studios/studio-ad-builder.jpg"
+                      alt="Ads Studio"
+                      className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                  <span className="text-[12px] font-semibold text-white group-hover:text-[#D8FF64] truncate">
+                    Ads Studio
+                  </span>
+                  <span className="text-[10px] text-white/40 truncate">Scan de marque & pubs</span>
+                </button>
+
+                {/* 5. UGC Studio */}
+                <button
+                  type="button"
+                  onClick={() => router.push("/studios/ugc")}
+                  className="flex flex-col text-left w-[130px] sm:w-[140px] shrink-0 p-2 rounded-2xl bg-[#181817] hover:bg-[#20201F] border border-white/10 hover:border-[#D8FF64]/40 transition-all cursor-pointer group snap-start"
+                >
+                  <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-black/40 border border-white/5 mb-2">
+                    <img
+                      src="/assets/studios/studio-ugc.jpg"
+                      alt="UGC Studio"
+                      className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                  <span className="text-[12px] font-semibold text-white group-hover:text-[#D8FF64] truncate">
+                    UGC Studio
+                  </span>
+                  <span className="text-[10px] text-white/40 truncate">Témoignages spontanés</span>
+                </button>
+
+                {/* 6. Animation Studio */}
+                <button
+                  type="button"
+                  onClick={() => router.push("/studios/animation")}
+                  className="flex flex-col text-left w-[130px] sm:w-[140px] shrink-0 p-2 rounded-2xl bg-[#181817] hover:bg-[#20201F] border border-white/10 hover:border-[#D8FF64]/40 transition-all cursor-pointer group snap-start"
+                >
+                  <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-black/40 border border-white/5 mb-2">
+                    <img
+                      src="/assets/studios/studio-animation.jpg"
+                      alt="Animation Studio"
+                      className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                  <span className="text-[12px] font-semibold text-white group-hover:text-[#D8FF64] truncate">
+                    Animation Studio
+                  </span>
+                  <span className="text-[10px] text-white/40 truncate">Dessins & Anime</span>
+                </button>
+
+                {/* 7. Mes Assets */}
+                <button
+                  type="button"
+                  onClick={() => setAssetsModalOpen(true)}
+                  className="flex flex-col text-left w-[130px] sm:w-[140px] shrink-0 p-2 rounded-2xl bg-[#181817] hover:bg-[#20201F] border border-white/10 hover:border-[#D8FF64]/40 transition-all cursor-pointer group snap-start"
+                >
+                  <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-white/5 border border-white/5 mb-2 flex items-center justify-center">
+                    <CoolIcon name="folder-open" size={28} duotone className="text-white/60 group-hover:text-[#D8FF64]" />
+                  </div>
+                  <span className="text-[12px] font-semibold text-white group-hover:text-[#D8FF64] truncate">
+                    All Assets
+                  </span>
+                  <span className="text-[10px] text-white/40 truncate">Images & Éléments</span>
+                </button>
+              </div>
             </div>
           </div>
         ) : (
-          /* Grille des générations existantes */
-          <div className="w-full max-w-5xl mx-auto px-4 pt-4">
+          /* Grille des générations existantes avec Unified Prompt Bubble en bas */
+          <div className="w-full max-w-5xl mx-auto px-4 pt-2 pb-24">
             <SectionShowcase
               mode={mode}
               cards={cards.filter((c) => c.mode === mode)}
@@ -835,67 +926,30 @@ export default function StudioPage() {
                 setPrompt(sample);
               }}
             />
+
+            {/* Bulle de prompt flottante en bas quand il y a des créations */}
+            <div className="fixed bottom-4 sm:bottom-6 inset-x-0 z-40 px-3 sm:px-4 pointer-events-none">
+              <div className="max-w-2xl mx-auto w-full pointer-events-auto">
+                <UnifiedPromptBubble
+                  prompt={prompt}
+                  setPrompt={setPrompt}
+                  selectedModelName={selectedModelName}
+                  onOpenModelSelector={() => setModelSelectorOpen(true)}
+                  aspectRatio={aspectRatio}
+                  setAspectRatio={setAspectRatio}
+                  onOpenAssets={() => setAssetsModalOpen(true)}
+                  selectedAssets={selectedAssets}
+                  onRemoveAsset={(id) => setSelectedAssets((cur) => cur.filter((a) => a.id !== id))}
+                  onOpenInfluencerBuilder={() => setInfluencerOpen(true)}
+                  isGenerating={isGenerating}
+                  onGenerate={handleGenerate}
+                  creditsCost={currentCost}
+                />
+              </div>
+            </div>
           </div>
         )}
       </main>
-
-      {/* ── BARRE FLOTTANTE INFÉRIEURE : CATÉGORIES + UNIFIED PROMPT BUBBLE ── */}
-      <footer className="fixed bottom-4 sm:bottom-6 inset-x-0 z-40 px-3 sm:px-4 pointer-events-none">
-        <div className="max-w-2xl mx-auto w-full pointer-events-auto">
-          {/* Sélecteur de catégorie (Image · Vidéo · Musique · Voix off) */}
-          <div className="flex items-center justify-center mb-2">
-            <div className="flex items-center gap-1 p-1 bg-[#1A1A19]/90 backdrop-blur-md border border-white/10 rounded-full shadow-lg">
-              {CATEGORIES.map((cat) => {
-                const active = mode === cat.id;
-                return (
-                  <button
-                    key={cat.id}
-                    type="button"
-                    onClick={() => {
-                      setMode(cat.id);
-                      if (selectedModelId === "auto") {
-                        // keep auto
-                      }
-                    }}
-                    className={cn(
-                      "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11.5px] font-medium transition-all cursor-pointer select-none",
-                      active
-                        ? "bg-[#D8FF64] text-black font-semibold shadow-xs"
-                        : "text-white/60 hover:text-white hover:bg-white/5"
-                    )}
-                  >
-                    <CoolIcon
-                      name={cat.icon}
-                      duotone
-                      size={13}
-                      secondaryColor="currentColor"
-                      secondaryOpacity={active ? 0.9 : 0.4}
-                    />
-                    <span>{cat.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Bulle de prompt unifiée avec [+], [Modèle], [Ratio] et [↑] */}
-          <UnifiedPromptBubble
-            prompt={prompt}
-            setPrompt={setPrompt}
-            selectedModelName={selectedModelName}
-            onOpenModelSelector={() => setModelSelectorOpen(true)}
-            aspectRatio={aspectRatio}
-            setAspectRatio={setAspectRatio}
-            onOpenAssets={() => setAssetsModalOpen(true)}
-            selectedAssets={selectedAssets}
-            onRemoveAsset={(id) => setSelectedAssets((cur) => cur.filter((a) => a.id !== id))}
-            onOpenInfluencerBuilder={() => setInfluencerOpen(true)}
-            isGenerating={isGenerating}
-            onGenerate={handleGenerate}
-            creditsCost={currentCost}
-          />
-        </div>
-      </footer>
 
       {/* ── TIROIRS & MODALES BRANCHÉS ── */}
 
