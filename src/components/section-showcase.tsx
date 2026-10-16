@@ -18,253 +18,126 @@ interface SectionShowcaseProps {
 }
 
 export function SectionShowcase({
-  mode,
   cards,
-  allModeCardsCount,
   onOpenCard,
-  onRetryCard,
-  onEditCard,
   onAnimateCard,
-  onOpenLibrary,
+  onRetryCard,
 }: SectionShowcaseProps) {
-  // Les 4 dernières générations de la section (le début du tableau est le plus récent)
-  const lastFour = cards.slice(0, 4);
+  if (cards.length === 0) return null;
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-3.5 sm:px-4 pt-16 sm:pt-20 pb-[260px] sm:pb-36 min-h-[calc(100dvh-60px)] flex flex-col justify-center transition-all duration-300">
-      {/* Grille des 4 cartes compactes ou simple carte avec bordure en trait interrompu si vide */}
-      {lastFour.length === 0 ? (
-        <div className="w-full flex items-center justify-center py-12 sm:py-16 px-4 border border-dashed border-[var(--line)] rounded-[18px] bg-[var(--surf)]/20 text-center select-none shadow-xs">
-          <span className="text-[12px] sm:text-[13px] text-[var(--mute)]">
-            Aucune génération récente
-          </span>
-        </div>
-      ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
-          {lastFour.map((c, index) => {
-            const isAudio = c.mode === "music" || c.mode === "voice";
-            const isVideo = c.mode === "video";
-            const fallbackImg = `/assets/organic/organic-${((c.orgIndex || 0) % 4) + 1}.webp`;
-            const mediaUrl = c.mediaUrl || fallbackImg;
+    <div className="w-full max-w-4xl mx-auto px-3 sm:px-4 pt-4 pb-28">
+      {/* Grille ultra-minimaliste 2 colonnes (mobile) à 3/4 colonnes (desktop) */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+        {cards.map((c) => {
+          const isAudio = c.mode === "music" || c.mode === "voice";
+          const isVideo = c.mode === "video";
+          const fallbackImg = `/assets/organic/organic-${((c.orgIndex || 0) % 4) + 1}.webp`;
+          const mediaUrl = c.mediaUrl || fallbackImg;
 
-            return (
-              <div
-                key={c.id}
-                onClick={() => {
-                  if (c.status === "ready") onOpenCard(c);
-                }}
-                className={cn(
-                  "group relative flex flex-col bg-[var(--surf)] border border-[var(--line)] rounded-[16px] overflow-hidden shadow-card transition-all duration-200",
-                  c.status === "ready"
-                    ? "hover:border-[var(--ink)]/40 hover:-translate-y-0.5 hover:shadow-overlay cursor-pointer"
-                    : "cursor-default"
-                )}
-              >
-                {/* Badge d'ordre compact (1 à 4) */}
-                <div className="absolute top-1.5 left-1.5 z-20 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-black/70 backdrop-blur-md border border-white/15 text-white text-[9.5px] font-medium leading-none">
-                  <span className="font-mono text-emerald-400 font-semibold">#{index + 1}</span>
-                  <span className="opacity-60">·</span>
-                  <span className="capitalize">{c.mode}</span>
+          return (
+            <div
+              key={c.id}
+              onClick={() => {
+                if (c.status === "ready") onOpenCard(c);
+              }}
+              className={cn(
+                "group relative rounded-2xl overflow-hidden bg-[#181817] border border-white/5 transition-all duration-200 aspect-[9/14] flex flex-col justify-between",
+                c.status === "ready"
+                  ? "hover:border-white/20 hover:scale-[1.01] cursor-pointer shadow-lg"
+                  : "cursor-default"
+              )}
+            >
+              {c.status !== "ready" ? (
+                /* État de génération épuré */
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-3 text-center bg-black/60">
+                  <CoolIcon name="loading" size={20} className="animate-spin text-[#D8FF64]" duotone={false} />
+                  <span className="text-[11px] font-medium text-white/70">
+                    Génération…
+                  </span>
                 </div>
-
-                {/* Zone de contenu média compacte (hauteur maîtrisée) */}
-                <div className="relative w-full h-[105px] sm:h-[115px] bg-[var(--mn)] overflow-hidden">
-                  {c.status !== "ready" ? (
-                    /* État de chargement compact */
-                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 p-2 text-center select-none bg-gradient-to-br from-[var(--surf)] via-[var(--mn)] to-[var(--bg)]">
-                      {/* Pixel grid loader miniature */}
-                      <div className="grid grid-cols-3 gap-0.5 shrink-0">
-                        {Array.from({ length: 9 }).map((_, idx) => (
+              ) : (
+                /* Média pleine surface (Image, Vidéo, Audio) sans badges ni textes techniques */
+                <>
+                  {c.mode === "image" ? (
+                    <img
+                      src={mediaUrl}
+                      alt={c.caption || "Création"}
+                      className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-300"
+                      loading="lazy"
+                    />
+                  ) : isVideo ? (
+                    <div className="relative w-full h-full bg-black flex items-center justify-center">
+                      <img
+                        src={mediaUrl}
+                        alt={c.caption || "Vidéo"}
+                        className="w-full h-full object-cover opacity-90 group-hover:scale-103 transition-transform duration-300"
+                        loading="lazy"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                        <div className="w-9 h-9 rounded-full bg-black/60 backdrop-blur-md border border-white/20 flex items-center justify-center text-white shadow-md group-hover:scale-110 transition-transform">
+                          <CoolIcon name="play" duotone size={16} secondaryColor="currentColor" />
+                        </div>
+                      </div>
+                    </div>
+                  ) : isAudio ? (
+                    <div className="w-full h-full flex flex-col justify-between p-4 bg-gradient-to-b from-[#1C1C1A] to-[#121211]">
+                      <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-[#D8FF64]">
+                        <CoolIcon name={c.mode === "music" ? "headphones" : "user-voice"} size={16} duotone />
+                      </div>
+                      <div className="flex items-end gap-1 h-12">
+                        {[40, 70, 45, 90, 60, 80, 50, 75, 95, 60].map((h, i) => (
                           <span
-                            key={idx}
-                            className="w-1.5 h-1.5 rounded-[1px] bg-[var(--ink)]"
-                            style={{
-                              animation: `pixel-on 650ms ease-in-out ${(idx % 3 + Math.floor(idx / 3)) * 90}ms infinite`,
-                              opacity: 0.25,
-                            }}
+                            key={i}
+                            className="flex-1 rounded-full bg-[#D8FF64]/80"
+                            style={{ height: `${h}%` }}
                           />
                         ))}
                       </div>
-
-                      <span className="font-medium text-[11px] text-[var(--ink)] line-clamp-1">
-                        {c.status === "thinking" ? "Analyse…" : "Synthèse…"}
-                      </span>
-
-                      <span className="font-mono text-[10px] text-[var(--mute)] tabular-nums px-1.5 py-0.2 rounded-full bg-[var(--bg)] border border-[var(--line)] leading-none">
-                        {String(Math.floor(c.elapsed / 60)).padStart(2, "0")}:
-                        {String(c.elapsed % 60).padStart(2, "0")}
-                      </span>
                     </div>
-                  ) : (
-                    /* Rendu média final compact */
-                    <>
-                      {c.mode === "image" ? (
-                        /* eslint-disable-next-line @next/next/no-img-element */
-                        <img
-                          src={mediaUrl}
-                          alt={c.caption}
-                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                          loading="lazy"
-                        />
-                      ) : isVideo ? (
-                        <div className="relative w-full h-full bg-black flex items-center justify-center">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={mediaUrl}
-                            alt={c.caption}
-                            className="w-full h-full object-cover opacity-85"
-                            loading="lazy"
-                          />
-                          <div className="absolute inset-0 flex items-center justify-center bg-black/25">
-                            <div className="w-7 h-7 rounded-full bg-black/70 backdrop-blur-md border border-white/20 flex items-center justify-center text-white shadow-md transition-transform group-hover:scale-110">
-                              <CoolIcon name="play" duotone size={13} secondaryColor="currentColor" />
-                            </div>
-                          </div>
-                        </div>
-                      ) : isAudio ? (
-                        <div
-                          className="w-full h-full flex flex-col justify-between p-2.5"
-                          style={{
-                            background: c.hues
-                              ? `linear-gradient(135deg, hsl(${c.hues[0]} 40% 18%), hsl(${c.hues[1]} 50% 12%))`
-                              : "linear-gradient(135deg, #1f1f23, #121214)",
+                  ) : null}
+
+                  {/* Actions discrètes au survol */}
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-2.5">
+                    <div className="flex items-center justify-end gap-1">
+                      {c.mode === "image" && onAnimateCard && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onAnimateCard(c);
                           }}
+                          className="w-7 h-7 rounded-full bg-black/60 hover:bg-black text-white flex items-center justify-center border border-white/10 transition-colors"
+                          title="Animer en vidéo"
                         >
-                          <div className="flex items-center justify-between">
-                            <span className="text-[9.5px] font-medium px-1.5 py-0.2 rounded-full bg-black/50 text-white backdrop-blur-md border border-white/10 leading-none">
-                              {c.mode === "music" ? "Musique" : "Voix"}
-                            </span>
-                            <CoolIcon
-                              name={c.mode === "music" ? "headphones" : "user-voice"}
-                              duotone
-                              size={13}
-                              secondaryColor="currentColor"
-                            />
-                          </div>
-
-                          <div className="flex items-end gap-0.5 h-8 px-0.5">
-                            {(c.waveforms || [25, 55, 40, 75, 45, 70, 35, 60, 85, 40, 55, 65, 30, 75]).map(
-                              (h, wi) => (
-                                <span
-                                  key={wi}
-                                  className="flex-1 rounded-full bg-emerald-500 opacity-85"
-                                  style={{ height: `${h}%` }}
-                                />
-                              )
-                            )}
-                          </div>
-                        </div>
-                      ) : null}
-
-                      {/* Actions rapides au survol (Haut Droite) */}
-                      <div
-                        className="absolute top-1.5 right-1.5 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-150 bg-black/70 backdrop-blur-md p-0.5 rounded-lg border border-white/15 z-20"
-                        onClick={(e) => e.stopPropagation()}
+                          <CoolIcon name="camera" size={13} duotone />
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onRetryCard(c);
+                        }}
+                        className="w-7 h-7 rounded-full bg-black/60 hover:bg-black text-white flex items-center justify-center border border-white/10 transition-colors"
+                        title="Rejouer"
                       >
-                        {c.mode === "image" && onAnimateCard && (
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onAnimateCard(c);
-                            }}
-                            className="p-1 hover:bg-white/20 rounded-md text-white transition-colors cursor-pointer"
-                            title="Animer en vidéo"
-                          >
-                            <CoolIcon name="camera" duotone size={11} secondaryColor="currentColor" />
-                          </button>
-                        )}
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onRetryCard(c);
-                          }}
-                          className="p-1 hover:bg-white/20 rounded-md text-white transition-colors cursor-pointer"
-                          title="Réessayer"
-                        >
-                          <CoolIcon name="redo" duotone size={11} secondaryColor="currentColor" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            const a = document.createElement("a");
-                            a.href = mediaUrl;
-                            a.download = `likyai-${c.mode}-${Date.now()}.${isAudio ? "mp3" : isVideo ? "mp4" : "png"}`;
-                            a.target = "_blank";
-                            document.body.appendChild(a);
-                            a.click();
-                            document.body.removeChild(a);
-                          }}
-                          className="p-1 hover:bg-white/20 rounded-md text-white transition-colors cursor-pointer"
-                          title="Télécharger"
-                        >
-                          <CoolIcon name="download" duotone size={11} />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onEditCard(c);
-                          }}
-                          className="p-1 hover:bg-white/20 rounded-md text-white transition-colors cursor-pointer"
-                          title="Modifier"
-                        >
-                          <CoolIcon name="edit-pencil-01" duotone size={11} secondaryColor="currentColor" />
-                        </button>
-                      </div>
-
-                      {/* Badge "Aperçu" au centre au survol */}
-                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none z-10">
-                        <span className="px-2 py-0.5 rounded-full bg-black/70 backdrop-blur-md border border-white/20 text-white text-[10px] font-medium flex items-center gap-1 shadow-md">
-                          <CoolIcon name="expand" duotone size={10} secondaryColor="currentColor" />
-                          <span>Aperçu</span>
-                        </span>
-                      </div>
-                    </>
-                  )}
-                </div>
-
-                {/* Pied de carte compact avec description et modèle */}
-                <div className="p-2 sm:p-2.5 flex flex-col justify-between bg-[var(--surf)] border-t border-[var(--line)]">
-                  <div>
-                    <div className="flex items-center justify-between gap-1 mb-0.5">
-                      <span className="text-[10.5px] font-semibold text-[var(--ink)] truncate max-w-[100px]">
-                        {c.modelName}
-                      </span>
-                      <span className="text-[9px] font-mono px-1 py-0.2 rounded bg-[var(--mn)] text-[var(--mute)] leading-none">
-                        {c.creditsCost} cr
-                      </span>
+                        <CoolIcon name="redo" size={13} duotone={false} />
+                      </button>
                     </div>
-                    <p className="text-[11px] text-[var(--ink)]/80 line-clamp-1 leading-snug">
-                      {c.fullPrompt}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
 
-          {/* Emplacements restants vides compacts (si < 4) */}
-          {Array.from({ length: Math.max(0, 4 - lastFour.length) }).map((_, placeholderIdx) => (
-            <div
-              key={`empty-slot-${placeholderIdx}`}
-              className="relative hidden sm:flex flex-col items-center justify-center p-3 border border-dashed border-[var(--line)] rounded-[16px] bg-[var(--bg)]/30 text-center select-none h-full min-h-[145px]"
-            >
-              <div className="w-7 h-7 rounded-full bg-[var(--mn)]/70 border border-[var(--line)] flex items-center justify-center text-[var(--mute)] mb-1.5">
-                <CoolIcon name="add-plus" size={13} />
-              </div>
-              <span className="text-[11px] font-medium text-[var(--mute)]">
-                Emplacement #{lastFour.length + placeholderIdx + 1}
-              </span>
-              <p className="text-[9.5px] text-[var(--mute)]/70 max-w-[100px] mt-0.5">
-                Prêt pour votre création
-              </p>
+                    <div className="p-1 rounded-xl bg-black/60 backdrop-blur-xs border border-white/10">
+                      <p className="text-[10.5px] text-white/90 line-clamp-2 leading-tight">
+                        {c.fullPrompt}
+                      </p>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
-          ))}
-        </div>
-      )}
+          );
+        })}
+      </div>
     </div>
   );
 }

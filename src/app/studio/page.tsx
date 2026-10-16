@@ -698,7 +698,7 @@ export default function StudioPage() {
       </header>
 
       {/* ── WORKSPACE CENTRAL ÉPURÉ ── */}
-      <main id="board" className="flex-1 w-full flex flex-col pt-18 sm:pt-20 pb-16 overflow-y-auto">
+      <main className="flex-1 w-full flex flex-col pt-18 sm:pt-20 pb-16 overflow-y-auto">
         {cards.length === 0 ? (
           /* Écran d'accueil centralisé avec Unified Prompt Bubble & Carousel */
           <div className="flex-1 flex flex-col items-center justify-center max-w-2xl mx-auto px-4 py-6 sm:py-10 text-center animate-in fade-in duration-300 w-full">
@@ -893,8 +893,8 @@ export default function StudioPage() {
           <div className="w-full max-w-5xl mx-auto px-4 pt-2 pb-24">
             <SectionShowcase
               mode={mode}
-              cards={cards.filter((c) => c.mode === mode)}
-              allModeCardsCount={cards.filter((c) => c.mode === mode).length}
+              cards={cards}
+              allModeCardsCount={cards.length}
               onOpenCard={(c) => openResultForCard(c as CanvasCard)}
               onAnimateCard={handleAnimateImage}
               onRetryCard={(c) =>

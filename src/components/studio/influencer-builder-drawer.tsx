@@ -241,10 +241,10 @@ export function InfluencerBuilderDrawer({
                 </label>
                 <div className="grid grid-cols-4 gap-2">
                   {[
-                    { id: "Average", label: "Average", color: "from-blue-500/20" },
-                    { id: "Bold", label: "Bold", color: "from-amber-500/20" },
-                    { id: "Extreme", label: "Extreme", color: "from-emerald-500/20" },
-                    { id: "Insect", label: "Insect", color: "from-purple-500/20" },
+                    { id: "Average", label: "Average", img: "/assets/influencer/type_average.jpg" },
+                    { id: "Bold", label: "Bold", img: "/assets/influencer/type_bold.jpg" },
+                    { id: "Extreme", label: "Extreme", img: "/assets/influencer/type_extreme.jpg" },
+                    { id: "Insect", label: "Insect", img: "/assets/influencer/type_insect.jpg" },
                   ].map((item) => {
                     const active = characterType === item.id;
                     return (
@@ -253,16 +253,20 @@ export function InfluencerBuilderDrawer({
                         type="button"
                         onClick={() => setCharacterType(item.id)}
                         className={cn(
-                          "flex flex-col items-center p-2 rounded-2xl border transition-all cursor-pointer group text-center",
+                          "flex flex-col items-center p-1.5 rounded-2xl border transition-all cursor-pointer group text-center overflow-hidden",
                           active
                             ? "bg-[#D8FF64]/10 border-[#D8FF64] ring-1 ring-[#D8FF64]"
                             : "bg-[#181817] border-white/10 hover:border-white/20 hover:bg-white/5"
                         )}
                       >
-                        <div className={cn("w-14 h-14 rounded-xl mb-1.5 flex items-center justify-center bg-gradient-to-b to-black/40 border border-white/10", item.color)}>
-                          <CoolIcon name="user-01" size={24} duotone secondaryColor={active ? "#D8FF64" : undefined} className={active ? "text-[#D8FF64]" : "text-white/60"} />
+                        <div className="w-full aspect-square rounded-xl mb-1.5 overflow-hidden bg-black/40 border border-white/10">
+                          <img
+                            src={item.img}
+                            alt={item.label}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
                         </div>
-                        <span className={cn("text-[11px] font-medium truncate w-full", active ? "text-[#D8FF64] font-semibold" : "text-white/70")}>
+                        <span className={cn("text-[11px] font-medium truncate w-full px-0.5", active ? "text-[#D8FF64] font-semibold" : "text-white/70")}>
                           {item.label}
                         </span>
                       </button>
@@ -278,10 +282,10 @@ export function InfluencerBuilderDrawer({
                 </label>
                 <div className="grid grid-cols-4 gap-2">
                   {[
-                    { id: "Female", label: "Female", symbol: "♀" },
-                    { id: "Male", label: "Male", symbol: "♂" },
-                    { id: "Trans man", label: "Trans man", symbol: "⚧" },
-                    { id: "Trans woman", label: "Trans woman", symbol: "⚧" },
+                    { id: "Female", label: "Female", img: "/assets/influencer/gender_female.jpg" },
+                    { id: "Male", label: "Male", img: "/assets/influencer/gender_male.jpg" },
+                    { id: "Trans man", label: "Trans man", img: "/assets/influencer/gender_transman.jpg" },
+                    { id: "Trans woman", label: "Trans woman", img: "/assets/influencer/gender_transwoman.jpg" },
                   ].map((item) => {
                     const active = gender === item.id;
                     return (
@@ -290,16 +294,20 @@ export function InfluencerBuilderDrawer({
                         type="button"
                         onClick={() => setGender(item.id)}
                         className={cn(
-                          "flex flex-col items-center p-2.5 rounded-2xl border transition-all cursor-pointer group text-center",
+                          "flex flex-col items-center p-1.5 rounded-2xl border transition-all cursor-pointer group text-center overflow-hidden",
                           active
                             ? "bg-[#D8FF64]/10 border-[#D8FF64] ring-1 ring-[#D8FF64]"
                             : "bg-[#181817] border-white/10 hover:border-white/20 hover:bg-white/5"
                         )}
                       >
-                        <div className="w-12 h-12 rounded-xl mb-1.5 flex items-center justify-center bg-white/5 border border-white/10 text-xl font-bold">
-                          {item.symbol}
+                        <div className="w-full aspect-square rounded-xl mb-1.5 overflow-hidden bg-black/40 border border-white/10">
+                          <img
+                            src={item.img}
+                            alt={item.label}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
                         </div>
-                        <span className={cn("text-[11px] font-medium truncate w-full", active ? "text-[#D8FF64] font-semibold" : "text-white/70")}>
+                        <span className={cn("text-[11px] font-medium truncate w-full px-0.5", active ? "text-[#D8FF64] font-semibold" : "text-white/70")}>
                           {item.label}
                         </span>
                       </button>
@@ -315,10 +323,10 @@ export function InfluencerBuilderDrawer({
                 </label>
                 <div className="grid grid-cols-4 gap-2">
                   {[
-                    { id: "Slim", label: "Slim" },
-                    { id: "Athletic", label: "Athletic" },
-                    { id: "Muscular", label: "Muscular" },
-                    { id: "Curvy", label: "Curvy" },
+                    { id: "Slim", label: "Slim", img: "/assets/influencer/build_slim.jpg" },
+                    { id: "Athletic", label: "Athletic", img: "/assets/influencer/build_athletic.jpg" },
+                    { id: "Muscular", label: "Muscular", img: "/assets/influencer/build_muscular.jpg" },
+                    { id: "Curvy", label: "Curvy", img: "/assets/influencer/build_curvy.jpg" },
                   ].map((item) => {
                     const active = build === item.id;
                     return (
@@ -327,16 +335,20 @@ export function InfluencerBuilderDrawer({
                         type="button"
                         onClick={() => setBuild(item.id)}
                         className={cn(
-                          "flex flex-col items-center p-2 rounded-2xl border transition-all cursor-pointer group text-center",
+                          "flex flex-col items-center p-1.5 rounded-2xl border transition-all cursor-pointer group text-center overflow-hidden",
                           active
                             ? "bg-[#D8FF64]/10 border-[#D8FF64] ring-1 ring-[#D8FF64]"
                             : "bg-[#181817] border-white/10 hover:border-white/20 hover:bg-white/5"
                         )}
                       >
-                        <div className="w-14 h-16 rounded-xl mb-1.5 flex items-center justify-center bg-white/5 border border-white/10">
-                          <CoolIcon name="user-01" size={26} duotone className={active ? "text-[#D8FF64]" : "text-white/60"} />
+                        <div className="w-full aspect-square rounded-xl mb-1.5 overflow-hidden bg-black/40 border border-white/10">
+                          <img
+                            src={item.img}
+                            alt={item.label}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
                         </div>
-                        <span className={cn("text-[11px] font-medium truncate w-full", active ? "text-[#D8FF64] font-semibold" : "text-white/70")}>
+                        <span className={cn("text-[11px] font-medium truncate w-full px-0.5", active ? "text-[#D8FF64] font-semibold" : "text-white/70")}>
                           {item.label}
                         </span>
                       </button>
@@ -352,21 +364,34 @@ export function InfluencerBuilderDrawer({
                     Height
                   </label>
                   <div className="grid grid-cols-3 gap-2">
-                    {["Average", "Tall", "Very tall"].map((h) => {
-                      const active = height === h;
+                    {[
+                      { id: "Average", label: "Average", img: "/assets/influencer/height_average.jpg" },
+                      { id: "Tall", label: "Tall", img: "/assets/influencer/height_tall.jpg" },
+                      { id: "Very tall", label: "Very tall", img: "/assets/influencer/height_verytall.jpg" },
+                    ].map((h) => {
+                      const active = height === h.id;
                       return (
                         <button
-                          key={h}
+                          key={h.id}
                           type="button"
-                          onClick={() => setHeight(h)}
+                          onClick={() => setHeight(h.id)}
                           className={cn(
-                            "py-2 rounded-xl text-center text-[12px] border transition-all cursor-pointer",
+                            "flex flex-col items-center p-1.5 rounded-2xl border transition-all cursor-pointer group text-center overflow-hidden",
                             active
-                              ? "bg-white text-black font-semibold shadow-sm"
-                              : "bg-white/5 border-white/10 text-white/70 hover:bg-white/10"
+                              ? "bg-[#D8FF64]/10 border-[#D8FF64] ring-1 ring-[#D8FF64]"
+                              : "bg-[#181817] border-white/10 hover:border-white/20 hover:bg-white/5"
                           )}
                         >
-                          {h}
+                          <div className="w-full aspect-square rounded-xl mb-1.5 overflow-hidden bg-black/40 border border-white/10">
+                            <img
+                              src={h.img}
+                              alt={h.label}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                          </div>
+                          <span className={cn("text-[11px] font-medium truncate w-full px-0.5", active ? "text-[#D8FF64] font-semibold" : "text-white/70")}>
+                            {h.label}
+                          </span>
                         </button>
                       );
                     })}
@@ -378,21 +403,35 @@ export function InfluencerBuilderDrawer({
                     Proportions
                   </label>
                   <div className="grid grid-cols-4 gap-2">
-                    {["Long limbs", "Short legs", "Broad shoulders", "Tiny waist"].map((p) => {
-                      const active = proportions === p;
+                    {[
+                      { id: "Long limbs", label: "Long limbs", img: "/assets/influencer/prop_longlimbs.jpg" },
+                      { id: "Short legs", label: "Short legs", img: "/assets/influencer/prop_shortlegs.jpg" },
+                      { id: "Broad shoulders", label: "Broad", img: "/assets/influencer/prop_broadshoulders.jpg" },
+                      { id: "Tiny waist", label: "Tiny waist", img: "/assets/influencer/prop_tinywaist.jpg" },
+                    ].map((p) => {
+                      const active = proportions === p.id;
                       return (
                         <button
-                          key={p}
+                          key={p.id}
                           type="button"
-                          onClick={() => setProportions(p)}
+                          onClick={() => setProportions(p.id)}
                           className={cn(
-                            "py-2 px-1 rounded-xl text-center text-[10.5px] border transition-all cursor-pointer",
+                            "flex flex-col items-center p-1.5 rounded-2xl border transition-all cursor-pointer group text-center overflow-hidden",
                             active
-                              ? "bg-[#D8FF64]/10 border-[#D8FF64] text-[#D8FF64] font-medium"
-                              : "bg-white/5 border-white/10 text-white/70 hover:bg-white/10"
+                              ? "bg-[#D8FF64]/10 border-[#D8FF64] ring-1 ring-[#D8FF64]"
+                              : "bg-[#181817] border-white/10 hover:border-white/20 hover:bg-white/5"
                           )}
                         >
-                          {p}
+                          <div className="w-full aspect-square rounded-xl mb-1.5 overflow-hidden bg-black/40 border border-white/10">
+                            <img
+                              src={p.img}
+                              alt={p.label}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                          </div>
+                          <span className={cn("text-[10px] font-medium truncate w-full px-0.5", active ? "text-[#D8FF64] font-semibold" : "text-white/70")}>
+                            {p.label}
+                          </span>
                         </button>
                       );
                     })}
@@ -401,48 +440,76 @@ export function InfluencerBuilderDrawer({
               </div>
 
               {/* 5. Head shape & Neck */}
-              <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-4">
                 <div>
-                  <label className="text-[11px] font-semibold uppercase tracking-wider text-white/50 block mb-1.5">
+                  <label className="text-[11px] font-semibold uppercase tracking-wider text-white/50 block mb-2">
                     Head shape
                   </label>
-                  <div className="grid grid-cols-2 gap-1.5">
-                    {["Standard", "Long", "Tiny", "High forehead"].map((hs) => (
+                  <div className="grid grid-cols-4 gap-2">
+                    {[
+                      { id: "Standard", label: "Standard", img: "/assets/influencer/head_standard.jpg" },
+                      { id: "Long", label: "Long", img: "/assets/influencer/head_long.jpg" },
+                      { id: "Tiny", label: "Tiny", img: "/assets/influencer/head_tiny.jpg" },
+                      { id: "High forehead", label: "High", img: "/assets/influencer/head_highforehead.jpg" },
+                    ].map((hs) => (
                       <button
-                        key={hs}
+                        key={hs.id}
                         type="button"
-                        onClick={() => setHeadShape(hs)}
+                        onClick={() => setHeadShape(hs.id)}
                         className={cn(
-                          "py-1.5 rounded-lg text-center text-[11px] border transition-all cursor-pointer",
-                          headShape === hs
-                            ? "bg-white text-black font-semibold"
-                            : "bg-white/5 border-white/5 text-white/60"
+                          "flex flex-col items-center p-1.5 rounded-2xl border transition-all cursor-pointer group text-center overflow-hidden",
+                          headShape === hs.id
+                            ? "bg-[#D8FF64]/10 border-[#D8FF64] ring-1 ring-[#D8FF64]"
+                            : "bg-[#181817] border-white/10 hover:border-white/20 hover:bg-white/5"
                         )}
                       >
-                        {hs}
+                        <div className="w-full aspect-square rounded-xl mb-1.5 overflow-hidden bg-black/40 border border-white/10">
+                          <img
+                            src={hs.img}
+                            alt={hs.label}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        </div>
+                        <span className={cn("text-[10px] font-medium truncate w-full px-0.5", headShape === hs.id ? "text-[#D8FF64] font-semibold" : "text-white/70")}>
+                          {hs.label}
+                        </span>
                       </button>
                     ))}
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-[11px] font-semibold uppercase tracking-wider text-white/50 block mb-1.5">
+                  <label className="text-[11px] font-semibold uppercase tracking-wider text-white/50 block mb-2">
                     Neck
                   </label>
-                  <div className="grid grid-cols-2 gap-1.5">
-                    {["Standard", "Column", "Long", "Short"].map((n) => (
+                  <div className="grid grid-cols-4 gap-2">
+                    {[
+                      { id: "Standard", label: "Standard", img: "/assets/influencer/neck_standard.jpg" },
+                      { id: "Column", label: "Column", img: "/assets/influencer/neck_column.jpg" },
+                      { id: "Long", label: "Long", img: "/assets/influencer/neck_long.jpg" },
+                      { id: "Short", label: "Short", img: "/assets/influencer/neck_short.jpg" },
+                    ].map((n) => (
                       <button
-                        key={n}
+                        key={n.id}
                         type="button"
-                        onClick={() => setNeck(n)}
+                        onClick={() => setNeck(n.id)}
                         className={cn(
-                          "py-1.5 rounded-lg text-center text-[11px] border transition-all cursor-pointer",
-                          neck === n
-                            ? "bg-white text-black font-semibold"
-                            : "bg-white/5 border-white/5 text-white/60"
+                          "flex flex-col items-center p-1.5 rounded-2xl border transition-all cursor-pointer group text-center overflow-hidden",
+                          neck === n.id
+                            ? "bg-[#D8FF64]/10 border-[#D8FF64] ring-1 ring-[#D8FF64]"
+                            : "bg-[#181817] border-white/10 hover:border-white/20 hover:bg-white/5"
                         )}
                       >
-                        {n}
+                        <div className="w-full aspect-square rounded-xl mb-1.5 overflow-hidden bg-black/40 border border-white/10">
+                          <img
+                            src={n.img}
+                            alt={n.label}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        </div>
+                        <span className={cn("text-[10px] font-medium truncate w-full px-0.5", neck === n.id ? "text-[#D8FF64] font-semibold" : "text-white/70")}>
+                          {n.label}
+                        </span>
                       </button>
                     ))}
                   </div>
@@ -455,25 +522,34 @@ export function InfluencerBuilderDrawer({
                   Hairstyle
                 </label>
                 <div className="grid grid-cols-4 gap-2 mb-3">
-                  {["Bob", "Bald", "Buzz cut", "Bowl cut"].map((hair) => {
-                    const active = hairstyle === hair;
+                  {[
+                    { id: "Bob", label: "Bob", img: "/assets/influencer/hair_bob.jpg" },
+                    { id: "Bald", label: "Bald", img: "/assets/influencer/hair_bald.jpg" },
+                    { id: "Buzz cut", label: "Buzz cut", img: "/assets/influencer/hair_buzzcut.jpg" },
+                    { id: "Bowl cut", label: "Bowl cut", img: "/assets/influencer/hair_bowlcut.jpg" },
+                  ].map((hair) => {
+                    const active = hairstyle === hair.id;
                     return (
                       <button
-                        key={hair}
+                        key={hair.id}
                         type="button"
-                        onClick={() => setHairstyle(hair)}
+                        onClick={() => setHairstyle(hair.id)}
                         className={cn(
-                          "p-2 rounded-2xl border transition-all cursor-pointer group text-center",
+                          "flex flex-col items-center p-1.5 rounded-2xl border transition-all cursor-pointer group text-center overflow-hidden",
                           active
                             ? "bg-[#D8FF64]/10 border-[#D8FF64] ring-1 ring-[#D8FF64]"
-                            : "bg-[#181817] border-white/10 hover:border-white/20"
+                            : "bg-[#181817] border-white/10 hover:border-white/20 hover:bg-white/5"
                         )}
                       >
-                        <div className="w-12 h-12 rounded-xl mb-1 flex items-center justify-center bg-white/5 border border-white/10 mx-auto">
-                          <CoolIcon name="user-01" size={22} duotone className={active ? "text-[#D8FF64]" : "text-white/60"} />
+                        <div className="w-full aspect-square rounded-xl mb-1.5 overflow-hidden bg-black/40 border border-white/10">
+                          <img
+                            src={hair.img}
+                            alt={hair.label}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
                         </div>
-                        <span className={cn("text-[11px] font-medium truncate block", active ? "text-[#D8FF64]" : "text-white/70")}>
-                          {hair}
+                        <span className={cn("text-[11px] font-medium truncate w-full px-0.5", active ? "text-[#D8FF64] font-semibold" : "text-white/70")}>
+                          {hair.label}
                         </span>
                       </button>
                     );
@@ -510,31 +586,40 @@ export function InfluencerBuilderDrawer({
                 </div>
               </div>
 
-              {/* 7. Ethnicity & Age */}
+              {/* 7. Ethnicity */}
               <div>
                 <label className="text-[11px] font-semibold uppercase tracking-wider text-white/50 block mb-2.5">
                   Ethnicity
                 </label>
                 <div className="grid grid-cols-4 gap-2">
-                  {["African", "Asian", "European", "Indian"].map((eth) => {
-                    const active = ethnicity === eth;
+                  {[
+                    { id: "African", label: "African", img: "/assets/influencer/ethnicity_african.jpg" },
+                    { id: "Asian", label: "Asian", img: "/assets/influencer/ethnicity_asian.jpg" },
+                    { id: "European", label: "European", img: "/assets/influencer/ethnicity_european.jpg" },
+                    { id: "Indian", label: "Indian", img: "/assets/influencer/ethnicity_indian.jpg" },
+                  ].map((eth) => {
+                    const active = ethnicity === eth.id;
                     return (
                       <button
-                        key={eth}
+                        key={eth.id}
                         type="button"
-                        onClick={() => setEthnicity(eth)}
+                        onClick={() => setEthnicity(eth.id)}
                         className={cn(
-                          "p-2 rounded-2xl border transition-all cursor-pointer group text-center",
+                          "flex flex-col items-center p-1.5 rounded-2xl border transition-all cursor-pointer group text-center overflow-hidden",
                           active
                             ? "bg-[#D8FF64]/10 border-[#D8FF64] ring-1 ring-[#D8FF64]"
-                            : "bg-[#181817] border-white/10 hover:border-white/20"
+                            : "bg-[#181817] border-white/10 hover:border-white/20 hover:bg-white/5"
                         )}
                       >
-                        <div className="w-12 h-12 rounded-xl mb-1 flex items-center justify-center bg-white/5 border border-white/10 mx-auto">
-                          <CoolIcon name="user-01" size={22} duotone className={active ? "text-[#D8FF64]" : "text-white/60"} />
+                        <div className="w-full aspect-square rounded-xl mb-1.5 overflow-hidden bg-black/40 border border-white/10">
+                          <img
+                            src={eth.img}
+                            alt={eth.label}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
                         </div>
-                        <span className={cn("text-[11px] font-medium truncate block", active ? "text-[#D8FF64]" : "text-white/70")}>
-                          {eth}
+                        <span className={cn("text-[11px] font-medium truncate w-full px-0.5", active ? "text-[#D8FF64] font-semibold" : "text-white/70")}>
+                          {eth.label}
                         </span>
                       </button>
                     );
@@ -600,21 +685,35 @@ export function InfluencerBuilderDrawer({
                   Eye shape
                 </label>
                 <div className="grid grid-cols-4 gap-2 mb-3">
-                  {["Almond", "Round", "Monolid", "Close-set"].map((item) => {
-                    const active = eyeShape === item;
+                  {[
+                    { id: "Almond", label: "Almond", img: "/assets/influencer/eye_almond.jpg" },
+                    { id: "Round", label: "Round", img: "/assets/influencer/eye_round.jpg" },
+                    { id: "Monolid", label: "Monolid", img: "/assets/influencer/eye_monolid.jpg" },
+                    { id: "Close-set", label: "Close-set", img: "/assets/influencer/eye_closeset.jpg" },
+                  ].map((item) => {
+                    const active = eyeShape === item.id;
                     return (
                       <button
-                        key={item}
+                        key={item.id}
                         type="button"
-                        onClick={() => setEyeShape(item)}
+                        onClick={() => setEyeShape(item.id)}
                         className={cn(
-                          "py-2 px-1 rounded-xl text-center text-[11px] border transition-all cursor-pointer",
+                          "flex flex-col items-center p-1.5 rounded-2xl border transition-all cursor-pointer group text-center overflow-hidden",
                           active
-                            ? "bg-[#D8FF64]/10 border-[#D8FF64] text-[#D8FF64] font-medium"
-                            : "bg-white/5 border-white/10 text-white/70"
+                            ? "bg-[#D8FF64]/10 border-[#D8FF64] ring-1 ring-[#D8FF64]"
+                            : "bg-[#181817] border-white/10 hover:border-white/20 hover:bg-white/5"
                         )}
                       >
-                        {item}
+                        <div className="w-full aspect-square rounded-xl mb-1.5 overflow-hidden bg-black/40 border border-white/10">
+                          <img
+                            src={item.img}
+                            alt={item.label}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        </div>
+                        <span className={cn("text-[10px] font-medium truncate w-full px-0.5", active ? "text-[#D8FF64] font-semibold" : "text-white/70")}>
+                          {item.label}
+                        </span>
                       </button>
                     );
                   })}
@@ -649,28 +748,87 @@ export function InfluencerBuilderDrawer({
                 </div>
               </div>
 
-              {/* 10. Facial hair & Distinctive features */}
-              <div className="space-y-3">
+              {/* 10. Facial Features */}
+              <div>
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-white/50 block mb-2.5">
+                  Features
+                </label>
+                <div className="grid grid-cols-4 gap-2">
+                  {[
+                    { id: "Dimples", label: "Dimples", img: "/assets/influencer/feat_dimples.jpg" },
+                    { id: "Freckles", label: "Freckles", img: "/assets/influencer/feat_freckles.jpg" },
+                    { id: "Heavy eye bags", label: "Heavy bags", img: "/assets/influencer/feat_heavyeyebags.jpg" },
+                    { id: "Blush", label: "Blush", img: "/assets/influencer/feat_blush.jpg" },
+                  ].map((feat) => {
+                    const active = features.includes(feat.id);
+                    return (
+                      <button
+                        key={feat.id}
+                        type="button"
+                        onClick={() => {
+                          setFeatures((prev) =>
+                            prev.includes(feat.id) ? prev.filter((f) => f !== feat.id) : [...prev, feat.id]
+                          );
+                        }}
+                        className={cn(
+                          "flex flex-col items-center p-1.5 rounded-2xl border transition-all cursor-pointer group text-center overflow-hidden",
+                          active
+                            ? "bg-[#D8FF64]/10 border-[#D8FF64] ring-1 ring-[#D8FF64]"
+                            : "bg-[#181817] border-white/10 hover:border-white/20 hover:bg-white/5"
+                        )}
+                      >
+                        <div className="w-full aspect-square rounded-xl mb-1.5 overflow-hidden bg-black/40 border border-white/10">
+                          <img
+                            src={feat.img}
+                            alt={feat.label}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        </div>
+                        <span className={cn("text-[10px] font-medium truncate w-full px-0.5", active ? "text-[#D8FF64] font-semibold" : "text-white/70")}>
+                          {feat.label}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* 11. Facial hair & Accessories */}
+              <div className="space-y-4">
                 <div>
                   <label className="text-[11px] font-semibold uppercase tracking-wider text-white/50 block mb-2">
                     Facial hair
                   </label>
                   <div className="grid grid-cols-4 gap-2">
-                    {["Clean", "Stubble", "Full beard", "Goatee"].map((fh) => {
-                      const active = facialHair === fh;
+                    {[
+                      { id: "Clean", label: "Clean", img: "/assets/influencer/hair_clean.jpg" },
+                      { id: "Stubble", label: "Stubble", img: "/assets/influencer/hair_stubble.jpg" },
+                      { id: "Full beard", label: "Full beard", img: "/assets/influencer/hair_fullbeard.jpg" },
+                      { id: "Goatee", label: "Goatee", img: "/assets/influencer/hair_goatee.jpg" },
+                    ].map((fh) => {
+                      const active = facialHair === fh.id;
                       return (
                         <button
-                          key={fh}
+                          key={fh.id}
                           type="button"
-                          onClick={() => setFacialHair(fh)}
+                          onClick={() => setFacialHair(fh.id)}
                           className={cn(
-                            "py-2 rounded-xl text-center text-[11px] border transition-all cursor-pointer",
+                            "flex flex-col items-center p-1.5 rounded-2xl border transition-all cursor-pointer group text-center overflow-hidden",
                             active
-                              ? "bg-white text-black font-semibold"
-                              : "bg-white/5 border-white/10 text-white/70"
+                              ? "bg-[#D8FF64]/10 border-[#D8FF64] ring-1 ring-[#D8FF64]"
+                              : "bg-[#181817] border-white/10 hover:border-white/20 hover:bg-white/5"
                           )}
                         >
-                          {fh}
+                          <div className="w-full aspect-square rounded-xl mb-1.5 overflow-hidden bg-black/40 border border-white/10">
+                            <img
+                              src={fh.img}
+                              alt={fh.label}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                          </div>
+                          <span className={cn("text-[10px] font-medium truncate w-full px-0.5", active ? "text-[#D8FF64] font-semibold" : "text-white/70")}>
+                            {fh.label}
+                          </span>
                         </button>
                       );
                     })}
@@ -682,21 +840,35 @@ export function InfluencerBuilderDrawer({
                     Accessories
                   </label>
                   <div className="grid grid-cols-4 gap-2">
-                    {["None", "Glasses", "Headphones", "Jewelry"].map((acc) => {
-                      const active = accessories === acc;
+                    {[
+                      { id: "None", label: "None", img: "/assets/influencer/acc_none.jpg" },
+                      { id: "Glasses", label: "Glasses", img: "/assets/influencer/acc_glasses.jpg" },
+                      { id: "Headphones", label: "Headphones", img: "/assets/influencer/acc_headphones.jpg" },
+                      { id: "Jewelry", label: "Jewelry", img: "/assets/influencer/acc_jewelry.jpg" },
+                    ].map((acc) => {
+                      const active = accessories === acc.id;
                       return (
                         <button
-                          key={acc}
+                          key={acc.id}
                           type="button"
-                          onClick={() => setAccessories(acc)}
+                          onClick={() => setAccessories(acc.id)}
                           className={cn(
-                            "py-2 rounded-xl text-center text-[11px] border transition-all cursor-pointer",
+                            "flex flex-col items-center p-1.5 rounded-2xl border transition-all cursor-pointer group text-center overflow-hidden",
                             active
-                              ? "bg-[#D8FF64]/10 border-[#D8FF64] text-[#D8FF64] font-medium"
-                              : "bg-white/5 border-white/10 text-white/70"
+                              ? "bg-[#D8FF64]/10 border-[#D8FF64] ring-1 ring-[#D8FF64]"
+                              : "bg-[#181817] border-white/10 hover:border-white/20 hover:bg-white/5"
                           )}
                         >
-                          {acc}
+                          <div className="w-full aspect-square rounded-xl mb-1.5 overflow-hidden bg-black/40 border border-white/10">
+                            <img
+                              src={acc.img}
+                              alt={acc.label}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                          </div>
+                          <span className={cn("text-[10px] font-medium truncate w-full px-0.5", active ? "text-[#D8FF64] font-semibold" : "text-white/70")}>
+                            {acc.label}
+                          </span>
                         </button>
                       );
                     })}
@@ -704,40 +876,98 @@ export function InfluencerBuilderDrawer({
                 </div>
               </div>
 
-              {/* 11. Style */}
+              {/* 12. Distinctive features */}
+              <div>
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-white/50 block mb-2.5">
+                  Distinctive features
+                </label>
+                <div className="grid grid-cols-4 gap-2">
+                  {[
+                    { id: "Odd eyes", label: "Odd eyes", img: "/assets/influencer/distinct_oddeyes.jpg" },
+                    { id: "Face tattoo", label: "Tattoo", img: "/assets/influencer/distinct_facetattoo.jpg" },
+                    { id: "Piercing", label: "Piercing", img: "/assets/influencer/distinct_piercing.jpg" },
+                    { id: "Ear piercing", label: "Ear", img: "/assets/influencer/distinct_earpiercing.jpg" },
+                  ].map((dist) => {
+                    const active = distinctive.includes(dist.id);
+                    return (
+                      <button
+                        key={dist.id}
+                        type="button"
+                        onClick={() => {
+                          setDistinctive((prev) =>
+                            prev.includes(dist.id) ? prev.filter((d) => d !== dist.id) : [...prev, dist.id]
+                          );
+                        }}
+                        className={cn(
+                          "flex flex-col items-center p-1.5 rounded-2xl border transition-all cursor-pointer group text-center overflow-hidden",
+                          active
+                            ? "bg-[#D8FF64]/10 border-[#D8FF64] ring-1 ring-[#D8FF64]"
+                            : "bg-[#181817] border-white/10 hover:border-white/20 hover:bg-white/5"
+                        )}
+                      >
+                        <div className="w-full aspect-square rounded-xl mb-1.5 overflow-hidden bg-black/40 border border-white/10">
+                          <img
+                            src={dist.img}
+                            alt={dist.label}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        </div>
+                        <span className={cn("text-[10px] font-medium truncate w-full px-0.5", active ? "text-[#D8FF64] font-semibold" : "text-white/70")}>
+                          {dist.label}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* 13. Style */}
               <div>
                 <label className="text-[11px] font-semibold uppercase tracking-wider text-white/50 block mb-2.5">
                   Style
                 </label>
                 <div className="grid grid-cols-3 gap-2">
-                  {/* Upload style card */}
-                  <button
-                    type="button"
-                    className="p-3 rounded-2xl border border-dashed border-white/20 bg-white/5 hover:bg-white/10 text-center flex flex-col items-center justify-center gap-1 cursor-pointer"
-                  >
-                    <CoolIcon name="folder-upload" size={18} duotone className="text-[#D8FF64]" />
-                    <span className="text-[10.5px] font-medium text-white">Add style reference</span>
-                  </button>
-
-                  {["Retro", "Sporty", "Streetwear", "Luxury", "Casual"].slice(0, 2).map((s) => {
-                    const active = stylePreset === s;
+                  {[
+                    { id: "Retro", label: "Retro", img: "/assets/influencer/style_retro.jpg" },
+                    { id: "Sporty", label: "Sporty", img: "/assets/influencer/style_sporty.jpg" },
+                  ].map((s) => {
+                    const active = stylePreset === s.id;
                     return (
                       <button
-                        key={s}
+                        key={s.id}
                         type="button"
-                        onClick={() => setStylePreset(s)}
+                        onClick={() => setStylePreset(s.id)}
                         className={cn(
-                          "p-2.5 rounded-2xl border transition-all cursor-pointer text-center flex flex-col items-center justify-center",
+                          "flex flex-col items-center p-1.5 rounded-2xl border transition-all cursor-pointer group text-center overflow-hidden",
                           active
-                            ? "bg-[#D8FF64]/10 border-[#D8FF64] text-[#D8FF64] font-medium"
-                            : "bg-white/5 border-white/10 text-white/70"
+                            ? "bg-[#D8FF64]/10 border-[#D8FF64] ring-1 ring-[#D8FF64]"
+                            : "bg-[#181817] border-white/10 hover:border-white/20 hover:bg-white/5"
                         )}
                       >
-                        <CoolIcon name="star" size={16} duotone className={active ? "text-[#D8FF64]" : "text-white/40"} />
-                        <span className="text-[11.5px] mt-1">{s}</span>
+                        <div className="w-full aspect-square rounded-xl mb-1.5 overflow-hidden bg-black/40 border border-white/10">
+                          <img
+                            src={s.img}
+                            alt={s.label}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        </div>
+                        <span className={cn("text-[11px] font-medium truncate w-full px-0.5", active ? "text-[#D8FF64] font-semibold" : "text-white/70")}>
+                          {s.label}
+                        </span>
                       </button>
                     );
                   })}
+
+                  {/* Upload style card */}
+                  <button
+                    type="button"
+                    className="p-2 rounded-2xl border border-dashed border-white/20 bg-white/5 hover:bg-white/10 text-center flex flex-col items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
+                      <CoolIcon name="folder-upload" size={18} duotone className="text-[#D8FF64]" />
+                    </div>
+                    <span className="text-[10px] font-medium text-white/80 leading-tight">Add reference</span>
+                  </button>
                 </div>
               </div>
 

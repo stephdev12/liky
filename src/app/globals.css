@@ -216,8 +216,7 @@ button[class*="bg-[var(--lime)]"] svg {
 #board {
   position: fixed;
   inset: 0;
-  background-image: radial-gradient(var(--dot) 1.1px, transparent 1.1px);
-  background-size: 22px 22px;
+  background-color: var(--bg);
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
