@@ -665,7 +665,7 @@ export default function StudioPage() {
 
         {/* Côté Droit : Upgrade Crédits + ThemeToggle + Bibliothèque + Avatar */}
         <div className="flex items-center gap-2 sm:gap-2.5">
-          {/* Bouton Upgrade Lime avec Diamant / Étoile */}
+          {/* Bouton Crédits Lime avec Étoile */}
           <button
             type="button"
             onClick={() => setTopupOpen(true)}
@@ -673,8 +673,7 @@ export default function StudioPage() {
             title="Recharger vos crédits"
           >
             <CoolIcon name="star" size={13} duotone={false} className="text-black fill-current" />
-            <span>Upgrade</span>
-            <span className="font-mono text-[11px] opacity-75 font-normal">({credits} cr)</span>
+            <span className="font-mono text-[12px] font-bold">{credits} cr</span>
           </button>
 
           {/* Theme Toggle */}

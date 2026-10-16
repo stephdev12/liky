@@ -307,9 +307,10 @@ export default function StudiosExplorePage() {
             type="button"
             onClick={() => setTopupOpen(true)}
             className="h-8 sm:h-9 px-3.5 rounded-full bg-[#D8FF64] hover:bg-[#cbf54a] text-black font-semibold text-[12px] flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+            title="Recharger vos crédits"
           >
             <CoolIcon name="star" size={13} duotone={false} className="text-black fill-current" />
-            <span>Upgrade</span>
+            <span className="font-mono text-[12px] font-bold">{credits} cr</span>
           </button>
         </div>
       </header>

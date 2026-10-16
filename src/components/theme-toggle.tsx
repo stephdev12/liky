@@ -11,8 +11,10 @@ export function ThemeToggle({ className }: { className?: string }) {
 
 	useEffect(() => {
 		setMounted(true);
-		// Check existing attribute or system preference or saved localStorage
-		const savedTheme = localStorage.getItem("likyai-theme") as "light" | "dark" | null;
+		// Check existing data-theme attribute on documentElement or localStorage
+		const currentAttr = document.documentElement.getAttribute("data-theme") as "light" | "dark" | null;
+		const savedTheme = (localStorage.getItem("likyai-theme") as "light" | "dark" | null) || currentAttr;
+		
 		if (savedTheme) {
 			setTheme(savedTheme);
 			document.documentElement.setAttribute("data-theme", savedTheme);
@@ -24,6 +26,31 @@ export function ThemeToggle({ className }: { className?: string }) {
 			document.documentElement.setAttribute("data-theme", initialTheme);
 			document.documentElement.classList.toggle("dark", initialTheme === "dark");
 		}
+
+		// Listen for global theme changes across instances & pages
+		const handleThemeChange = (e: Event) => {
+			const customEvent = e as CustomEvent<"light" | "dark">;
+			if (customEvent.detail) {
+				setTheme(customEvent.detail);
+			}
+		};
+
+		// Listen for multi-tab localStorage changes
+		const handleStorage = (e: StorageEvent) => {
+			if (e.key === "likyai-theme" && (e.newValue === "light" || e.newValue === "dark")) {
+				setTheme(e.newValue);
+				document.documentElement.setAttribute("data-theme", e.newValue);
+				document.documentElement.classList.toggle("dark", e.newValue === "dark");
+			}
+		};
+
+		window.addEventListener("likyai-theme-change", handleThemeChange);
+		window.addEventListener("storage", handleStorage);
+
+		return () => {
+			window.removeEventListener("likyai-theme-change", handleThemeChange);
+			window.removeEventListener("storage", handleStorage);
+		};
 	}, []);
 
 	const toggleTheme = () => {
@@ -32,6 +59,7 @@ export function ThemeToggle({ className }: { className?: string }) {
 		localStorage.setItem("likyai-theme", nextTheme);
 		document.documentElement.setAttribute("data-theme", nextTheme);
 		document.documentElement.classList.toggle("dark", nextTheme === "dark");
+		window.dispatchEvent(new CustomEvent("likyai-theme-change", { detail: nextTheme }));
 	};
 
 	if (!mounted) {
@@ -39,7 +67,7 @@ export function ThemeToggle({ className }: { className?: string }) {
 			<button
 				aria-label="Changer le thème"
 				className={cn(
-					"size-8 rounded-full border border-border/80 flex items-center justify-center bg-card text-muted-foreground transition-colors",
+					"size-8 rounded-full border border-[var(--line)] flex items-center justify-center bg-[var(--field)] text-[var(--mute)] transition-colors",
 					className
 				)}
 			>
@@ -53,7 +81,7 @@ export function ThemeToggle({ className }: { className?: string }) {
 			aria-label={`Passer au mode ${theme === "light" ? "sombre" : "clair"}`}
 			onClick={toggleTheme}
 			className={cn(
-				"relative size-8 rounded-full border border-border/80 flex items-center justify-center bg-card/80 backdrop-blur-sm text-foreground hover:bg-muted transition-colors overflow-hidden cursor-pointer",
+				"relative size-8 rounded-full border border-[var(--line)] flex items-center justify-center bg-[var(--field)] text-[var(--ink)] hover:bg-[var(--hover)] transition-colors overflow-hidden cursor-pointer",
 				className
 			)}
 		>

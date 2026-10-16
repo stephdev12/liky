@@ -126,18 +126,18 @@ export function InfluencerBuilderDrawer({
       />
 
       {/* Drawer Container (Responsive: bottom sheet on mobile, right drawer on desktop) */}
-      <div className="fixed inset-x-0 bottom-0 sm:inset-y-0 sm:right-0 sm:left-auto w-full sm:w-[500px] h-[92vh] sm:h-screen bg-[#111110] text-[#F8F8F5] border-t sm:border-t-0 sm:border-l border-white/10 shadow-2xl z-50 flex flex-col justify-between overflow-hidden animate-in slide-in-from-bottom sm:slide-in-from-right duration-200">
+      <div className="fixed inset-x-0 bottom-0 sm:inset-y-0 sm:right-0 sm:left-auto w-full sm:w-[500px] h-[92vh] sm:h-screen bg-[var(--surface)] text-[var(--ink)] border-t sm:border-t-0 sm:border-l border-[var(--line)] shadow-2xl z-50 flex flex-col justify-between overflow-hidden animate-in slide-in-from-bottom sm:slide-in-from-right duration-200">
         
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 shrink-0">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--line)] shrink-0">
           <div className="w-8" />
-          <h2 className="font-heading text-[16px] font-semibold text-white tracking-tight">
+          <h2 className="font-heading text-[16px] font-semibold text-[var(--ink)] tracking-tight">
             Create Influencer
           </h2>
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/70 hover:text-white transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-full bg-[var(--field)] hover:bg-[var(--hover)] flex items-center justify-center text-[var(--ink-2)] hover:text-[var(--ink)] transition-colors cursor-pointer"
           >
             <CoolIcon name="close-md" size={16} duotone={false} />
           </button>
@@ -171,15 +171,15 @@ export function InfluencerBuilderDrawer({
           </div>
 
           {/* Mode Switch: Build from me vs Build from scratch */}
-          <div className="p-1 rounded-full bg-white/5 border border-white/10 grid grid-cols-2 text-[12px] font-medium">
+          <div className="p-1 rounded-full bg-[var(--field)] border border-[var(--line)] grid grid-cols-2 text-[12px] font-medium">
             <button
               type="button"
               onClick={() => setMode("me")}
               className={cn(
                 "py-2 rounded-full transition-all cursor-pointer text-center",
                 mode === "me"
-                  ? "bg-white text-black font-semibold shadow-md"
-                  : "text-white/60 hover:text-white"
+                  ? "bg-[var(--ink)] text-[var(--bg)] font-semibold shadow-md"
+                  : "text-[var(--ink-2)] hover:text-[var(--ink)]"
               )}
             >
               Build from me
@@ -190,8 +190,8 @@ export function InfluencerBuilderDrawer({
               className={cn(
                 "py-2 rounded-full transition-all cursor-pointer text-center",
                 mode === "scratch"
-                  ? "bg-white text-black font-semibold shadow-md"
-                  : "text-white/60 hover:text-white"
+                  ? "bg-[var(--ink)] text-[var(--bg)] font-semibold shadow-md"
+                  : "text-[var(--ink-2)] hover:text-[var(--ink)]"
               )}
             >
               Build from scratch
@@ -200,7 +200,7 @@ export function InfluencerBuilderDrawer({
 
           {/* Nom du personnage */}
           <div>
-            <label className="text-[11px] font-semibold uppercase tracking-wider text-white/40 block mb-1.5">
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-3)] block mb-1.5">
               Avatar Handle / Name (@)
             </label>
             <input
@@ -208,26 +208,26 @@ export function InfluencerBuilderDrawer({
               value={characterName}
               onChange={(e) => setCharacterName(e.target.value)}
               placeholder="amina, thomas, sarah..."
-              className="w-full h-9 px-3 rounded-xl bg-white/5 border border-white/10 text-white text-[13px] outline-none focus:border-[#D8FF64]"
+              className="w-full h-9 px-3 rounded-xl bg-[var(--field)] border border-[var(--line)] text-[var(--ink)] text-[13px] outline-none focus:border-[#D8FF64]"
             />
           </div>
 
           {mode === "me" ? (
-            <div className="p-6 rounded-2xl border-2 border-dashed border-white/20 bg-white/5 text-center space-y-3">
+            <div className="p-6 rounded-2xl border-2 border-dashed border-[var(--line-strong)] bg-[var(--field)] text-center space-y-3">
               <div className="w-12 h-12 rounded-full bg-[#D8FF64]/10 text-[#D8FF64] flex items-center justify-center mx-auto">
                 <CoolIcon name="folder-upload" size={24} duotone />
               </div>
               <div>
-                <span className="text-[14px] font-medium text-white block">
+                <span className="text-[14px] font-medium text-[var(--ink)] block">
                   Déposez votre selfie ou portrait de face
                 </span>
-                <p className="text-[11.5px] text-white/50 max-w-xs mx-auto mt-1">
+                <p className="text-[11.5px] text-[var(--ink-3)] max-w-xs mx-auto mt-1">
                   Photo claire, regard caméra pour extraire vos traits et verrouiller la cohérence de votre jumeau numérique.
                 </p>
               </div>
               <button
                 type="button"
-                className="px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white text-[12px] font-medium transition-colors cursor-pointer"
+                className="px-4 py-2 rounded-full bg-[var(--surface)] hover:bg-[var(--hover)] border border-[var(--line)] text-[var(--ink)] text-[12px] font-medium transition-colors cursor-pointer"
               >
                 Sélectionner une photo
               </button>
@@ -236,7 +236,7 @@ export function InfluencerBuilderDrawer({
             <>
               {/* 1. Character type */}
               <div>
-                <label className="text-[11px] font-semibold uppercase tracking-wider text-white/50 block mb-2.5">
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-3)] block mb-2.5">
                   Character type
                 </label>
                 <div className="grid grid-cols-4 gap-2">
@@ -255,18 +255,18 @@ export function InfluencerBuilderDrawer({
                         className={cn(
                           "flex flex-col items-center p-1.5 rounded-2xl border transition-all cursor-pointer group text-center overflow-hidden",
                           active
-                            ? "bg-[#D8FF64]/10 border-[#D8FF64] ring-1 ring-[#D8FF64]"
-                            : "bg-[#181817] border-white/10 hover:border-white/20 hover:bg-white/5"
+                            ? "bg-[var(--hover)] border-neutral-900 dark:border-[#D8FF64] ring-1 ring-neutral-900 dark:ring-[#D8FF64]"
+                            : "bg-[var(--field)] border-[var(--line)] hover:border-[var(--line-strong)] hover:bg-[var(--hover)]"
                         )}
                       >
-                        <div className="w-full aspect-square rounded-xl mb-1.5 overflow-hidden bg-black/40 border border-white/10">
+                        <div className="w-full aspect-square rounded-xl mb-1.5 overflow-hidden bg-[var(--surface)] border border-[var(--line)]">
                           <img
                             src={item.img}
                             alt={item.label}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           />
                         </div>
-                        <span className={cn("text-[11px] font-medium truncate w-full px-0.5", active ? "text-[#D8FF64] font-semibold" : "text-white/70")}>
+                        <span className={cn("text-[11px] font-medium truncate w-full px-0.5", active ? "text-neutral-900 dark:text-[#D8FF64] font-bold" : "text-[var(--ink-2)]")}>
                           {item.label}
                         </span>
                       </button>
@@ -277,7 +277,7 @@ export function InfluencerBuilderDrawer({
 
               {/* 2. Gender */}
               <div>
-                <label className="text-[11px] font-semibold uppercase tracking-wider text-white/50 block mb-2.5">
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-3)] block mb-2.5">
                   Gender
                 </label>
                 <div className="grid grid-cols-4 gap-2">
@@ -296,18 +296,18 @@ export function InfluencerBuilderDrawer({
                         className={cn(
                           "flex flex-col items-center p-1.5 rounded-2xl border transition-all cursor-pointer group text-center overflow-hidden",
                           active
-                            ? "bg-[#D8FF64]/10 border-[#D8FF64] ring-1 ring-[#D8FF64]"
-                            : "bg-[#181817] border-white/10 hover:border-white/20 hover:bg-white/5"
+                            ? "bg-[var(--hover)] border-neutral-900 dark:border-[#D8FF64] ring-1 ring-neutral-900 dark:ring-[#D8FF64]"
+                            : "bg-[var(--field)] border-[var(--line)] hover:border-[var(--line-strong)] hover:bg-[var(--hover)]"
                         )}
                       >
-                        <div className="w-full aspect-square rounded-xl mb-1.5 overflow-hidden bg-black/40 border border-white/10">
+                        <div className="w-full aspect-square rounded-xl mb-1.5 overflow-hidden bg-[var(--surface)] border border-[var(--line)]">
                           <img
                             src={item.img}
                             alt={item.label}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           />
                         </div>
-                        <span className={cn("text-[11px] font-medium truncate w-full px-0.5", active ? "text-[#D8FF64] font-semibold" : "text-white/70")}>
+                        <span className={cn("text-[11px] font-medium truncate w-full px-0.5", active ? "text-neutral-900 dark:text-[#D8FF64] font-bold" : "text-[var(--ink-2)]")}>
                           {item.label}
                         </span>
                       </button>
@@ -318,7 +318,7 @@ export function InfluencerBuilderDrawer({
 
               {/* 3. Build */}
               <div>
-                <label className="text-[11px] font-semibold uppercase tracking-wider text-white/50 block mb-2.5">
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-3)] block mb-2.5">
                   Build
                 </label>
                 <div className="grid grid-cols-4 gap-2">
@@ -337,18 +337,18 @@ export function InfluencerBuilderDrawer({
                         className={cn(
                           "flex flex-col items-center p-1.5 rounded-2xl border transition-all cursor-pointer group text-center overflow-hidden",
                           active
-                            ? "bg-[#D8FF64]/10 border-[#D8FF64] ring-1 ring-[#D8FF64]"
-                            : "bg-[#181817] border-white/10 hover:border-white/20 hover:bg-white/5"
+                            ? "bg-[var(--hover)] border-neutral-900 dark:border-[#D8FF64] ring-1 ring-neutral-900 dark:ring-[#D8FF64]"
+                            : "bg-[var(--field)] border-[var(--line)] hover:border-[var(--line-strong)] hover:bg-[var(--hover)]"
                         )}
                       >
-                        <div className="w-full aspect-square rounded-xl mb-1.5 overflow-hidden bg-black/40 border border-white/10">
+                        <div className="w-full aspect-square rounded-xl mb-1.5 overflow-hidden bg-[var(--surface)] border border-[var(--line)]">
                           <img
                             src={item.img}
                             alt={item.label}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           />
                         </div>
-                        <span className={cn("text-[11px] font-medium truncate w-full px-0.5", active ? "text-[#D8FF64] font-semibold" : "text-white/70")}>
+                        <span className={cn("text-[11px] font-medium truncate w-full px-0.5", active ? "text-neutral-900 dark:text-[#D8FF64] font-bold" : "text-[var(--ink-2)]")}>
                           {item.label}
                         </span>
                       </button>
@@ -360,7 +360,7 @@ export function InfluencerBuilderDrawer({
               {/* 4. Height & Proportions */}
               <div className="space-y-4">
                 <div>
-                  <label className="text-[11px] font-semibold uppercase tracking-wider text-white/50 block mb-2">
+                  <label className="text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-3)] block mb-2">
                     Height
                   </label>
                   <div className="grid grid-cols-3 gap-2">
@@ -378,18 +378,18 @@ export function InfluencerBuilderDrawer({
                           className={cn(
                             "flex flex-col items-center p-1.5 rounded-2xl border transition-all cursor-pointer group text-center overflow-hidden",
                             active
-                              ? "bg-[#D8FF64]/10 border-[#D8FF64] ring-1 ring-[#D8FF64]"
-                              : "bg-[#181817] border-white/10 hover:border-white/20 hover:bg-white/5"
+                              ? "bg-[var(--hover)] border-neutral-900 dark:border-[#D8FF64] ring-1 ring-neutral-900 dark:ring-[#D8FF64]"
+                              : "bg-[var(--field)] border-[var(--line)] hover:border-[var(--line-strong)] hover:bg-[var(--hover)]"
                           )}
                         >
-                          <div className="w-full aspect-square rounded-xl mb-1.5 overflow-hidden bg-black/40 border border-white/10">
+                          <div className="w-full aspect-square rounded-xl mb-1.5 overflow-hidden bg-[var(--surface)] border border-[var(--line)]">
                             <img
                               src={h.img}
                               alt={h.label}
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                             />
                           </div>
-                          <span className={cn("text-[11px] font-medium truncate w-full px-0.5", active ? "text-[#D8FF64] font-semibold" : "text-white/70")}>
+                          <span className={cn("text-[11px] font-medium truncate w-full px-0.5", active ? "text-neutral-900 dark:text-[#D8FF64] font-bold" : "text-[var(--ink-2)]")}>
                             {h.label}
                           </span>
                         </button>
@@ -399,7 +399,7 @@ export function InfluencerBuilderDrawer({
                 </div>
 
                 <div>
-                  <label className="text-[11px] font-semibold uppercase tracking-wider text-white/50 block mb-2">
+                  <label className="text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-3)] block mb-2">
                     Proportions
                   </label>
                   <div className="grid grid-cols-4 gap-2">
@@ -418,18 +418,18 @@ export function InfluencerBuilderDrawer({
                           className={cn(
                             "flex flex-col items-center p-1.5 rounded-2xl border transition-all cursor-pointer group text-center overflow-hidden",
                             active
-                              ? "bg-[#D8FF64]/10 border-[#D8FF64] ring-1 ring-[#D8FF64]"
-                              : "bg-[#181817] border-white/10 hover:border-white/20 hover:bg-white/5"
+                              ? "bg-[var(--hover)] border-neutral-900 dark:border-[#D8FF64] ring-1 ring-neutral-900 dark:ring-[#D8FF64]"
+                              : "bg-[var(--field)] border-[var(--line)] hover:border-[var(--line-strong)] hover:bg-[var(--hover)]"
                           )}
                         >
-                          <div className="w-full aspect-square rounded-xl mb-1.5 overflow-hidden bg-black/40 border border-white/10">
+                          <div className="w-full aspect-square rounded-xl mb-1.5 overflow-hidden bg-[var(--surface)] border border-[var(--line)]">
                             <img
                               src={p.img}
                               alt={p.label}
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                             />
                           </div>
-                          <span className={cn("text-[10px] font-medium truncate w-full px-0.5", active ? "text-[#D8FF64] font-semibold" : "text-white/70")}>
+                          <span className={cn("text-[10px] font-medium truncate w-full px-0.5", active ? "text-neutral-900 dark:text-[#D8FF64] font-bold" : "text-[var(--ink-2)]")}>
                             {p.label}
                           </span>
                         </button>
@@ -442,7 +442,7 @@ export function InfluencerBuilderDrawer({
               {/* 5. Head shape & Neck */}
               <div className="space-y-4">
                 <div>
-                  <label className="text-[11px] font-semibold uppercase tracking-wider text-white/50 block mb-2">
+                  <label className="text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-3)] block mb-2">
                     Head shape
                   </label>
                   <div className="grid grid-cols-4 gap-2">
@@ -459,11 +459,11 @@ export function InfluencerBuilderDrawer({
                         className={cn(
                           "flex flex-col items-center p-1.5 rounded-2xl border transition-all cursor-pointer group text-center overflow-hidden",
                           headShape === hs.id
-                            ? "bg-[#D8FF64]/10 border-[#D8FF64] ring-1 ring-[#D8FF64]"
-                            : "bg-[#181817] border-white/10 hover:border-white/20 hover:bg-white/5"
+                            ? "bg-[var(--hover)] border-neutral-900 dark:border-[#D8FF64] ring-1 ring-neutral-900 dark:ring-[#D8FF64]"
+                            : "bg-[var(--field)] border-[var(--line)] hover:border-[var(--line-strong)] hover:bg-[var(--hover)]"
                         )}
                       >
-                        <div className="w-full aspect-square rounded-xl mb-1.5 overflow-hidden bg-black/40 border border-white/10">
+                        <div className="w-full aspect-square rounded-xl mb-1.5 overflow-hidden bg-[var(--surface)] border border-[var(--line)]">
                           <img
                             src={hs.img}
                             alt={hs.label}
@@ -479,7 +479,7 @@ export function InfluencerBuilderDrawer({
                 </div>
 
                 <div>
-                  <label className="text-[11px] font-semibold uppercase tracking-wider text-white/50 block mb-2">
+                  <label className="text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-3)] block mb-2">
                     Neck
                   </label>
                   <div className="grid grid-cols-4 gap-2">
@@ -496,11 +496,11 @@ export function InfluencerBuilderDrawer({
                         className={cn(
                           "flex flex-col items-center p-1.5 rounded-2xl border transition-all cursor-pointer group text-center overflow-hidden",
                           neck === n.id
-                            ? "bg-[#D8FF64]/10 border-[#D8FF64] ring-1 ring-[#D8FF64]"
-                            : "bg-[#181817] border-white/10 hover:border-white/20 hover:bg-white/5"
+                            ? "bg-[var(--hover)] border-neutral-900 dark:border-[#D8FF64] ring-1 ring-neutral-900 dark:ring-[#D8FF64]"
+                            : "bg-[var(--field)] border-[var(--line)] hover:border-[var(--line-strong)] hover:bg-[var(--hover)]"
                         )}
                       >
-                        <div className="w-full aspect-square rounded-xl mb-1.5 overflow-hidden bg-black/40 border border-white/10">
+                        <div className="w-full aspect-square rounded-xl mb-1.5 overflow-hidden bg-[var(--surface)] border border-[var(--line)]">
                           <img
                             src={n.img}
                             alt={n.label}
@@ -518,7 +518,7 @@ export function InfluencerBuilderDrawer({
 
               {/* 6. Hairstyle & Hair Color */}
               <div>
-                <label className="text-[11px] font-semibold uppercase tracking-wider text-white/50 block mb-2.5">
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-3)] block mb-2.5">
                   Hairstyle
                 </label>
                 <div className="grid grid-cols-4 gap-2 mb-3">
@@ -537,18 +537,18 @@ export function InfluencerBuilderDrawer({
                         className={cn(
                           "flex flex-col items-center p-1.5 rounded-2xl border transition-all cursor-pointer group text-center overflow-hidden",
                           active
-                            ? "bg-[#D8FF64]/10 border-[#D8FF64] ring-1 ring-[#D8FF64]"
-                            : "bg-[#181817] border-white/10 hover:border-white/20 hover:bg-white/5"
+                            ? "bg-[var(--hover)] border-neutral-900 dark:border-[#D8FF64] ring-1 ring-neutral-900 dark:ring-[#D8FF64]"
+                            : "bg-[var(--field)] border-[var(--line)] hover:border-[var(--line-strong)] hover:bg-[var(--hover)]"
                         )}
                       >
-                        <div className="w-full aspect-square rounded-xl mb-1.5 overflow-hidden bg-black/40 border border-white/10">
+                        <div className="w-full aspect-square rounded-xl mb-1.5 overflow-hidden bg-[var(--surface)] border border-[var(--line)]">
                           <img
                             src={hair.img}
                             alt={hair.label}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           />
                         </div>
-                        <span className={cn("text-[11px] font-medium truncate w-full px-0.5", active ? "text-[#D8FF64] font-semibold" : "text-white/70")}>
+                        <span className={cn("text-[11px] font-medium truncate w-full px-0.5", active ? "text-neutral-900 dark:text-[#D8FF64] font-bold" : "text-[var(--ink-2)]")}>
                           {hair.label}
                         </span>
                       </button>
@@ -557,7 +557,7 @@ export function InfluencerBuilderDrawer({
                 </div>
 
                 {/* Hair Color Swatches */}
-                <label className="text-[11px] font-semibold uppercase tracking-wider text-white/50 block mb-2">
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-3)] block mb-2">
                   Hair Color
                 </label>
                 <div className="grid grid-cols-4 gap-2">
@@ -575,11 +575,11 @@ export function InfluencerBuilderDrawer({
                         onClick={() => setHairColor(color.id)}
                         className={cn(
                           "p-2 rounded-xl border transition-all cursor-pointer flex flex-col items-center gap-1.5",
-                          active ? "border-[#D8FF64] bg-[#D8FF64]/10" : "border-white/10 bg-white/5"
+                          active ? "border-neutral-900 dark:border-[#D8FF64] bg-[var(--hover)] ring-1 ring-neutral-900 dark:ring-[#D8FF64]" : "border-[var(--line)] bg-[var(--field)] hover:border-[var(--line-strong)] hover:bg-[var(--hover)]"
                         )}
                       >
                         <div className="w-full h-8 rounded-lg shadow-inner" style={{ backgroundColor: color.hex }} />
-                        <span className="text-[10.5px] text-white/80 truncate">{color.id}</span>
+                        <span className="text-[10.5px] text-[var(--ink-2)] truncate">{color.id}</span>
                       </button>
                     );
                   })}
@@ -588,7 +588,7 @@ export function InfluencerBuilderDrawer({
 
               {/* 7. Ethnicity */}
               <div>
-                <label className="text-[11px] font-semibold uppercase tracking-wider text-white/50 block mb-2.5">
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-3)] block mb-2.5">
                   Ethnicity
                 </label>
                 <div className="grid grid-cols-4 gap-2">
@@ -607,18 +607,18 @@ export function InfluencerBuilderDrawer({
                         className={cn(
                           "flex flex-col items-center p-1.5 rounded-2xl border transition-all cursor-pointer group text-center overflow-hidden",
                           active
-                            ? "bg-[#D8FF64]/10 border-[#D8FF64] ring-1 ring-[#D8FF64]"
-                            : "bg-[#181817] border-white/10 hover:border-white/20 hover:bg-white/5"
+                            ? "bg-[var(--hover)] border-neutral-900 dark:border-[#D8FF64] ring-1 ring-neutral-900 dark:ring-[#D8FF64]"
+                            : "bg-[var(--field)] border-[var(--line)] hover:border-[var(--line-strong)] hover:bg-[var(--hover)]"
                         )}
                       >
-                        <div className="w-full aspect-square rounded-xl mb-1.5 overflow-hidden bg-black/40 border border-white/10">
+                        <div className="w-full aspect-square rounded-xl mb-1.5 overflow-hidden bg-[var(--surface)] border border-[var(--line)]">
                           <img
                             src={eth.img}
                             alt={eth.label}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           />
                         </div>
-                        <span className={cn("text-[11px] font-medium truncate w-full px-0.5", active ? "text-[#D8FF64] font-semibold" : "text-white/70")}>
+                        <span className={cn("text-[11px] font-medium truncate w-full px-0.5", active ? "text-neutral-900 dark:text-[#D8FF64] font-bold" : "text-[var(--ink-2)]")}>
                           {eth.label}
                         </span>
                       </button>
@@ -630,7 +630,7 @@ export function InfluencerBuilderDrawer({
               {/* 8. Age & Skin color */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[11px] font-semibold uppercase tracking-wider text-white/50 block mb-2">
+                  <label className="text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-3)] block mb-2">
                     Age
                   </label>
                   <div className="flex gap-1.5">
@@ -642,8 +642,8 @@ export function InfluencerBuilderDrawer({
                         className={cn(
                           "flex-1 py-1.5 rounded-lg text-center text-[11px] border transition-all cursor-pointer",
                           age === a
-                            ? "bg-white text-black font-semibold"
-                            : "bg-white/5 border-white/5 text-white/60"
+                            ? "bg-[var(--ink)] text-[var(--bg)] font-semibold shadow-xs"
+                            : "bg-[var(--field)] border border-[var(--line)] text-[var(--ink-2)] hover:bg-[var(--hover)]"
                         )}
                       >
                         {a}
@@ -653,7 +653,7 @@ export function InfluencerBuilderDrawer({
                 </div>
 
                 <div>
-                  <label className="text-[11px] font-semibold uppercase tracking-wider text-white/50 block mb-2">
+                  <label className="text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-3)] block mb-2">
                     Skin color
                   </label>
                   <div className="flex gap-1.5">
@@ -669,7 +669,7 @@ export function InfluencerBuilderDrawer({
                         onClick={() => setSkinColor(s.id)}
                         className={cn(
                           "flex-1 h-7 rounded-lg border transition-all cursor-pointer relative",
-                          skinColor === s.id ? "ring-2 ring-[#D8FF64] border-black" : "border-white/10"
+                          skinColor === s.id ? "ring-2 ring-[#D8FF64] border-neutral-900" : "border-[var(--line)]"
                         )}
                         style={{ backgroundColor: s.hex }}
                         title={s.id}
@@ -681,7 +681,7 @@ export function InfluencerBuilderDrawer({
 
               {/* 9. Eye shape & Eye color */}
               <div>
-                <label className="text-[11px] font-semibold uppercase tracking-wider text-white/50 block mb-2.5">
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-3)] block mb-2.5">
                   Eye shape
                 </label>
                 <div className="grid grid-cols-4 gap-2 mb-3">
@@ -700,18 +700,18 @@ export function InfluencerBuilderDrawer({
                         className={cn(
                           "flex flex-col items-center p-1.5 rounded-2xl border transition-all cursor-pointer group text-center overflow-hidden",
                           active
-                            ? "bg-[#D8FF64]/10 border-[#D8FF64] ring-1 ring-[#D8FF64]"
-                            : "bg-[#181817] border-white/10 hover:border-white/20 hover:bg-white/5"
+                            ? "bg-[var(--hover)] border-neutral-900 dark:border-[#D8FF64] ring-1 ring-neutral-900 dark:ring-[#D8FF64]"
+                            : "bg-[var(--field)] border-[var(--line)] hover:border-[var(--line-strong)] hover:bg-[var(--hover)]"
                         )}
                       >
-                        <div className="w-full aspect-square rounded-xl mb-1.5 overflow-hidden bg-black/40 border border-white/10">
+                        <div className="w-full aspect-square rounded-xl mb-1.5 overflow-hidden bg-[var(--surface)] border border-[var(--line)]">
                           <img
                             src={item.img}
                             alt={item.label}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           />
                         </div>
-                        <span className={cn("text-[10px] font-medium truncate w-full px-0.5", active ? "text-[#D8FF64] font-semibold" : "text-white/70")}>
+                        <span className={cn("text-[10px] font-medium truncate w-full px-0.5", active ? "text-neutral-900 dark:text-[#D8FF64] font-bold" : "text-[var(--ink-2)]")}>
                           {item.label}
                         </span>
                       </button>
@@ -719,7 +719,7 @@ export function InfluencerBuilderDrawer({
                   })}
                 </div>
 
-                <label className="text-[11px] font-semibold uppercase tracking-wider text-white/50 block mb-2">
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-3)] block mb-2">
                   Eye color
                 </label>
                 <div className="grid grid-cols-4 gap-2">
@@ -737,11 +737,11 @@ export function InfluencerBuilderDrawer({
                         onClick={() => setEyeColor(color.id)}
                         className={cn(
                           "p-2 rounded-xl border transition-all cursor-pointer flex flex-col items-center gap-1.5",
-                          active ? "border-[#D8FF64] bg-[#D8FF64]/10" : "border-white/10 bg-white/5"
+                          active ? "border-neutral-900 dark:border-[#D8FF64] bg-[var(--hover)] ring-1 ring-neutral-900 dark:ring-[#D8FF64]" : "border-[var(--line)] bg-[var(--field)] hover:border-[var(--line-strong)] hover:bg-[var(--hover)]"
                         )}
                       >
                         <div className="w-full h-7 rounded-lg" style={{ backgroundColor: color.hex }} />
-                        <span className="text-[10px] text-white/80">{color.id}</span>
+                        <span className="text-[10px] text-[var(--ink-2)]">{color.id}</span>
                       </button>
                     );
                   })}
@@ -750,7 +750,7 @@ export function InfluencerBuilderDrawer({
 
               {/* 10. Facial Features */}
               <div>
-                <label className="text-[11px] font-semibold uppercase tracking-wider text-white/50 block mb-2.5">
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-3)] block mb-2.5">
                   Features
                 </label>
                 <div className="grid grid-cols-4 gap-2">
@@ -773,18 +773,18 @@ export function InfluencerBuilderDrawer({
                         className={cn(
                           "flex flex-col items-center p-1.5 rounded-2xl border transition-all cursor-pointer group text-center overflow-hidden",
                           active
-                            ? "bg-[#D8FF64]/10 border-[#D8FF64] ring-1 ring-[#D8FF64]"
-                            : "bg-[#181817] border-white/10 hover:border-white/20 hover:bg-white/5"
+                            ? "bg-[var(--hover)] border-neutral-900 dark:border-[#D8FF64] ring-1 ring-neutral-900 dark:ring-[#D8FF64]"
+                            : "bg-[var(--field)] border-[var(--line)] hover:border-[var(--line-strong)] hover:bg-[var(--hover)]"
                         )}
                       >
-                        <div className="w-full aspect-square rounded-xl mb-1.5 overflow-hidden bg-black/40 border border-white/10">
+                        <div className="w-full aspect-square rounded-xl mb-1.5 overflow-hidden bg-[var(--surface)] border border-[var(--line)]">
                           <img
                             src={feat.img}
                             alt={feat.label}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           />
                         </div>
-                        <span className={cn("text-[10px] font-medium truncate w-full px-0.5", active ? "text-[#D8FF64] font-semibold" : "text-white/70")}>
+                        <span className={cn("text-[10px] font-medium truncate w-full px-0.5", active ? "text-neutral-900 dark:text-[#D8FF64] font-bold" : "text-[var(--ink-2)]")}>
                           {feat.label}
                         </span>
                       </button>
@@ -796,7 +796,7 @@ export function InfluencerBuilderDrawer({
               {/* 11. Facial hair & Accessories */}
               <div className="space-y-4">
                 <div>
-                  <label className="text-[11px] font-semibold uppercase tracking-wider text-white/50 block mb-2">
+                  <label className="text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-3)] block mb-2">
                     Facial hair
                   </label>
                   <div className="grid grid-cols-4 gap-2">
@@ -815,18 +815,18 @@ export function InfluencerBuilderDrawer({
                           className={cn(
                             "flex flex-col items-center p-1.5 rounded-2xl border transition-all cursor-pointer group text-center overflow-hidden",
                             active
-                              ? "bg-[#D8FF64]/10 border-[#D8FF64] ring-1 ring-[#D8FF64]"
-                              : "bg-[#181817] border-white/10 hover:border-white/20 hover:bg-white/5"
+                              ? "bg-[var(--hover)] border-neutral-900 dark:border-[#D8FF64] ring-1 ring-neutral-900 dark:ring-[#D8FF64]"
+                              : "bg-[var(--field)] border-[var(--line)] hover:border-[var(--line-strong)] hover:bg-[var(--hover)]"
                           )}
                         >
-                          <div className="w-full aspect-square rounded-xl mb-1.5 overflow-hidden bg-black/40 border border-white/10">
+                          <div className="w-full aspect-square rounded-xl mb-1.5 overflow-hidden bg-[var(--surface)] border border-[var(--line)]">
                             <img
                               src={fh.img}
                               alt={fh.label}
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                             />
                           </div>
-                          <span className={cn("text-[10px] font-medium truncate w-full px-0.5", active ? "text-[#D8FF64] font-semibold" : "text-white/70")}>
+                          <span className={cn("text-[10px] font-medium truncate w-full px-0.5", active ? "text-neutral-900 dark:text-[#D8FF64] font-bold" : "text-[var(--ink-2)]")}>
                             {fh.label}
                           </span>
                         </button>
@@ -836,7 +836,7 @@ export function InfluencerBuilderDrawer({
                 </div>
 
                 <div>
-                  <label className="text-[11px] font-semibold uppercase tracking-wider text-white/50 block mb-2">
+                  <label className="text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-3)] block mb-2">
                     Accessories
                   </label>
                   <div className="grid grid-cols-4 gap-2">
@@ -855,18 +855,18 @@ export function InfluencerBuilderDrawer({
                           className={cn(
                             "flex flex-col items-center p-1.5 rounded-2xl border transition-all cursor-pointer group text-center overflow-hidden",
                             active
-                              ? "bg-[#D8FF64]/10 border-[#D8FF64] ring-1 ring-[#D8FF64]"
-                              : "bg-[#181817] border-white/10 hover:border-white/20 hover:bg-white/5"
+                              ? "bg-[var(--hover)] border-neutral-900 dark:border-[#D8FF64] ring-1 ring-neutral-900 dark:ring-[#D8FF64]"
+                              : "bg-[var(--field)] border-[var(--line)] hover:border-[var(--line-strong)] hover:bg-[var(--hover)]"
                           )}
                         >
-                          <div className="w-full aspect-square rounded-xl mb-1.5 overflow-hidden bg-black/40 border border-white/10">
+                          <div className="w-full aspect-square rounded-xl mb-1.5 overflow-hidden bg-[var(--surface)] border border-[var(--line)]">
                             <img
                               src={acc.img}
                               alt={acc.label}
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                             />
                           </div>
-                          <span className={cn("text-[10px] font-medium truncate w-full px-0.5", active ? "text-[#D8FF64] font-semibold" : "text-white/70")}>
+                          <span className={cn("text-[10px] font-medium truncate w-full px-0.5", active ? "text-neutral-900 dark:text-[#D8FF64] font-bold" : "text-[var(--ink-2)]")}>
                             {acc.label}
                           </span>
                         </button>
@@ -878,7 +878,7 @@ export function InfluencerBuilderDrawer({
 
               {/* 12. Distinctive features */}
               <div>
-                <label className="text-[11px] font-semibold uppercase tracking-wider text-white/50 block mb-2.5">
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-3)] block mb-2.5">
                   Distinctive features
                 </label>
                 <div className="grid grid-cols-4 gap-2">
@@ -901,18 +901,18 @@ export function InfluencerBuilderDrawer({
                         className={cn(
                           "flex flex-col items-center p-1.5 rounded-2xl border transition-all cursor-pointer group text-center overflow-hidden",
                           active
-                            ? "bg-[#D8FF64]/10 border-[#D8FF64] ring-1 ring-[#D8FF64]"
-                            : "bg-[#181817] border-white/10 hover:border-white/20 hover:bg-white/5"
+                            ? "bg-[var(--hover)] border-neutral-900 dark:border-[#D8FF64] ring-1 ring-neutral-900 dark:ring-[#D8FF64]"
+                            : "bg-[var(--field)] border-[var(--line)] hover:border-[var(--line-strong)] hover:bg-[var(--hover)]"
                         )}
                       >
-                        <div className="w-full aspect-square rounded-xl mb-1.5 overflow-hidden bg-black/40 border border-white/10">
+                        <div className="w-full aspect-square rounded-xl mb-1.5 overflow-hidden bg-[var(--surface)] border border-[var(--line)]">
                           <img
                             src={dist.img}
                             alt={dist.label}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           />
                         </div>
-                        <span className={cn("text-[10px] font-medium truncate w-full px-0.5", active ? "text-[#D8FF64] font-semibold" : "text-white/70")}>
+                        <span className={cn("text-[10px] font-medium truncate w-full px-0.5", active ? "text-neutral-900 dark:text-[#D8FF64] font-bold" : "text-[var(--ink-2)]")}>
                           {dist.label}
                         </span>
                       </button>
@@ -923,7 +923,7 @@ export function InfluencerBuilderDrawer({
 
               {/* 13. Style */}
               <div>
-                <label className="text-[11px] font-semibold uppercase tracking-wider text-white/50 block mb-2.5">
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-3)] block mb-2.5">
                   Style
                 </label>
                 <div className="grid grid-cols-3 gap-2">
@@ -940,18 +940,18 @@ export function InfluencerBuilderDrawer({
                         className={cn(
                           "flex flex-col items-center p-1.5 rounded-2xl border transition-all cursor-pointer group text-center overflow-hidden",
                           active
-                            ? "bg-[#D8FF64]/10 border-[#D8FF64] ring-1 ring-[#D8FF64]"
-                            : "bg-[#181817] border-white/10 hover:border-white/20 hover:bg-white/5"
+                            ? "bg-[var(--hover)] border-neutral-900 dark:border-[#D8FF64] ring-1 ring-neutral-900 dark:ring-[#D8FF64]"
+                            : "bg-[var(--field)] border-[var(--line)] hover:border-[var(--line-strong)] hover:bg-[var(--hover)]"
                         )}
                       >
-                        <div className="w-full aspect-square rounded-xl mb-1.5 overflow-hidden bg-black/40 border border-white/10">
+                        <div className="w-full aspect-square rounded-xl mb-1.5 overflow-hidden bg-[var(--surface)] border border-[var(--line)]">
                           <img
                             src={s.img}
                             alt={s.label}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           />
                         </div>
-                        <span className={cn("text-[11px] font-medium truncate w-full px-0.5", active ? "text-[#D8FF64] font-semibold" : "text-white/70")}>
+                        <span className={cn("text-[11px] font-medium truncate w-full px-0.5", active ? "text-neutral-900 dark:text-[#D8FF64] font-bold" : "text-[var(--ink-2)]")}>
                           {s.label}
                         </span>
                       </button>
@@ -961,20 +961,20 @@ export function InfluencerBuilderDrawer({
                   {/* Upload style card */}
                   <button
                     type="button"
-                    className="p-2 rounded-2xl border border-dashed border-white/20 bg-white/5 hover:bg-white/10 text-center flex flex-col items-center justify-center gap-1.5 cursor-pointer"
+                    className="p-2 rounded-2xl border border-dashed border-[var(--line-strong)] bg-[var(--field)] hover:bg-[var(--hover)] text-center flex flex-col items-center justify-center gap-1.5 cursor-pointer"
                   >
-                    <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-xl bg-[var(--surface)] border border-[var(--line)] flex items-center justify-center">
                       <CoolIcon name="folder-upload" size={18} duotone className="text-[#D8FF64]" />
                     </div>
-                    <span className="text-[10px] font-medium text-white/80 leading-tight">Add reference</span>
+                    <span className="text-[10px] font-medium text-[var(--ink-2)] leading-tight">Add reference</span>
                   </button>
                 </div>
               </div>
 
               {/* 12. Prompt Switch */}
-              <div className="p-3 rounded-2xl bg-white/5 border border-white/10 space-y-2">
+              <div className="p-3 rounded-2xl bg-[var(--field)] border border-[var(--line)] space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[12px] font-medium text-white">Prompt</span>
+                  <span className="text-[12px] font-medium text-[var(--ink)]">Prompt</span>
                   <input
                     type="checkbox"
                     checked={promptEnabled}
@@ -988,7 +988,7 @@ export function InfluencerBuilderDrawer({
                     value={customPrompt}
                     onChange={(e) => setCustomPrompt(e.target.value)}
                     placeholder="Instructions détaillées pour le style, pose, vêtements..."
-                    className="w-full p-2.5 rounded-xl bg-black/40 border border-white/10 text-[12px] text-white resize-none outline-none focus:border-[#D8FF64]"
+                    className="w-full p-2.5 rounded-xl bg-[var(--surface)] border border-[var(--line)] text-[12px] text-[var(--ink)] resize-none outline-none focus:border-[#D8FF64]"
                   />
                 )}
               </div>
@@ -997,9 +997,9 @@ export function InfluencerBuilderDrawer({
         </div>
 
         {/* Fixed Bottom Bar: Free gens toggle + Shuffle + Lime Generate button */}
-        <div className="p-4 border-t border-white/10 bg-[#111110] space-y-2.5 shrink-0">
+        <div className="p-4 border-t border-[var(--line)] bg-[var(--surface)] space-y-2.5 shrink-0">
           <div className="flex items-center justify-between px-1">
-            <div className="flex items-center gap-1.5 text-[11.5px] text-white/70">
+            <div className="flex items-center gap-1.5 text-[11.5px] text-[var(--ink-2)]">
               <CoolIcon name="star" size={13} duotone secondaryColor="#D8FF64" className="text-[#D8FF64]" />
               <span>Free gens: 5</span>
             </div>
@@ -1015,7 +1015,7 @@ export function InfluencerBuilderDrawer({
             <button
               type="button"
               onClick={handleShuffle}
-              className="w-11 h-11 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-white/80 hover:text-white transition-colors cursor-pointer shrink-0"
+              className="w-11 h-11 rounded-full bg-[var(--field)] hover:bg-[var(--hover)] border border-[var(--line)] flex items-center justify-center text-[var(--ink-2)] hover:text-[var(--ink)] transition-colors cursor-pointer shrink-0"
               title="Shuffle parameters"
             >
               <CoolIcon name="shuffle" size={18} duotone={false} />

@@ -94,8 +94,8 @@ export function SectionShowcase({
                       </div>
                     </div>
                   ) : isAudio ? (
-                    <div className="w-full h-full flex flex-col justify-between p-4 bg-gradient-to-b from-[#1C1C1A] to-[#121211]">
-                      <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-[#D8FF64]">
+                    <div className="w-full h-full flex flex-col justify-between p-4 bg-gradient-to-b from-[var(--field)] to-[var(--surface)]">
+                      <div className="w-8 h-8 rounded-full bg-[var(--surface)] border border-[var(--line)] flex items-center justify-center text-neutral-900 dark:text-[#D8FF64]">
                         <CoolIcon name={c.mode === "music" ? "headphones" : "user-voice"} size={16} duotone />
                       </div>
                       <div className="flex items-end gap-1 h-12">

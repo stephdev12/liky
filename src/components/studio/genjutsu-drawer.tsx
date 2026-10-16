@@ -97,18 +97,18 @@ export function GenjutsuDrawer({
       />
 
       {/* Drawer Container */}
-      <div className="fixed inset-x-0 bottom-0 sm:inset-y-0 sm:right-0 sm:left-auto w-full sm:w-[490px] h-[92vh] sm:h-screen bg-[#111110] text-[#F8F8F5] border-t sm:border-t-0 sm:border-l border-white/10 shadow-2xl z-50 flex flex-col justify-between overflow-hidden animate-in slide-in-from-bottom sm:slide-in-from-right duration-200">
+      <div className="fixed inset-x-0 bottom-0 sm:inset-y-0 sm:right-0 sm:left-auto w-full sm:w-[490px] h-[92vh] sm:h-screen bg-[var(--surface)] text-[var(--ink)] border-t sm:border-t-0 sm:border-l border-[var(--line)] shadow-2xl z-50 flex flex-col justify-between overflow-hidden animate-in slide-in-from-bottom sm:slide-in-from-right duration-200">
         
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 shrink-0">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--line)] shrink-0">
           <div className="w-8" />
-          <h2 className="font-heading text-[16px] font-semibold text-white tracking-tight">
+          <h2 className="font-heading text-[16px] font-semibold text-[var(--ink)] tracking-tight">
             likyAI Genjutsu
           </h2>
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/70 hover:text-white transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-full bg-[var(--field)] hover:bg-[var(--hover)] flex items-center justify-center text-[var(--ink-2)] hover:text-[var(--ink)] transition-colors cursor-pointer"
           >
             <CoolIcon name="close-md" size={16} duotone={false} />
           </button>
@@ -118,7 +118,7 @@ export function GenjutsuDrawer({
         <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4 text-[13px] scrollbar-thin">
           
           {/* Top Video Motion Banner */}
-          <div className="relative w-full h-32 rounded-2xl overflow-hidden bg-black border border-white/10 flex items-center justify-between px-5 shadow-lg group">
+          <div className="relative w-full h-32 rounded-2xl overflow-hidden bg-black border border-[var(--line)] flex items-center justify-between px-5 shadow-lg group">
             <img
               src="/assets/studios/studio-cinema.jpg"
               alt="Genjutsu background"
@@ -130,7 +130,7 @@ export function GenjutsuDrawer({
               <span className="font-heading text-[20px] font-extrabold text-[#D8FF64] tracking-tight block drop-shadow-md">
                 LIKYAI GENJUTSU
               </span>
-              <span className="text-[11px] text-white/80 block mt-0.5 leading-snug">
+              <span className="text-[11px] text-white/90 block mt-0.5 leading-snug">
                 Extract motion from any video and retarget to your assets
               </span>
             </div>
@@ -145,15 +145,15 @@ export function GenjutsuDrawer({
           </div>
 
           {/* Mode Tabs: Motion transfer vs Objects swap */}
-          <div className="p-1 rounded-full bg-white/5 border border-white/10 grid grid-cols-2 text-[12px] font-medium">
+          <div className="p-1 rounded-full bg-[var(--field)] border border-[var(--line)] grid grid-cols-2 text-[12px] font-medium">
             <button
               type="button"
               onClick={() => setTab("motion")}
               className={cn(
                 "py-2 rounded-full transition-all cursor-pointer flex items-center justify-center gap-2",
                 tab === "motion"
-                  ? "bg-white text-black font-semibold shadow-md"
-                  : "text-white/60 hover:text-white"
+                  ? "bg-[var(--ink)] text-[var(--bg)] font-semibold shadow-md"
+                  : "text-[var(--ink-2)] hover:text-[var(--ink)]"
               )}
             >
               <CoolIcon name="monitor-play" size={14} duotone={false} />
@@ -165,8 +165,8 @@ export function GenjutsuDrawer({
               className={cn(
                 "py-2 rounded-full transition-all cursor-pointer flex items-center justify-center gap-2",
                 tab === "swap"
-                  ? "bg-white text-black font-semibold shadow-md"
-                  : "text-white/60 hover:text-white"
+                  ? "bg-[var(--ink)] text-[var(--bg)] font-semibold shadow-md"
+                  : "text-[var(--ink-2)] hover:text-[var(--ink)]"
               )}
             >
               <CoolIcon name="layers" size={14} duotone={false} />
@@ -177,45 +177,45 @@ export function GenjutsuDrawer({
           {/* Style Selector Pill */}
           <div
             onClick={() => setStyleModalOpen(true)}
-            className="flex items-center justify-between p-3 rounded-2xl bg-[#181817] border border-white/10 hover:border-white/20 cursor-pointer transition-all"
+            className="flex items-center justify-between p-3 rounded-2xl bg-[var(--field)] border border-[var(--line)] hover:border-[var(--line-strong)] hover:bg-[var(--hover)] cursor-pointer transition-all"
           >
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg overflow-hidden bg-black/40 border border-white/10 flex items-center justify-center">
-                <CoolIcon name="star" size={16} duotone secondaryColor="#D8FF64" className="text-[#D8FF64]" />
+              <div className="w-8 h-8 rounded-lg overflow-hidden bg-[var(--surface)] border border-[var(--line)] flex items-center justify-center">
+                <CoolIcon name="star" size={16} duotone secondaryColor="#D8FF64" className="text-neutral-900 dark:text-[#D8FF64]" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="text-[12.5px] font-medium text-white">Style</span>
-                  <span className="px-1.5 py-0.2 rounded-full bg-[#D8FF64]/20 text-[#D8FF64] text-[9.5px] font-bold">NEW</span>
+                  <span className="text-[12.5px] font-medium text-[var(--ink)]">Style</span>
+                  <span className="px-1.5 py-0.2 rounded-full bg-[#D8FF64]/20 text-neutral-900 dark:text-[#D8FF64] text-[9.5px] font-bold">NEW</span>
                 </div>
-                <span className="text-[11px] text-white/50">{selectedStyle}</span>
+                <span className="text-[11px] text-[var(--ink-3)]">{selectedStyle}</span>
               </div>
             </div>
-            <div className="flex items-center gap-1 text-[11.5px] text-white/60 hover:text-white">
+            <div className="flex items-center gap-1 text-[11.5px] text-[var(--ink-2)] hover:text-[var(--ink)]">
               <span>Apply</span>
-              <CoolIcon name="chevron-down" size={12} duotone={false} className="-rotate-90 text-white/40" />
+              <CoolIcon name="chevron-down" size={12} duotone={false} className="-rotate-90 text-[var(--ink-3)]" />
             </div>
           </div>
 
           {/* Card 1: Add reference video to extract motion */}
-          <div className="p-4 rounded-2xl bg-[#181817] border border-white/10 space-y-3">
+          <div className="p-4 rounded-2xl bg-[var(--field)] border border-[var(--line)] space-y-3">
             <div className="flex flex-col items-center justify-center text-center py-2">
-              <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-2.5">
-                <CoolIcon name="camera" size={22} duotone secondaryColor="#D8FF64" className="text-white/80" />
+              <div className="w-12 h-12 rounded-full bg-[var(--surface)] border border-[var(--line)] flex items-center justify-center mb-2.5">
+                <CoolIcon name="camera" size={22} duotone secondaryColor="#D8FF64" className="text-[var(--ink)]" />
               </div>
-              <span className="text-[13px] font-medium text-white block">
+              <span className="text-[13px] font-medium text-[var(--ink)] block">
                 Add reference video to extract motion
               </span>
-              <span className="text-[11px] text-white/50 block mt-0.5">
+              <span className="text-[11px] text-[var(--ink-3)] block mt-0.5">
                 Video duration: 4–30 seconds
               </span>
             </div>
 
             {videoUrl ? (
-              <div className="p-2.5 rounded-xl bg-black/40 border border-[#D8FF64]/40 flex items-center justify-between">
+              <div className="p-2.5 rounded-xl bg-[var(--surface)] border border-[var(--line-strong)] flex items-center justify-between">
                 <div className="flex items-center gap-2 truncate">
-                  <CoolIcon name="monitor-play" size={16} duotone className="text-[#D8FF64] shrink-0" />
-                  <span className="text-[12px] text-white truncate">{videoName || "Vidéo sélectionnée"}</span>
+                  <CoolIcon name="monitor-play" size={16} duotone className="text-neutral-900 dark:text-[#D8FF64] shrink-0" />
+                  <span className="text-[12px] text-[var(--ink)] truncate">{videoName || "Vidéo sélectionnée"}</span>
                 </div>
                 <button
                   type="button"
@@ -223,7 +223,7 @@ export function GenjutsuDrawer({
                     setVideoUrl("");
                     setVideoName("");
                   }}
-                  className="text-xs text-white/50 hover:text-white ml-2 shrink-0 cursor-pointer"
+                  className="text-xs text-[var(--ink-3)] hover:text-[var(--ink)] ml-2 shrink-0 cursor-pointer"
                 >
                   Retirer
                 </button>
@@ -233,14 +233,14 @@ export function GenjutsuDrawer({
                 <button
                   type="button"
                   onClick={() => videoInputRef.current?.click()}
-                  className="w-full py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white/80 text-[12px] font-medium flex items-center justify-center gap-2 transition-all cursor-pointer"
+                  className="w-full py-2.5 rounded-xl bg-[var(--surface)] hover:bg-[var(--hover)] border border-[var(--line)] text-[var(--ink)] text-[12px] font-medium flex items-center justify-center gap-2 transition-all cursor-pointer"
                 >
                   <CoolIcon name="folder-upload" size={15} duotone={false} />
                   <span>Importer un fichier MP4/WebM</span>
                 </button>
 
                 <div className="pt-2">
-                  <span className="text-[11px] font-semibold uppercase tracking-wider text-white/40 block mb-2 text-center">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-3)] block mb-2 text-center">
                     Ou sélectionner un preset
                   </span>
                   <div className="grid grid-cols-2 gap-1.5">
@@ -252,12 +252,12 @@ export function GenjutsuDrawer({
                           setVideoUrl(p.url);
                           setVideoName(p.name);
                         }}
-                        className="p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-left transition-colors cursor-pointer group"
+                        className="p-2 rounded-xl bg-[var(--surface)] hover:bg-[var(--hover)] border border-[var(--line)] text-left transition-colors cursor-pointer group"
                       >
-                        <span className="text-[11px] font-medium text-white group-hover:text-[#D8FF64] block truncate">
+                        <span className="text-[11px] font-medium text-[var(--ink)] group-hover:text-emerald-600 dark:group-hover:text-[#D8FF64] block truncate">
                           {p.name}
                         </span>
-                        <span className="text-[9.5px] text-white/40 font-mono">{p.duration}</span>
+                        <span className="text-[9.5px] text-[var(--ink-3)] font-mono">{p.duration}</span>
                       </button>
                     ))}
                   </div>
@@ -275,25 +275,25 @@ export function GenjutsuDrawer({
           </div>
 
           {/* Card 2: Add your characters, products or clothes */}
-          <div className="p-4 rounded-2xl bg-[#181817] border border-white/10 space-y-3">
+          <div className="p-4 rounded-2xl bg-[var(--field)] border border-[var(--line)] space-y-3">
             <div className="flex flex-col items-center justify-center text-center py-2">
-              {/* 3 Circular Icons: Head, Shirt, Box */}
+              {/* 3 Circular Icons */}
               <div className="flex items-center -space-x-2 mb-2.5">
-                <div className="w-10 h-10 rounded-full bg-white/10 border border-white/20 flex items-center justify-center z-10 shadow-md">
-                  <CoolIcon name="user-01" size={18} duotone className="text-white/80" />
+                <div className="w-10 h-10 rounded-full bg-[var(--surface)] border border-[var(--line)] flex items-center justify-center z-10 shadow-md">
+                  <CoolIcon name="user-01" size={18} duotone className="text-[var(--ink-2)]" />
                 </div>
-                <div className="w-10 h-10 rounded-full bg-white/10 border border-white/20 flex items-center justify-center z-20 shadow-md">
-                  <CoolIcon name="shopping-bag-01" size={18} duotone className="text-[#D8FF64]" />
+                <div className="w-10 h-10 rounded-full bg-[var(--surface)] border border-[var(--line)] flex items-center justify-center z-20 shadow-md">
+                  <CoolIcon name="shopping-bag-01" size={18} duotone className="text-neutral-900 dark:text-[#D8FF64]" />
                 </div>
-                <div className="w-10 h-10 rounded-full bg-white/10 border border-white/20 flex items-center justify-center z-30 shadow-md">
-                  <CoolIcon name="download-package" size={18} duotone className="text-white/80" />
+                <div className="w-10 h-10 rounded-full bg-[var(--surface)] border border-[var(--line)] flex items-center justify-center z-30 shadow-md">
+                  <CoolIcon name="download-package" size={18} duotone className="text-[var(--ink-2)]" />
                 </div>
               </div>
 
-              <span className="text-[13px] font-medium text-white block">
+              <span className="text-[13px] font-medium text-[var(--ink)] block">
                 Add your characters, products or clothes
               </span>
-              <span className="text-[11px] text-white/50 block mt-0.5">
+              <span className="text-[11px] text-[var(--ink-3)] block mt-0.5">
                 Up to 30 images
               </span>
             </div>
@@ -301,7 +301,7 @@ export function GenjutsuDrawer({
             {selectedImages.length > 0 && (
               <div className="grid grid-cols-4 gap-2 pt-1">
                 {selectedImages.map((url, i) => (
-                  <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-white/10 bg-black/40">
+                  <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-[var(--line)] bg-[var(--surface)]">
                     <img src={url} alt="" className="w-full h-full object-cover" />
                     <button
                       type="button"
@@ -318,7 +318,7 @@ export function GenjutsuDrawer({
             <button
               type="button"
               onClick={() => imageInputRef.current?.click()}
-              className="w-full py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white/80 text-[12px] font-medium flex items-center justify-center gap-2 transition-all cursor-pointer"
+              className="w-full py-2.5 rounded-xl bg-[var(--surface)] hover:bg-[var(--hover)] border border-[var(--line)] text-[var(--ink)] text-[12px] font-medium flex items-center justify-center gap-2 transition-all cursor-pointer"
             >
               <CoolIcon name="add-plus" size={15} duotone={false} />
               <span>Ajouter des images ({selectedImages.length}/30)</span>
@@ -335,9 +335,9 @@ export function GenjutsuDrawer({
           </div>
 
           {/* Toggle: Prompt */}
-          <div className="p-3.5 rounded-2xl bg-[#181817] border border-white/10 space-y-2">
+          <div className="p-3.5 rounded-2xl bg-[var(--field)] border border-[var(--line)] space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-[12.5px] font-medium text-white">Prompt</span>
+              <span className="text-[12.5px] font-medium text-[var(--ink)]">Prompt</span>
               <input
                 type="checkbox"
                 checked={promptEnabled}
@@ -351,16 +351,16 @@ export function GenjutsuDrawer({
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 placeholder="Consignes précises de mouvement ou d'éclairage..."
-                className="w-full p-2.5 rounded-xl bg-black/40 border border-white/10 text-[12px] text-white resize-none outline-none focus:border-[#D8FF64]"
+                className="w-full p-2.5 rounded-xl bg-[var(--surface)] border border-[var(--line)] text-[12px] text-[var(--ink)] resize-none outline-none focus:border-[#D8FF64]"
               />
             )}
           </div>
 
           {/* Row: Quality Selection */}
-          <div className="flex items-center justify-between p-3.5 rounded-2xl bg-[#181817] border border-white/10">
+          <div className="flex items-center justify-between p-3.5 rounded-2xl bg-[var(--field)] border border-[var(--line)]">
             <div>
-              <span className="text-[12.5px] font-medium text-white block">Quality</span>
-              <span className="text-[11px] text-white/50">{quality}</span>
+              <span className="text-[12.5px] font-medium text-[var(--ink)] block">Quality</span>
+              <span className="text-[11px] text-[var(--ink-3)]">{quality}</span>
             </div>
             <div className="flex items-center gap-1.5">
               {(["720p", "1080p", "4K"] as const).map((q) => (
@@ -372,7 +372,7 @@ export function GenjutsuDrawer({
                     "px-2.5 py-1 rounded-lg text-xs font-mono transition-all cursor-pointer",
                     quality === q
                       ? "bg-[#D8FF64] text-black font-semibold shadow-xs"
-                      : "bg-white/5 text-white/60 hover:text-white"
+                      : "bg-[var(--surface)] text-[var(--ink-2)] hover:text-[var(--ink)]"
                   )}
                 >
                   {q}
@@ -383,10 +383,10 @@ export function GenjutsuDrawer({
         </div>
 
         {/* Fixed Bottom Bar: Free gens toggle + Big Lime Generate button */}
-        <div className="p-4 border-t border-white/10 bg-[#111110] space-y-2.5 shrink-0">
+        <div className="p-4 border-t border-[var(--line)] bg-[var(--surface)] space-y-2.5 shrink-0">
           <div className="flex items-center justify-between px-1">
-            <div className="flex items-center gap-1.5 text-[11.5px] text-white/70">
-              <CoolIcon name="star" size={13} duotone secondaryColor="#D8FF64" className="text-[#D8FF64]" />
+            <div className="flex items-center gap-1.5 text-[11.5px] text-[var(--ink-2)]">
+              <CoolIcon name="star" size={13} duotone secondaryColor="#D8FF64" className="text-neutral-900 dark:text-[#D8FF64]" />
               <span>Free Gens: 1 left ⓘ</span>
             </div>
             <input
@@ -420,14 +420,14 @@ export function GenjutsuDrawer({
 
       {/* Modal Style Picker */}
       {styleModalOpen && (
-        <div className="fixed inset-0 z-60 bg-black/80 flex items-center justify-center p-4">
-          <div className="w-full max-w-sm rounded-[24px] bg-[#1A1A19] border border-white/10 p-5 space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-white/10">
-              <h3 className="font-heading text-sm font-semibold text-white">Select Motion Style</h3>
+        <div className="fixed inset-0 z-60 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="w-full max-w-sm rounded-[24px] bg-[var(--surface)] border border-[var(--line)] p-5 space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between pb-2 border-b border-[var(--line)]">
+              <h3 className="font-heading text-sm font-semibold text-[var(--ink)]">Select Motion Style</h3>
               <button
                 type="button"
                 onClick={() => setStyleModalOpen(false)}
-                className="text-white/60 hover:text-white"
+                className="text-[var(--ink-2)] hover:text-[var(--ink)] cursor-pointer"
               >
                 <CoolIcon name="close-md" size={14} duotone={false} />
               </button>
@@ -444,12 +444,12 @@ export function GenjutsuDrawer({
                   className={cn(
                     "w-full p-3 rounded-xl border text-left transition-all cursor-pointer",
                     selectedStyle === s.name
-                      ? "bg-[#D8FF64]/10 border-[#D8FF64] text-white"
-                      : "bg-white/5 border-white/5 text-white/70 hover:bg-white/10"
+                      ? "bg-[var(--hover)] border-neutral-900 dark:border-[#D8FF64] text-[var(--ink)] ring-1 ring-neutral-900 dark:ring-[#D8FF64]"
+                      : "bg-[var(--field)] border-[var(--line)] text-[var(--ink-2)] hover:bg-[var(--hover)] hover:text-[var(--ink)]"
                   )}
                 >
                   <span className="text-[12.5px] font-semibold block">{s.name}</span>
-                  <span className="text-[11px] text-white/50 block mt-0.5">{s.desc}</span>
+                  <span className="text-[11px] text-[var(--ink-3)] block mt-0.5">{s.desc}</span>
                 </button>
               ))}
             </div>
@@ -459,29 +459,29 @@ export function GenjutsuDrawer({
 
       {/* How it works Dialog */}
       {howItWorksOpen && (
-        <div className="fixed inset-0 z-60 bg-black/80 flex items-center justify-center p-4">
-          <div className="w-full max-w-md rounded-[24px] bg-[#1A1A19] border border-white/10 p-6 space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-white/10">
-              <h3 className="font-heading text-base font-semibold text-[#D8FF64]">
+        <div className="fixed inset-0 z-60 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="w-full max-w-md rounded-[24px] bg-[var(--surface)] border border-[var(--line)] p-6 space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between pb-2 border-b border-[var(--line)]">
+              <h3 className="font-heading text-base font-semibold text-[var(--ink)]">
                 How likyAI Genjutsu Works
               </h3>
               <button
                 type="button"
                 onClick={() => setHowItWorksOpen(false)}
-                className="text-white/60 hover:text-white"
+                className="text-[var(--ink-2)] hover:text-[var(--ink)] cursor-pointer"
               >
                 <CoolIcon name="close-md" size={14} duotone={false} />
               </button>
             </div>
-            <div className="space-y-3 text-[12.5px] text-white/70 leading-relaxed">
+            <div className="space-y-3 text-[12.5px] text-[var(--ink-2)] leading-relaxed">
               <p>
-                <strong>1. Motion Transfer :</strong> Importez n&apos;importe quelle vidéo réelle de 4 à 30 secondes. Notre réseau neuronal extrait la cinématique squelettique 3D, le rythme et les mouvements de caméra.
+                <strong className="text-[var(--ink)]">1. Motion Transfer :</strong> Importez n&apos;importe quelle vidéo réelle de 4 à 30 secondes. Notre réseau neuronal extrait la cinématique squelettique 3D, le rythme et les mouvements de caméra.
               </p>
               <p>
-                <strong>2. Object & Character Swap :</strong> Ajoutez la photo de votre influenceur, de votre modèle ou vêtement. Genjutsu applique le mouvement exact tout en conservant l&apos;identité et les textures.
+                <strong className="text-[var(--ink)]">2. Object & Character Swap :</strong> Ajoutez la photo de votre influenceur, de votre modèle ou vêtement. Genjutsu applique le mouvement exact tout en conservant l&apos;identité et les textures.
               </p>
               <p>
-                <strong>3. Rendu Haute Définition :</strong> Les flux sont synthétisés via KIE Seedance et Higgsfield pour un rendu photoréaliste à 60 FPS.
+                <strong className="text-[var(--ink)]">3. Rendu Haute Définition :</strong> Les flux vidéo sont synthétisés pour un rendu cinématique photoréaliste à 60 FPS.
               </p>
             </div>
             <button
