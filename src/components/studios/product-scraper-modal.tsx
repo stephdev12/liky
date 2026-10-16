@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import { CoolIcon } from "@/components/icons/coolicon";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ScrapedProductData {
@@ -143,7 +142,7 @@ export function ProductScraperModal({
               >
                 {loading ? (
                   <>
-                    <Loader2 className="size-3.5 animate-spin mr-1.5" />
+                    <CoolIcon name="loading" size={14} className="animate-spin mr-1.5" duotone={false} />
                     Analyse…
                   </>
                 ) : (

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { X, Sparkles, Shuffle, Upload, Check, Loader2 } from "lucide-react";
+import { CoolIcon } from "@/components/icons/coolicon";
 import { cn } from "@/lib/utils";
 
 interface InfluencerBuilderDrawerProps {
@@ -122,7 +122,7 @@ export function InfluencerBuilderDrawer({
         <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-white/10 shrink-0">
           <div className="flex items-center gap-2">
             <span className="p-1 rounded-lg bg-[#D8FF64]/10 text-[#D8FF64]">
-              <Sparkles className="size-4" />
+              <CoolIcon name="star" size={16} duotone secondaryColor="#D8FF64" className="text-[#D8FF64]" />
             </span>
             <h3 className="font-heading text-[17px] font-medium text-white">
               Créer un Influenceur IA
@@ -133,7 +133,7 @@ export function InfluencerBuilderDrawer({
             onClick={onClose}
             className="p-1.5 rounded-full bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-colors cursor-pointer"
           >
-            <X className="size-4" />
+            <CoolIcon name="close-md" size={16} duotone={false} />
           </button>
         </div>
 
@@ -186,7 +186,7 @@ export function InfluencerBuilderDrawer({
           {mode === "me" ? (
             <div className="p-6 rounded-2xl border-2 border-dashed border-white/20 bg-white/5 text-center space-y-3">
               <div className="w-12 h-12 rounded-full bg-[#D8FF64]/10 text-[#D8FF64] flex items-center justify-center mx-auto">
-                <Upload className="size-6" />
+                <CoolIcon name="folder-upload" size={24} duotone />
               </div>
               <div>
                 <span className="text-[14px] font-medium text-white block">
@@ -461,7 +461,7 @@ export function InfluencerBuilderDrawer({
             className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-colors cursor-pointer"
             title="Tirage aléatoire (Shuffle)"
           >
-            <Shuffle className="size-4" />
+            <CoolIcon name="shuffle" size={16} duotone />
           </button>
 
           <button
@@ -472,12 +472,12 @@ export function InfluencerBuilderDrawer({
           >
             {isGenerating ? (
               <>
-                <Loader2 className="size-4 animate-spin text-black" />
+                <CoolIcon name="loading" size={16} className="animate-spin text-black" duotone={false} />
                 <span>Génération de la planche...</span>
               </>
             ) : (
               <>
-                <Sparkles className="size-4 text-black" />
+                <CoolIcon name="star" size={16} duotone={false} className="text-black" />
                 <span>Générer l'influenceur · 8 cr</span>
               </>
             )}

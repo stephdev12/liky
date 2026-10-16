@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef, useState, useEffect } from "react";
-import { Plus, ArrowUp, Sparkles, X, ChevronDown, Loader2, Layers } from "lucide-react";
+import { CoolIcon } from "@/components/icons/coolicon";
 import { cn } from "@/lib/utils";
 import type { AssetItem } from "./assets-modal";
 
@@ -127,7 +127,7 @@ export function UnifiedPromptBubble({
           {filteredAssets.length === 0 ? (
             <div className="py-5 text-center space-y-2">
               <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center mx-auto text-white/40">
-                <Layers className="size-5" />
+                <CoolIcon name="layers" size={20} duotone className="text-white/40" />
               </div>
               <p className="text-[12px] text-white/60">Vos éléments apparaîtront ici</p>
               <button
@@ -186,7 +186,7 @@ export function UnifiedPromptBubble({
                   onClick={() => onRemoveAsset(asset.id)}
                   className="text-white/40 hover:text-white ml-0.5"
                 >
-                  <X className="size-3" />
+                  <CoolIcon name="close-sm" size={12} duotone={false} />
                 </button>
               </div>
             ))}
@@ -215,7 +215,7 @@ export function UnifiedPromptBubble({
                 className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-white/70 hover:text-white transition-all cursor-pointer"
                 title="Ajouter des images, vidéos ou personnages (+)"
               >
-                <Plus className="size-4" />
+                <CoolIcon name="add-plus" size={15} duotone={false} />
               </button>
 
               {/* Bouton Modèle (ex: [✨ Auto ▾]) */}
@@ -224,9 +224,9 @@ export function UnifiedPromptBubble({
                 onClick={onOpenModelSelector}
                 className="flex items-center gap-1.5 h-8 px-3 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-[12px] font-medium text-white/80 hover:text-white transition-all cursor-pointer"
               >
-                <Sparkles className="size-3 text-[#D8FF64]" />
+                <CoolIcon name="star" size={13} duotone secondaryColor="#D8FF64" className="text-[#D8FF64]" />
                 <span className="truncate max-w-[110px]">{selectedModelName}</span>
-                <ChevronDown className="size-3 text-white/40" />
+                <CoolIcon name="chevron-down" size={11} duotone={false} className="text-white/40" />
               </button>
 
               {/* Bouton Ratio (ex: [▯ 9:16 ▾]) */}
@@ -237,7 +237,7 @@ export function UnifiedPromptBubble({
                   className="flex items-center gap-1.5 h-8 px-2.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-[11.5px] font-mono text-white/80 hover:text-white transition-all cursor-pointer"
                 >
                   <span>{aspectRatio}</span>
-                  <ChevronDown className="size-3 text-white/40" />
+                  <CoolIcon name="chevron-down" size={11} duotone={false} className="text-white/40" />
                 </button>
 
                 {ratioDropdownOpen && (
@@ -284,9 +284,9 @@ export function UnifiedPromptBubble({
                 title="Lancer la création (Entrée)"
               >
                 {isGenerating ? (
-                  <Loader2 className="size-4 animate-spin text-black" />
+                  <CoolIcon name="loading" size={16} className="animate-spin text-black" duotone={false} />
                 ) : (
-                  <ArrowUp className="size-5 stroke-[2.5]" />
+                  <CoolIcon name="arrow-up-md" size={18} strokeWidth={2.5} duotone={false} className="text-black" />
                 )}
               </button>
             </div>

@@ -20,7 +20,6 @@ import {
   getNetworkByCode,
 } from "@/lib/payment/catalog";
 import { cn } from "@/lib/utils";
-import { Loader2 } from "lucide-react";
 
 interface TopupModalProps {
   isOpen: boolean;
@@ -492,7 +491,7 @@ export function TopupModal({
           {step === "waiting_push" && (
             <div className="py-8 px-4 flex flex-col items-center text-center space-y-4">
               <div className="relative size-16 rounded-full bg-[var(--field)] border border-[var(--line)] flex items-center justify-center">
-                <Loader2 className="size-8 animate-spin text-foreground" />
+                <CoolIcon name="loading" size={32} className="animate-spin text-foreground" duotone={false} />
               </div>
               <div className="space-y-1.5 max-w-sm">
                 <h3 className="font-heading text-lg font-semibold text-foreground">
@@ -543,7 +542,7 @@ export function TopupModal({
                   className="w-full"
                 >
                   {loading ? (
-                    <Loader2 className="size-4 animate-spin" />
+                    <CoolIcon name="loading" size={16} className="animate-spin" duotone={false} />
                   ) : (
                     "Valider mon paiement"
                   )}
@@ -656,7 +655,7 @@ export function TopupModal({
               >
                 {loading ? (
                   <>
-                    <Loader2 className="size-3.5 animate-spin mr-1.5" />
+                    <CoolIcon name="loading" size={14} className="animate-spin mr-1.5" duotone={false} />
                     Traitement…
                   </>
                 ) : currentNetwork.code === "card" ? (

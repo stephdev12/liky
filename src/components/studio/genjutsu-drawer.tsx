@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import { X, Video, Sparkles, Upload, Loader2, Check, Film, Layers, Shirt, Package, User } from "lucide-react";
+import { CoolIcon } from "@/components/icons/coolicon";
 import { cn } from "@/lib/utils";
 
 interface GenjutsuDrawerProps {
@@ -67,7 +67,7 @@ export function GenjutsuDrawer({
         <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-white/10 shrink-0">
           <div className="flex items-center gap-2">
             <span className="p-1 rounded-lg bg-[#D8FF64]/10 text-[#D8FF64]">
-              <Sparkles className="size-4" />
+              <CoolIcon name="star" size={16} duotone secondaryColor="#D8FF64" className="text-[#D8FF64]" />
             </span>
             <h3 className="font-heading text-[17px] font-medium text-white">
               likyAI Genjutsu
@@ -78,7 +78,7 @@ export function GenjutsuDrawer({
             onClick={onClose}
             className="p-1.5 rounded-full bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-colors cursor-pointer"
           >
-            <X className="size-4" />
+            <CoolIcon name="close-md" size={16} duotone={false} />
           </button>
         </div>
 
@@ -95,7 +95,7 @@ export function GenjutsuDrawer({
                   : "text-white/60 hover:text-white"
               )}
             >
-              <Film className="size-3.5" />
+              <CoolIcon name="monitor-play" size={14} duotone />
               <span>Motion transfer</span>
             </button>
             <button
@@ -108,7 +108,7 @@ export function GenjutsuDrawer({
                   : "text-white/60 hover:text-white"
               )}
             >
-              <Layers className="size-3.5" />
+              <CoolIcon name="layers" size={14} duotone />
               <span>Objects swap</span>
             </button>
           </div>
@@ -119,7 +119,7 @@ export function GenjutsuDrawer({
           {/* Bloc 1 : Vidéo de mouvement */}
           <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-3">
             <div className="flex items-center gap-2 text-white/60 text-[11.5px] font-semibold uppercase tracking-wider">
-              <Video className="size-4 text-[#D8FF64]" />
+              <CoolIcon name="camera" size={16} duotone secondaryColor="#D8FF64" className="text-[#D8FF64]" />
               <span>Vidéo source de mouvement (4–30s)</span>
             </div>
 
@@ -143,7 +143,7 @@ export function GenjutsuDrawer({
                   onClick={() => videoInputRef.current?.click()}
                   className="w-full py-4 rounded-xl border border-dashed border-white/20 hover:border-[#D8FF64]/60 bg-black/20 flex flex-col items-center justify-center gap-1 text-white/70 hover:text-white transition-all cursor-pointer"
                 >
-                  <Upload className="size-5 text-[#D8FF64]" />
+                  <CoolIcon name="folder-upload" size={20} duotone className="text-[#D8FF64]" />
                   <span className="text-[12px] font-medium">Importer votre vidéo de référence</span>
                   <span className="text-[10.5px] text-white/40">MP4, WebM (4s à 30s)</span>
                 </button>
@@ -175,9 +175,9 @@ export function GenjutsuDrawer({
                 Sujet cible (Jusqu'à 30 images)
               </span>
               <div className="flex items-center gap-2 text-white/40">
-                <User className="size-3.5" />
-                <Shirt className="size-3.5" />
-                <Package className="size-3.5" />
+                <CoolIcon name="user-01" size={14} duotone />
+                <CoolIcon name="shopping-bag-01" size={14} duotone />
+                <CoolIcon name="download-package" size={14} duotone />
               </div>
             </div>
 
@@ -186,7 +186,7 @@ export function GenjutsuDrawer({
               onClick={() => imageInputRef.current?.click()}
               className="w-full py-4 rounded-xl border border-dashed border-white/20 hover:border-[#D8FF64]/60 bg-black/20 flex flex-col items-center justify-center gap-1 text-white/70 hover:text-white transition-all cursor-pointer"
             >
-              <Upload className="size-5 text-white/70" />
+              <CoolIcon name="folder-upload" size={20} duotone className="text-white/70" />
               <span className="text-[12px] font-medium">
                 {selectedImages.length > 0
                   ? `${selectedImages.length} image(s) sélectionnée(s)`
@@ -251,12 +251,12 @@ export function GenjutsuDrawer({
           >
             {isSubmitting ? (
               <>
-                <Loader2 className="size-4 animate-spin text-black" />
+                <CoolIcon name="loading" size={16} className="animate-spin text-black" duotone={false} />
                 <span>Envoi à Genjutsu...</span>
               </>
             ) : (
               <>
-                <Sparkles className="size-4 text-black" />
+                <CoolIcon name="star" size={16} duotone={false} className="text-black" />
                 <span>Lancer le transfert de mouvement · 22 cr</span>
               </>
             )}

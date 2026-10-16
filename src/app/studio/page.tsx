@@ -2,16 +2,6 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Menu,
-  Sparkles,
-  FolderOpen,
-  User,
-  Film,
-  ShoppingBag,
-  Loader2,
-  Layers,
-} from "lucide-react";
 import { CoolIcon, type CoolIconKey } from "@/components/icons/coolicon";
 import { LogoIcon } from "@/components/logo";
 import { ResultBubble, type GenerationResultData } from "@/components/result-bubble";
@@ -630,10 +620,10 @@ export default function StudioPage() {
       <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#121211] text-[#F8F8F5] select-none">
         <div className="flex flex-col items-center gap-4 animate-in fade-in duration-300">
           <div className="w-12 h-12 rounded-[16px] bg-[#D8FF64] flex items-center justify-center shadow-lg text-black">
-            <Sparkles className="size-6 text-black" />
+            <CoolIcon name="star" size={24} className="text-black" duotone={false} />
           </div>
           <div className="flex items-center gap-2">
-            <Loader2 className="size-4 animate-spin text-[#D8FF64]" />
+            <CoolIcon name="loading" size={16} className="animate-spin text-[#D8FF64]" duotone={false} />
             <span className="text-[13px] font-medium text-white/60">
               Accès sécurisé au Studio likyAI…
             </span>
@@ -656,7 +646,7 @@ export default function StudioPage() {
             title="Menu de navigation"
             aria-label="Ouvrir le menu"
           >
-            <Menu className="size-4" />
+            <CoolIcon name="hamburger-md" size={18} duotone={false} />
           </button>
 
           <button
@@ -690,7 +680,7 @@ export default function StudioPage() {
             className="h-8 sm:h-9 px-2.5 sm:px-3 rounded-full bg-[#D8FF64]/10 hover:bg-[#D8FF64]/20 border border-[#D8FF64]/30 flex items-center gap-1.5 text-[11.5px] sm:text-[12px] font-semibold text-[#D8FF64] transition-all cursor-pointer"
             title="Cliquer pour recharger vos crédits"
           >
-            <Sparkles className="size-3.5 text-[#D8FF64]" />
+            <CoolIcon name="star" size={14} duotone secondaryColor="#D8FF64" className="text-[#D8FF64]" />
             <span className="font-mono">{credits} cr</span>
           </button>
 
@@ -701,7 +691,7 @@ export default function StudioPage() {
             className="h-8 sm:h-9 px-2.5 sm:px-3 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center gap-1.5 text-[11.5px] sm:text-[12px] font-medium text-white/80 hover:text-white transition-all cursor-pointer"
             title="Bibliothèque de vos créations"
           >
-            <FolderOpen className="size-3.5 text-white/60" />
+            <CoolIcon name="folder-open" size={16} duotone className="text-white/60" />
             <span className="hidden sm:inline">Bibliothèque</span>
             <span className="px-1.5 py-0.2 rounded-full bg-white/10 text-[10px] font-mono text-white/70">
               {cards.length}
@@ -729,7 +719,7 @@ export default function StudioPage() {
             {/* Emblème subtil LikyAI */}
             <div className="relative mb-5">
               <div className="w-16 h-16 rounded-[22px] bg-gradient-to-br from-[#D8FF64]/20 via-[#D8FF64]/5 to-transparent border border-[#D8FF64]/30 flex items-center justify-center text-[#D8FF64] shadow-[0_0_35px_rgba(216,255,100,0.15)]">
-                <Sparkles className="size-8 text-[#D8FF64]" />
+                <CoolIcon name="star" size={32} duotone secondaryColor="#D8FF64" className="text-[#D8FF64]" />
               </div>
             </div>
 
@@ -749,7 +739,7 @@ export default function StudioPage() {
                 className="p-3.5 rounded-2xl bg-[#1A1A19] border border-white/10 hover:border-[#D8FF64]/40 hover:bg-white/5 text-left transition-all group cursor-pointer"
               >
                 <div className="w-8 h-8 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform">
-                  <User className="size-4" />
+                  <CoolIcon name="user-01" size={16} duotone className="text-purple-400" />
                 </div>
                 <div className="text-[12.5px] font-semibold text-white mb-0.5">AI Influencer</div>
                 <div className="text-[11px] text-white/50 leading-tight">Clone et visage cohérent</div>
@@ -762,7 +752,7 @@ export default function StudioPage() {
                 className="p-3.5 rounded-2xl bg-[#1A1A19] border border-white/10 hover:border-[#D8FF64]/40 hover:bg-white/5 text-left transition-all group cursor-pointer"
               >
                 <div className="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform">
-                  <Sparkles className="size-4" />
+                  <CoolIcon name="star" size={16} duotone secondaryColor="#34D399" className="text-emerald-400" />
                 </div>
                 <div className="text-[12.5px] font-semibold text-white mb-0.5">Genjutsu Motion</div>
                 <div className="text-[11px] text-white/50 leading-tight">Transfert de mouvement</div>
@@ -781,7 +771,7 @@ export default function StudioPage() {
                 className="p-3.5 rounded-2xl bg-[#1A1A19] border border-white/10 hover:border-[#D8FF64]/40 hover:bg-white/5 text-left transition-all group cursor-pointer"
               >
                 <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform">
-                  <Film className="size-4" />
+                  <CoolIcon name="monitor-play" size={16} duotone className="text-amber-400" />
                 </div>
                 <div className="text-[12.5px] font-semibold text-white mb-0.5">Cinéma 4.0</div>
                 <div className="text-[11px] text-white/50 leading-tight">Plans 35mm Hollywood</div>
@@ -800,7 +790,7 @@ export default function StudioPage() {
                 className="p-3.5 rounded-2xl bg-[#1A1A19] border border-white/10 hover:border-[#D8FF64]/40 hover:bg-white/5 text-left transition-all group cursor-pointer"
               >
                 <div className="w-8 h-8 rounded-xl bg-sky-500/10 border border-sky-500/20 text-sky-400 flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform">
-                  <ShoppingBag className="size-4" />
+                  <CoolIcon name="shopping-bag-01" size={16} duotone className="text-sky-400" />
                 </div>
                 <div className="text-[12.5px] font-semibold text-white mb-0.5">Ad & UGC</div>
                 <div className="text-[11px] text-white/50 leading-tight">Pubs virales TikTok & Reels</div>

@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import { CoolIcon } from "@/components/icons/coolicon";
 import { Input } from "@/components/ui/input";
-import { Loader2, Globe, Sparkles, Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /* ─────────────────────────────────────────────────────────
@@ -77,7 +76,7 @@ export function AdBrandDrawer({ isOpen, onClose, brandData, setBrandData }: AdBr
               onClick={onClose}
               className="p-1 rounded-lg text-[var(--mute)] hover:text-[var(--ink)] hover:bg-[var(--mn)]"
             >
-              <X className="size-4" />
+              <CoolIcon name="close-md" size={16} duotone={false} />
             </button>
           </div>
 
@@ -96,7 +95,7 @@ export function AdBrandDrawer({ isOpen, onClose, brandData, setBrandData }: AdBr
                 disabled={scanning || !url.trim()}
                 className="h-9 px-3.5 rounded-xl bg-[var(--lime)] text-[#171717] font-semibold text-[12px] shrink-0 disabled:opacity-50"
               >
-                {scanning ? <Loader2 className="size-3.5 animate-spin" /> : "Scanner"}
+                {scanning ? <CoolIcon name="loading" size={14} className="animate-spin" duotone={false} /> : "Scanner"}
               </button>
             </form>
             {error && <p className="text-[11px] text-red-500">{error}</p>}
@@ -212,7 +211,7 @@ export function UgcProductDrawer({ isOpen, onClose, productData, setProductData 
           <div className="flex items-center justify-between pb-3 border-b border-[var(--line)]">
             <h3 className="font-heading text-[18px] text-[var(--ink)]">Fiche Produit UGC</h3>
             <button type="button" onClick={onClose} className="p-1 rounded-lg text-[var(--mute)] hover:text-[var(--ink)]">
-              <X className="size-4" />
+              <CoolIcon name="close-md" size={16} duotone={false} />
             </button>
           </div>
 
@@ -231,7 +230,7 @@ export function UgcProductDrawer({ isOpen, onClose, productData, setProductData 
                 disabled={scanning || !url.trim()}
                 className="h-9 px-3 rounded-xl bg-[var(--mn)] text-[var(--ink)] font-medium text-[12px] shrink-0"
               >
-                {scanning ? <Loader2 className="size-3.5 animate-spin" /> : "Extraire"}
+                {scanning ? <CoolIcon name="loading" size={14} className="animate-spin" duotone={false} /> : "Extraire"}
               </button>
             </div>
           </div>
@@ -297,7 +296,7 @@ export function AnimationStoryDrawer({ isOpen, onClose, storyData, setStoryData 
           <div className="flex items-center justify-between pb-3 border-b border-[var(--line)]">
             <h3 className="font-heading text-[18px] text-[var(--ink)]">Découpage en scènes</h3>
             <button type="button" onClick={onClose} className="p-1 rounded-lg text-[var(--mute)] hover:text-[var(--ink)]">
-              <X className="size-4" />
+              <CoolIcon name="close-md" size={16} duotone={false} />
             </button>
           </div>
 

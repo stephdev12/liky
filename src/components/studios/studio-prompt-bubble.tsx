@@ -10,7 +10,6 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { Loader2 } from "lucide-react";
 
 export interface StudioImageRef {
   id: string;
@@ -561,7 +560,7 @@ export function StudioPromptBubble({
             >
               {isGenerating ? (
                 <>
-                  <Loader2 className="size-3 animate-spin text-[#171717]" />
+                  <CoolIcon name="loading" size={13} className="animate-spin text-[#171717]" duotone={false} />
                   <span>Rendu…</span>
                 </>
               ) : (

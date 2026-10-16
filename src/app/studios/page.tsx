@@ -9,7 +9,6 @@ import { TopupModal } from "@/components/topup-modal";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
 import { cn } from "@/lib/utils";
-import { Loader2 } from "lucide-react";
 
 interface StudioCardConfig {
   id: "libre" | "ad" | "cinema" | "ugc" | "anim";
@@ -310,7 +309,7 @@ export default function StudiosHubPage() {
             </svg>
           </div>
           <div className="flex items-center gap-2">
-            <Loader2 className="size-4 animate-spin text-emerald-600 dark:text-emerald-400" />
+            <CoolIcon name="loading" size={16} className="animate-spin text-emerald-600 dark:text-emerald-400" duotone={false} />
             <span className="text-[13px] font-medium text-[var(--mute)]">
               Accès au Hub des Studios…
             </span>

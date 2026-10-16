@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import { X, Upload, Plus, Check, Sparkles, User, Image as ImageIcon } from "lucide-react";
+import { CoolIcon } from "@/components/icons/coolicon";
 import { cn } from "@/lib/utils";
 
 export interface AssetItem {
@@ -85,7 +85,7 @@ export function AssetsModal({
             onClick={onClose}
             className="p-1.5 rounded-full bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-colors cursor-pointer"
           >
-            <X className="size-4" />
+            <CoolIcon name="close-md" size={16} duotone={false} />
           </button>
         </div>
 
@@ -157,7 +157,7 @@ export function AssetsModal({
                 className="aspect-square rounded-2xl border-2 border-dashed border-white/20 hover:border-[#D8FF64]/60 bg-white/5 hover:bg-white/8 transition-all flex flex-col items-center justify-center gap-1.5 text-white/70 hover:text-white cursor-pointer group"
               >
                 <div className="w-10 h-10 rounded-full bg-white/10 group-hover:bg-[#D8FF64]/20 group-hover:text-[#D8FF64] flex items-center justify-center transition-colors">
-                  <Upload className="size-5" />
+                  <CoolIcon name="folder-upload" size={20} duotone />
                 </div>
                 <span className="text-[11.5px] font-medium">Importer</span>
               </button>
@@ -174,7 +174,7 @@ export function AssetsModal({
                 className="aspect-square rounded-2xl border-2 border-dashed border-[#D8FF64]/40 hover:border-[#D8FF64] bg-[#D8FF64]/5 hover:bg-[#D8FF64]/10 transition-all flex flex-col items-center justify-center gap-1.5 text-[#D8FF64] cursor-pointer"
               >
                 <div className="w-10 h-10 rounded-full bg-[#D8FF64]/20 flex items-center justify-center">
-                  <Plus className="size-5" />
+                  <CoolIcon name="add-plus" size={18} duotone={false} className="stroke-[2.5]" />
                 </div>
                 <span className="text-[11.5px] font-medium text-center px-1">Créer avatar</span>
               </button>
@@ -207,7 +207,7 @@ export function AssetsModal({
 
                   {isSelected && (
                     <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-[#D8FF64] text-black flex items-center justify-center shadow">
-                      <Check className="size-3 stroke-[3]" />
+                      <CoolIcon name="check" size={12} duotone={false} className="stroke-[3]" />
                     </div>
                   )}
                 </div>

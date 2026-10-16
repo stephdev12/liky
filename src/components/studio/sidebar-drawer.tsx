@@ -4,20 +4,6 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { LogoIcon } from "@/components/logo";
 import { CoolIcon } from "@/components/icons/coolicon";
-import {
-  X,
-  Compass,
-  Sparkles,
-  User,
-  Film,
-  ShoppingBag,
-  Tv,
-  Layers,
-  FolderOpen,
-  Plus,
-  Cpu,
-  ArrowRight,
-} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface SidebarDrawerProps {
@@ -77,7 +63,7 @@ export function SidebarDrawer({
               onClick={onClose}
               className="p-1.5 rounded-full bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-colors cursor-pointer"
             >
-              <X className="size-4" />
+              <CoolIcon name="close-md" size={16} duotone={false} />
             </button>
           </div>
 
@@ -90,7 +76,7 @@ export function SidebarDrawer({
             }}
             className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[#D8FF64] text-black font-semibold text-[13px] shadow-sm hover:bg-[#cbf54a] transition-all cursor-pointer"
           >
-            <Plus className="size-4 stroke-[3]" />
+            <CoolIcon name="add-plus" size={15} duotone={false} className="stroke-[2.5]" />
             <span>Nouveau projet</span>
           </button>
 
@@ -101,14 +87,14 @@ export function SidebarDrawer({
               onClick={() => navigateTo("/studios")}
               className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-white/80 hover:text-white hover:bg-white/5 transition-colors text-left cursor-pointer"
             >
-              <Compass className="size-4 text-white/50" />
+              <CoolIcon name="compass" size={16} duotone className="text-white/50" />
               <span>Hub des Studios</span>
             </button>
 
             {/* MCP Connecté */}
             <div className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-white/80 hover:text-white hover:bg-white/5 transition-colors">
               <div className="flex items-center gap-3">
-                <Cpu className="size-4 text-white/50" />
+                <CoolIcon name="instance" size={16} duotone className="text-white/50" />
                 <span>MCP (Claude & GPT)</span>
               </div>
               <button
@@ -129,7 +115,7 @@ export function SidebarDrawer({
               }}
               className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-white/80 hover:text-white hover:bg-white/5 transition-colors text-left cursor-pointer"
             >
-              <Sparkles className="size-4 text-[#D8FF64]" />
+              <CoolIcon name="star" size={16} duotone secondaryColor="#D8FF64" className="text-[#D8FF64]" />
               <span>Genjutsu Motion & Swap</span>
             </button>
 
@@ -141,7 +127,7 @@ export function SidebarDrawer({
               }}
               className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-white/80 hover:text-white hover:bg-white/5 transition-colors text-left cursor-pointer"
             >
-              <User className="size-4 text-[#D8FF64]" />
+              <CoolIcon name="user-01" size={16} duotone className="text-[#D8FF64]" />
               <span>AI Influencer Builder</span>
             </button>
 
@@ -151,7 +137,7 @@ export function SidebarDrawer({
               onClick={() => navigateTo("/studios/cinema")}
               className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-white/80 hover:text-white hover:bg-white/5 transition-colors text-left cursor-pointer"
             >
-              <Film className="size-4 text-white/50" />
+              <CoolIcon name="monitor-play" size={16} duotone className="text-white/50" />
               <span>Cinéma Studio</span>
             </button>
 
@@ -160,7 +146,7 @@ export function SidebarDrawer({
               onClick={() => navigateTo("/studios/ad-builder")}
               className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-white/80 hover:text-white hover:bg-white/5 transition-colors text-left cursor-pointer"
             >
-              <Layers className="size-4 text-white/50" />
+              <CoolIcon name="layers" size={16} duotone className="text-white/50" />
               <span>Ad Builder Studio</span>
             </button>
 
@@ -169,7 +155,7 @@ export function SidebarDrawer({
               onClick={() => navigateTo("/studios/ugc")}
               className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-white/80 hover:text-white hover:bg-white/5 transition-colors text-left cursor-pointer"
             >
-              <ShoppingBag className="size-4 text-white/50" />
+              <CoolIcon name="shopping-bag-01" size={16} duotone className="text-white/50" />
               <span>UGC Studio</span>
             </button>
 
@@ -178,7 +164,7 @@ export function SidebarDrawer({
               onClick={() => navigateTo("/studios/animation")}
               className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-white/80 hover:text-white hover:bg-white/5 transition-colors text-left cursor-pointer"
             >
-              <Tv className="size-4 text-white/50" />
+              <CoolIcon name="desktop" size={16} duotone className="text-white/50" />
               <span>Animation Studio</span>
             </button>
 
@@ -190,7 +176,7 @@ export function SidebarDrawer({
               }}
               className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-white/80 hover:text-white hover:bg-white/5 transition-colors text-left cursor-pointer"
             >
-              <FolderOpen className="size-4 text-white/50" />
+              <CoolIcon name="folder-open" size={16} duotone className="text-white/50" />
               <span>Mes Assets</span>
             </button>
           </nav>

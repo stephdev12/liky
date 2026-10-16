@@ -12,7 +12,6 @@ import { StudioPromptBubble, type StudioImageRef } from "@/components/studios/st
 import { AdBrandDrawer, type AdBrandData } from "@/components/studios/studio-drawers";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
-import { Loader2 } from "lucide-react";
 
 export default function AdBuilderStudioPage() {
   const router = useRouter();
@@ -173,7 +172,7 @@ export default function AdBuilderStudioPage() {
   if (authLoading) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--bg)] text-[var(--ink)]">
-        <Loader2 className="size-6 animate-spin text-emerald-600 dark:text-emerald-400" />
+        <CoolIcon name="loading" size={24} className="animate-spin text-emerald-600 dark:text-emerald-400" duotone={false} />
       </div>
     );
   }

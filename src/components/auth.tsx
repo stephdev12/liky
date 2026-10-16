@@ -15,7 +15,6 @@ import {
 import { AuthDivider } from "@/components/auth-divider";
 import { LogoIcon } from "@/components/logo";
 import { DecorIcon } from "@/components/decor-icon";
-import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
@@ -348,7 +347,7 @@ export function AuthPage({ onSuccess, className, isModal = false }: AuthProps) {
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="size-4 animate-spin" />
+                  <CoolIcon name="loading" size={16} className="animate-spin" duotone={false} />
                   <span>Traitement en cours…</span>
                 </>
               ) : authMode === "signin" ? (
@@ -371,7 +370,7 @@ export function AuthPage({ onSuccess, className, isModal = false }: AuthProps) {
               disabled={isOAuthLoading !== null || isLoading}
             >
               {isOAuthLoading === "google" ? (
-                <Loader2 className="size-3.5 animate-spin" />
+                <CoolIcon name="loading" size={14} className="animate-spin" duotone={false} />
               ) : (
                 <GoogleIcon />
               )}
@@ -385,7 +384,7 @@ export function AuthPage({ onSuccess, className, isModal = false }: AuthProps) {
               disabled={isOAuthLoading !== null || isLoading}
             >
               {isOAuthLoading === "github" ? (
-                <Loader2 className="size-3.5 animate-spin" />
+                <CoolIcon name="loading" size={14} className="animate-spin" duotone={false} />
               ) : (
                 <GithubIcon />
               )}

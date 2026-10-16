@@ -3,7 +3,6 @@
 import React, { useState, useMemo } from "react";
 import { CoolIcon } from "@/components/icons/coolicon";
 import { Input } from "@/components/ui/input";
-import { X, Sparkles, Check, Film, Image as ImageIcon, Music, Mic, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface ModelOption {
@@ -184,14 +183,19 @@ export function ModelSelectorModal({
             onClick={onClose}
             className="p-1.5 rounded-full bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-colors cursor-pointer"
           >
-            <X className="size-4" />
+            <CoolIcon name="close-md" size={16} duotone={false} />
           </button>
         </div>
 
         {/* Barre de recherche */}
         <div className="px-5 pt-3 pb-2">
           <div className="relative">
-            <Search className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none" />
+            <CoolIcon
+              name="search-magnifying-glass"
+              size={15}
+              duotone={false}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none"
+            />
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -220,7 +224,7 @@ export function ModelSelectorModal({
             >
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-[#D8FF64]/10 border border-[#D8FF64]/20 flex items-center justify-center text-[#D8FF64]">
-                  <Sparkles className="size-5" />
+                  <CoolIcon name="star" size={20} duotone secondaryColor="#D8FF64" className="text-[#D8FF64]" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
@@ -237,7 +241,7 @@ export function ModelSelectorModal({
 
               {selectedModel === "auto" && (
                 <div className="w-6 h-6 rounded-full bg-[#D8FF64] text-black flex items-center justify-center shrink-0">
-                  <Check className="size-3.5 stroke-[3]" />
+                  <CoolIcon name="check" size={14} duotone={false} className="text-black stroke-[3]" />
                 </div>
               )}
             </button>
@@ -247,7 +251,7 @@ export function ModelSelectorModal({
           {videoModels.length > 0 && (
             <div>
               <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-white/40 mb-2 px-1">
-                <Film className="size-3.5" />
+                <CoolIcon name="monitor-play" size={14} duotone className="text-white/40" />
                 <span>Vidéo ({videoModels.length})</span>
               </div>
               <div className="space-y-1.5">
@@ -270,7 +274,7 @@ export function ModelSelectorModal({
           {imageModels.length > 0 && (
             <div>
               <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-white/40 mb-2 px-1">
-                <ImageIcon className="size-3.5" />
+                <CoolIcon name="image-01" size={14} duotone className="text-white/40" />
                 <span>Image ({imageModels.length})</span>
               </div>
               <div className="space-y-1.5">
@@ -293,7 +297,7 @@ export function ModelSelectorModal({
           {audioModels.length > 0 && (
             <div>
               <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-white/40 mb-2 px-1">
-                <Music className="size-3.5" />
+                <CoolIcon name="headphones" size={14} duotone className="text-white/40" />
                 <span>Audio & Voix ({audioModels.length})</span>
               </div>
               <div className="space-y-1.5">
@@ -340,11 +344,11 @@ function ModelItem({
       <div className="flex items-center gap-3 min-w-0 pr-2">
         <div className="w-9 h-9 rounded-lg bg-black/40 border border-white/10 flex items-center justify-center shrink-0">
           {model.category === "video" ? (
-            <Film className="size-4 text-white/70 group-hover:text-white" />
+            <CoolIcon name="monitor-play" size={16} duotone className="text-white/70 group-hover:text-white" />
           ) : model.category === "image" ? (
-            <ImageIcon className="size-4 text-white/70 group-hover:text-white" />
+            <CoolIcon name="image-01" size={16} duotone className="text-white/70 group-hover:text-white" />
           ) : (
-            <Mic className="size-4 text-white/70 group-hover:text-white" />
+            <CoolIcon name="user-voice" size={16} duotone className="text-white/70 group-hover:text-white" />
           )}
         </div>
         <div className="min-w-0">
@@ -382,7 +386,7 @@ function ModelItem({
         </span>
         {isSelected && (
           <div className="w-5 h-5 rounded-full bg-[#D8FF64] text-black flex items-center justify-center">
-            <Check className="size-3 stroke-[3]" />
+            <CoolIcon name="check" size={12} duotone={false} className="text-black stroke-[3]" />
           </div>
         )}
       </div>
