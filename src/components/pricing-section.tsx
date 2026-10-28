@@ -22,11 +22,15 @@ export function PricingSection() {
 					transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
 					className="mx-auto max-w-xl space-y-3 text-center"
 				>
+					<div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[var(--field)] border border-[var(--line)] text-xs text-[var(--ink-2)] mx-auto">
+						<span className="w-1.5 h-1.5 rounded-full bg-[#D8FF64]" />
+						<span>Paiement IA via Mobile Money en Afrique</span>
+					</div>
 					<h2 className="font-heading font-semibold text-3xl text-foreground tracking-tight sm:text-4xl md:text-5xl">
-						Rechargez vos crédits en toute liberté
+						Rechargez vos crédits IA en toute liberté
 					</h2>
 					<p className="text-muted-foreground text-sm sm:text-base max-w-md mx-auto">
-						Pas d&apos;abonnement récurrent forcé. Achetez vos crédits par Mobile Money (Wave, MTN, Orange, Moov) et créez quand vous voulez.
+						Pas d&apos;abonnement récurrent forcé. Achetez vos crédits par Mobile Money (Orange Money, MTN, Wave, Moov) partout en Afrique et créez quand vous voulez.
 					</p>
 				</motion.div>
 

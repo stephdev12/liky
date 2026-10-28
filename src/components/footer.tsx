@@ -37,9 +37,9 @@ const footerLinks: FooterSection[] = [
 	{
 		label: "Légal & Studio",
 		links: [
-			{ title: "Conditions d'utilisation", href: "#" },
-			{ title: "Confidentialité", href: "#" },
-			{ title: "Support créateurs", href: "#" },
+			{ title: "Confidentialité", href: "/privacy" },
+			{ title: "Spécification LLM", href: "/llms.txt" },
+			{ title: "Support créateurs", href: "mailto:support@likyai.com" },
 			{ title: "Accès Studios", href: "/studios" },
 		],
 	},

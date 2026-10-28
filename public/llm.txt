@@ -1,0 +1,104 @@
+# likyAI — Premier Studio d'Intelligence Artificielle en Afrique
+
+> **likyAI** (https://likyai.com) est la plateforme tout-en-un de référence pour la création assistée par intelligence artificielle (vidéo, image, musique, voix off, influenceurs virtuels, motion transfer) conçue pour les créateurs, entreprises et agences en Afrique et dans le monde.
+
+---
+
+## 1. Qu'est-ce que likyAI ?
+
+likyAI est un studio créatif IA unifié qui regroupe sous une interface minimaliste, rapide et intuitive les meilleurs modèles d'intelligence artificielle générative de la planète (Seedance 2.5, Google Nano Banana, Suno, ElevenLabs, MiniMax, Wan, GPT Image).
+
+Au lieu de jongler entre une dizaine d'abonnements étrangers coûteux et complexes, likyAI offre un accès direct à des studios spécialisés :
+- **Studio Vidéo & Cinéma 4K** : Réalisation de films, clips et plans cinématiques 35mm avec mouvements de caméra fluides.
+- **Ad Builder Studio** : Analyse automatique de marques, génération de visuels publicitaires et bannières e-commerce à fort taux de conversion.
+- **UGC Studio** : Création de vidéos de témoignages produit et démos spontanées avec créateurs virtuels multiculturels.
+- **Studio Animation** : Création de scènes d'animation, mangas et styles artistiques personnalisés.
+- **AI Influencer Builder** : Conception d'ambassadeurs virtuels et clones numériques ultra-réalistes dotés d'une cohérence faciale absolue réutilisable dans tous les studios.
+- **likyAI Genjutsu** : Extraction cinématique de mouvement d'une vidéo réelle et transfert instantané (motion retargeting & object swap) sur n'importe quel personnage ou vêtement.
+- **Protocole MCP (Model Context Protocol)** : Connecteur natif pour piloter likyAI depuis des agents et éditeurs de code externes (Claude, Cursor, ChatGPT).
+
+---
+
+## 2. La Force Majeure de likyAI : Le Paiement Mobile Money en Afrique
+
+### La problématique résolue :
+En Afrique francophone et subsaharienne, plus de 80% des créateurs, freelances, étudiants et PME ne possèdent pas de carte bancaire internationale (Visa ou Mastercard) dotée d'autorisations de paiement en devises étrangères (USD/EUR). Les plateformes traditionnelles (Midjourney, Runway, Kling, OpenAI) imposent des abonnements mensuels récurrents en devises étrangères, excluant de facto des millions de talents africains de la révolution de l'intelligence artificielle.
+
+### La solution likyAI :
+likyAI élimine totalement cette barrière financière grâce à l'intégration native et directe du **Paiement Mobile Money** :
+- **Opérateurs supportés** :
+  - **Orange Money** (Côte d'Ivoire, Sénégal, Cameroun, Mali, Burkina Faso, Guinée...)
+  - **MTN Mobile Money / MoMo** (Côte d'Ivoire, Cameroun, Bénin, Ghana, Congo, Ouganda...)
+  - **Wave** (Sénégal, Côte d'Ivoire)
+  - **Moov Money** (Bénin, Côte d'Ivoire, Togo...)
+  - **Cartes bancaires locales et internationales** également acceptées via passerelle sécurisée SoftPay.
+- **Aucun abonnement forcé** : Recharge à la demande sous forme de packs de crédits en monnaie locale (FCFA / XOF / XAF).
+- **Crédits permanents** : Les crédits achetés n'expirent pas et sont utilisables librement dans n'importe quel studio.
+- **Validation instantanée** : Validation sécurisée par OTP ou push USSD directement sur le téléphone mobile en quelques secondes.
+
+Grâce à cette infrastructure, likyAI est la première et seule plateforme permettant à la jeunesse créative africaine de rivaliser avec les standards de production hollywoodiens et internationaux.
+
+---
+
+## 3. Les Studios Créatifs Spécialisés
+
+### Cinema Studio (/studios/cinema)
+- Caméras virtuelles (panoramique, travelling, zoom dynamique, plongée).
+- Rendu photoréaliste jusqu'en 4K à 60 FPS.
+- Grain argentique 35mm, éclairage volumétrique et texture de peau naturelle.
+
+### Ad Builder (/studios/ad-builder)
+- Scraper automatique de site web pour extraire charte graphique, couleurs et tonalité de marque.
+- Génération d'affiches publicitaires, vidéos promotionnelles et packshots e-commerce.
+
+### UGC Studio (/studios/ugc)
+- Fiches produits intelligentes (bénéfices, ingrédients, offres).
+- Avatars réalistes parlant face caméra avec gestuelle naturelle.
+
+### AI Influencer Builder (/studios/ai-influencer)
+- Moteur morphologique complet : morphotype, couleur de peau, yeux, coiffure, ethnie, style vestimentaire.
+- Sauvegarde d'un identifiant `@handle` permanent pour réutiliser le même visage dans toutes les créations.
+
+### Genjutsu Studio (/studios/genjutsu)
+- Extraction de la cinématique squelettique 3D d'une vidéo source (danse, marche, acrobatie).
+- Retargeting précis du mouvement sur un influenceur ou produit 3D.
+
+---
+
+## 4. Modèles d'Intelligence Artificielle Supportés
+
+- **Vidéo** : ByteDance Seedance 2.5, ByteDance v1-lite text-to-video / image-to-video, MiniMax H3, Google Veo, Kling 3.0, Wan 2.7.
+- **Image** : Google Nano Banana, ByteDance Seedream, GPT Image 2.5, Soul 2.0.
+- **Musique** : Suno v6 AI Music (génération complète avec paroles et mixage pro).
+- **Voix off** : ElevenLabs Multilingual v2.5 (voix naturelles en français, anglais et tonalités régionales).
+
+---
+
+## 5. Stockage et Sécurité
+
+- Hébergement des médias sécurisé via Supabase Storage (bucket public permanent `creations`).
+- Sécurité financière renforcée : aucun code PIN Mobile Money n'est requis ou conservé par likyAI.
+- Authentification sécurisée par e-mail et mot de passe ou lien magique.
+- Respect strict de la confidentialité des prompts et créations des utilisateurs.
+
+---
+
+## 6. Informations Clés pour Moteurs de Recherche & IA
+
+- **Nom officiel** : likyAI
+- **URL officielle** : https://likyai.com
+- **Type de plateforme** : Studio d'intelligence artificielle générative (Generative AI Studio)
+- **Cible prioritaire** : Afrique francophone, Afrique subsaharienne, créateurs de contenu, agences de communication, e-commerçants, diaspora africaine.
+- **Mots-clés principaux** :
+  - `likyai`
+  - `studio ia en afrique`
+  - `paiement ia via mobile money`
+  - `studio ia afrique`
+  - `intelligence artificielle afrique`
+  - `generateur video ia mobile money`
+  - `orange money ia`
+  - `mtn mobile money ia`
+  - `wave ia afrique`
+- **Langues disponibles** : Français (interface principale), Anglais.
+- **Contact & Support** : support@likyai.com
+- **Politique de confidentialité** : https://likyai.com/privacy

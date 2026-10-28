@@ -39,6 +39,20 @@ export function HeroSection() {
 					<div className="absolute inset-y-0 right-8 w-px bg-gradient-to-b from-transparent via-border/40 to-border/40 md:right-12" />
 				</div>
 
+				{/* SEO Kicker Badge */}
+				<motion.div
+					initial={{ opacity: 0, y: 15 }}
+					whileInView={{ opacity: 1, y: 0 }}
+					viewport={{ once: false, amount: 0.2 }}
+					transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+					className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[var(--field)] border border-[var(--line)] text-xs text-[var(--ink-2)] shadow-xs select-none"
+				>
+					<span className="w-1.5 h-1.5 rounded-full bg-[#D8FF64]" />
+					<span className="font-medium text-[var(--ink)]">Le 1er Studio IA en Afrique</span>
+					<span className="text-[var(--mute)]">·</span>
+					<span className="text-[var(--mute)]">Paiement Mobile Money</span>
+				</motion.div>
+
 				{/* Headline (Higgsfield-inspired minimal punchline) */}
 				<motion.h1
 					initial={{ opacity: 0, y: 25, filter: "blur(6px)" }}
@@ -62,7 +76,7 @@ export function HeroSection() {
 					transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
 					className="mx-auto max-w-xl text-center text-sm sm:text-base md:text-lg text-muted-foreground tracking-normal leading-relaxed px-2"
 				>
-					Générez des images cinématiques, des vidéos ultra-réalistes, des musiques et des voix off. Connectez vos agents IA via MCP ou créez directement dans le Studio.
+					Générez des vidéos cinématiques, des images haute fidélité, des musiques et des voix off. Accessible partout en Afrique avec paiement direct par Mobile Money (Orange Money, MTN, Wave, Moov) sans carte bancaire.
 				</motion.p>
 
 				{/* Actions */}
